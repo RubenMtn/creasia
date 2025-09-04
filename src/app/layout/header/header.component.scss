@@ -1,0 +1,11 @@
+@use 'tokens' as *; // o '../../../styles/tokens' si no tienes includePaths
+
+.hdr{
+  display:flex; align-items:center; justify-content:center;
+  padding:$space-2; background:#fff; border-bottom:1px solid rgba(0,0,0,.08);
+}
+.brand{
+  font-family:$font-title; font-weight:700;
+  font-size:clamp(1.5rem, 4vw, 2.25rem);
+  text-transform:uppercase; letter-spacing:.08em; margin:0;
+}

@@ -1,1 +1,7 @@
 /* You can add global styles to this file, and also import other style files */
+@use 'styles/tokens' as *;
+
+:root { color-scheme: light; }
+html, body { height: 100%; }
+body { margin:0; background:$ivory; color:$tinta; font-family:$font-body; }
+.container { width:min(100%, 960px); margin:0 auto; padding:$space-2; }
