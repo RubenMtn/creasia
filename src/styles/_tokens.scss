@@ -1,9 +1,15 @@
-/* Colores */
+/* Paleta base (oriental) */
 $red-carmine: #B2262E;
-$ink-black:   #121212;
+$ink-black:   #121212;  // negro tinta
 $ivory:       #F7F4EF;
 $gold-soft:   #C8A96B;
 $tinta:       #2C2C2C;
+
+/* Modo oscuro (layout) */
+$text-light:  #fff;               // texto sobre fondos oscuros
+$bg-dark:     black;         // header/body
+$bg-near:     $ink-black;            // footer (casi negro)
+$border-dk:   rgba(255, 255, 255, .08); // líneas sutiles en dark
 
 /* Tipografías */
 $font-title: 'Noto Serif JP', serif;

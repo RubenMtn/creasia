@@ -1,4 +1,24 @@
+<!-- <section class="hero">
+  <h2 class="t">Bienvenido a Creasia</h2>
+  <p class="s">Cultura oriental, diseño sereno y contenido cuidado.</p>
+</section> -->
+
 <section class="hero">
-  <h2>Bienvenido a Creasia</h2>
-  <p>Cultura oriental, diseño sereno y contenido cuidado.</p>
+  <div class="media-wrap" [style.aspect-ratio]="videoAR">
+    <video
+      #vid
+      class="layer video"
+      src="assets/video/facesvid.mp4"
+      autoplay muted playsinline preload="auto"
+      (loadedmetadata)="onMeta(vid)"
+      (ended)="startFade(vid)"
+      [class.fade-out]="fading">
+    </video>
+
+    <img
+      class="layer image"
+      src="assets/images/facedrw.jpg"
+      alt="Ilustración"
+      [class.visible]="showImage">
+  </div>
 </section>

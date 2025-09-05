@@ -1,7 +1,11 @@
 /* You can add global styles to this file, and also import other style files */
-@use 'styles/tokens' as *;
+@use 'styles/tokens' as *; // o la ruta relativa: @use './styles/tokens' as *;
+@use 'styles/breakpoints' as *; // o ruta relativa
 
-:root { color-scheme: light; }
+:root { color-scheme: dark; }
 html, body { height: 100%; }
-body { margin:0; background:$ivory; color:$tinta; font-family:$font-body; }
+body { margin: 0; background: $bg-dark; color: $text-light; font-family: $font-body; }
 .container { width:min(100%, 960px); margin:0 auto; padding:$space-2; }
+
+*{ box-sizing:border-box; }
+html, body{ height:100%; margin:0; }

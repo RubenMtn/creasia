@@ -1,0 +1,9 @@
+$bp-sm: 640px;   // móvil
+$bp-md: 1024px;  // tablet
+$bp-lg: 1280px;  // desktop
+
+@mixin up($w) {
+  @media (min-width: $w) {
+    @content;
+  }
+}

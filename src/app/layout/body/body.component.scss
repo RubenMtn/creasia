@@ -1,3 +1,6 @@
 @use 'tokens' as *;
-/* Contenedor base mobile-first */
-.container { width: min(100%, 960px); margin: 0 auto; padding: $space-2; }
+@use 'breakpoints' as *;
+
+.container { width:min(100%, 960px); margin:0 auto; padding:$space-2; }
+@include up($bp-md) { .container { width:min(100%, 1120px); } }
+@include up($bp-lg) { .container { width:min(100%, 1240px); } }

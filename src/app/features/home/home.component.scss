@@ -1,2 +1,24 @@
-@use 'tokens' as *;
-.hero { padding:$space-3 0; }
+@use 'tokens' as *; // o ruta relativa
+@use 'breakpoints' as *;
+
+.hero { display:grid; place-items:center; padding:$space-2 0; }
+
+.media-wrap {
+  position: relative;
+  width: 100%;
+  line-height: 0;          // elimina posibles gaps
+}
+
+.layer {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  object-fit: contain;     // misma escala para ambos
+  display: block;
+}
+
+.video { transition: opacity 800ms ease; z-index: 2; }
+.video.fade-out { opacity: 0; }
+
+.image { opacity: 0; transition: opacity 800ms ease; z-index: 1; }
+.image.visible { opacity: 1; }
+
