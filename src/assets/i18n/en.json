@@ -1,0 +1,13 @@
+{
+  "links": {
+    "section1": "Activities",
+    "section2": "Members",
+    "section3": "Culture",
+    "section4": "Languages",
+    "section5": "Travel",
+    "section6": "Gourmet Spots"
+  },
+  "home": {
+    "caption": "A community passionate about discovery, learning, and valuable contributions across cultures"
+  }
+}

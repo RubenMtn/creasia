@@ -1,64 +1,57 @@
 import { Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { TPipe } from '../../shared/i18n/t.pipe';
 
 interface LinkItem {
-  label: string;
-  route: string;
-  cls: string;
+  key: string;   // clave i18n, ej: 'links.section1'
+  route: string; // ruta
+  cls: string;   // clase de posición
 }
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [RouterLink],
+  imports: [RouterLink, TPipe],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss'
 })
 export class HomeComponent {
-  /* ====== Vídeo/imagen (sin cambios de comportamiento) ====== */
   videoAR = '16 / 9';
-  fading = false;     // el vídeo está desvaneciéndose
-  showImage = false;  // imagen visible para el crossfade
-  showLinks = false;  // mostramos enlaces al terminar el fade
+  fading = false;
+  showImage = false;
+  showLinks = false;
 
   onMeta(v: HTMLVideoElement) {
     if (v.videoWidth && v.videoHeight) {
-      this.videoAR = `${v.videoWidth} / ${v.videoHeight}`; // encaje exacto
+      this.videoAR = `${v.videoWidth} / ${v.videoHeight}`;
     }
   }
 
   startFade(v: HTMLVideoElement) {
     v.pause();
-    try { v.currentTime = Math.max(0, v.duration - 0.05); } catch { /* noop */ }
-    this.showImage = true;   // aparece imagen para el crossfade
-    this.fading = true;      // comienza el desvanecimiento del vídeo
+    try { v.currentTime = Math.max(0, v.duration - 0.05); } catch { /* empty */ }
+    this.showImage = true;
+    this.fading = true;
   }
-
-  /* ====== Enlaces (aleatorizar orden de aparición) ====== */
-  // Base de enlaces con su posición (la posición NO cambia; solo el orden de aparición)
-  private readonly links: LinkItem[] = [
-    { label: 'Actividades', route: '/seccion-1', cls: 'l-top-left'  },
-    { label: 'Socios', route: '/seccion-2', cls: 'l-mid-left'  },
-    { label: 'Cultura', route: '/seccion-3', cls: 'l-bot-left'  },
-    { label: 'Idiomas', route: '/seccion-4', cls: 'l-top-right' },
-    { label: 'Viajes', route: '/seccion-5', cls: 'l-mid-right' },
-    { label: 'Gourmetpass', route: '/seccion-6', cls: 'l-bot-right' },
-  ];
-
-  // Array que se pinta en la vista (orden aleatorio)
-  displayLinks: LinkItem[] = [];
-
-  // Stagger del “pop” (ms)
-  baseDelay = 200;  // retardo inicial antes del primer link
-  stagger   = 180;  // separación entre un link y el siguiente
 
   onFadeEnd(ev: TransitionEvent) {
     const el = ev.target as HTMLElement;
     if (this.fading && el?.classList.contains('video') && ev.propertyName === 'opacity') {
-      // 1) Aleatoriza orden de aparición
       this.displayLinks = [...this.links].sort(() => Math.random() - 0.5);
-      // 2) Muestra los links (la animación usa animationDelay inline)
       this.showLinks = true;
     }
   }
+
+  private readonly links: LinkItem[] = [
+    { key: 'links.section1', route: '/seccion-1', cls: 'l-top-left'  },
+    { key: 'links.section2', route: '/seccion-2', cls: 'l-mid-left'  },
+    { key: 'links.section3', route: '/seccion-3', cls: 'l-bot-left'  },
+    { key: 'links.section4', route: '/seccion-4', cls: 'l-top-right' },
+    { key: 'links.section5', route: '/seccion-5', cls: 'l-mid-right' },
+    { key: 'links.section6', route: '/seccion-6', cls: 'l-bot-right' },
+  ];
+
+  displayLinks: LinkItem[] = [];
+  baseDelay = 200;
+  stagger   = 180;
 }

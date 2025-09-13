@@ -1,0 +1,8 @@
+<label class="sr-only" for="langSel">Idioma</label>
+<select
+  id="langSel"
+  class="lang-select"
+  [value]="current"
+  (change)="onChange($event)">
+  <option *ngFor="let l of langs" [value]="l.code">{{ l.label }}</option>
+</select>

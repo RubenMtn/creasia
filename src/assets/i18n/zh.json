@@ -1,0 +1,13 @@
+{
+  "links": {
+    "section1": "活动",
+    "section2": "会员",
+    "section3": "文化",
+    "section4": "语言",
+    "section5": "旅行",
+    "section6": "美食地点"
+  },
+  "home": {
+    "caption": "一个热衷于探索、学习，并在不同文化之间做出有价值贡献的社区"
+  }
+}

@@ -1,90 +1,76 @@
-@use 'tokens' as *;        // variables globales
-@use 'breakpoints' as *;   // $bp-md/$bp-lg + mixin up()
+@use 'tokens' as *;
+@use 'breakpoints' as *;
 
-/* =========================
-   Hero + media (vídeo/imagen)
-   ========================= */
+/* ================= Hero + media (vídeo/imagen) =================
+   - Mantiene el overlay y no altera el encaje del vídeo/imagen. */
 .hero {
+  position: relative;               /* CLAVE para el overlay de los links */
   display: grid;
   place-items: center;
   padding: $space-2 0;
-  position: relative; // capa de enlaces superpuesta
 }
 
 .media-wrap {
   position: relative;
   width: 100%;
-  line-height: 0; // elimina gaps verticales del contenedor
+  line-height: 0;                   /* evita gaps verticales */
 }
 
-/* Capas superpuestas: encaje exacto */
 .layer {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: contain; // misma escala para vídeo e imagen
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  object-fit: contain;              /* vídeo e imagen escalan idéntico */
   display: block;
 }
 
-/* Crossfade vídeo → imagen */
-.video { z-index: 2; transition: opacity 700ms ease; }
+/* Crossfade vídeo → imagen (velocidad ajustable) */
+.video { z-index: 2; transition: opacity 1200ms ease; }
 .video.fade-out { opacity: 0; }
 
 .image { z-index: 1; opacity: 0; transition: opacity 800ms ease; }
 .image.visible { opacity: 1; }
 
-/* =========================
-   Capa de enlaces animados
-   ========================= */
-.link-layer {
-  position: absolute;
-  inset: 0;
+/* ================= Overlay de enlaces animados =================
+   - Nacen del centro y se mueven a su posición final. */
+.link-layer{
+  position: absolute; inset: 0;
   z-index: 5;
-  pointer-events: none; // esta capa no bloquea
+  pointer-events: none; /* la capa no bloquea */
 }
 
-/* Cuadro base centrado y con ancho según contenido */
+/* Cuadro base centrado, ancho según contenido, con animación. */
 .link{
   position: absolute; top: 50%; left: 50%;
   transform: translate(-50%,-50%) scale(0.05);
   opacity: 0;
 
-  pointer-events: auto;
+  pointer-events: auto;             /* cada enlace sí es clicable */
   color: #fff; text-decoration: none;
   border: 1px solid #fff; background: transparent;
   text-transform: uppercase; letter-spacing: .06em;
   font-weight: 600; border-radius: .5rem;
 
-  /* CENTRADO PERFECTO del texto */
-  display: inline-flex;             /* caja según contenido */
-  align-items: center;              /* centra vertical */
-  justify-content: center;          /* centra horizontal */
-  text-align: center;
+  display: inline-flex; align-items: center; justify-content: center; text-align: center;
 
-  /* Tamaño adaptable al contenido */
-  padding: .5rem .9rem;
-  inline-size: fit-content;         /* ancho según contenido (fallback abajo) */
-  /* width: fit-content; */          /* usa esta si tu editor se queja de inline-size */
+  /* TAMAÑOS POR DISPOSITIVO:
+     - Móvil: algo más pequeño para que “respire”.
+     - Tablet: intermedio.
+     - Desktop: como veníamos usando. */
+  /* móvil (base) */
+  font-size: 0.82rem;
+  padding: .45rem .75rem;
+  inline-size: fit-content;
+  min-inline-size: 8ch;
+  max-inline-size: 28ch;
 
-  /* Límites razonables (en caracteres) para no crecer de más */
-  min-inline-size: 8ch;             /* ancho mínimo ≈ 8 caracteres */
-  max-inline-size: 28ch;            /* si supera, permitirá salto de línea */
-
-  /* Si NO quieres salto de línea, descomenta esto: */
-  /* white-space: nowrap; */
-
-  /* Animación (igual que antes; el delay se lo das en TS si quieres) */
   will-change: transform, opacity;
-  animation: popInMove 500ms cubic-bezier(.2,.7,.2,1) forwards;
+  animation: popInMove 1200ms cubic-bezier(.2,.7,.2,1) forwards;
 
   &:hover  { outline: 2px solid rgba(255,255,255,.30); }
   &:active { scale: .98; }
 }
 
-
-/* Posiciones finales (NO tienen delay aquí; solo movimiento).
-   Usamos variables CSS (--tx/--ty) que dependen del viewport. */
+/* Posiciones finales (variables CSS) — MOBILE por defecto */
 .l-top-left  { --tx: -32vw; --ty: -18vh; }
 .l-mid-left  { --tx: -32vw; --ty:   0vh; }
 .l-bot-left  { --tx: -32vw; --ty:  18vh; }
@@ -93,84 +79,68 @@
 .l-mid-right { --tx:  32vw; --ty:   0vh; }
 .l-bot-right { --tx:  32vw; --ty:  18vh; }
 
-/* TABLET: tamaño medio y más separación */
+/* TABLET (>= $bp-md): sube un punto tamaño y separación */
 @include up($bp-md) {
-  .link {
+  .link{
     font-size: 0.95rem;
     padding: .55rem .9rem;
-    min-width: clamp(7.5rem, 22vw, 12rem);
+    min-inline-size: 9ch;
   }
   .l-top-left  { --tx: -36vw; --ty: -20vh; }
   .l-mid-left  { --tx: -36vw; --ty:   0vh; }
   .l-bot-left  { --tx: -36vw; --ty:  20vh; }
-
   .l-top-right { --tx:  36vw; --ty: -20vh; }
   .l-mid-right { --tx:  36vw; --ty:   0vh; }
   .l-bot-right { --tx:  36vw; --ty:  20vh; }
 }
 
-/* PC/Escritorio: tamaño original y separación amplia */
+/* DESKTOP (>= $bp-lg): tamaño y separación amplios */
 @include up($bp-lg) {
-  .link {
+  .link{
     font-size: 1rem;
     padding: .6rem 1rem;
-    min-width: clamp(8rem, 18vw, 14rem);
+    min-inline-size: 10ch;
   }
   .l-top-left  { --tx: -38vw; --ty: -22vh; }
   .l-mid-left  { --tx: -38vw; --ty:   0vh; }
   .l-bot-left  { --tx: -38vw; --ty:  22vh; }
-
   .l-top-right { --tx:  38vw; --ty: -22vh; }
   .l-mid-right { --tx:  38vw; --ty:   0vh; }
   .l-bot-right { --tx:  38vw; --ty:  22vh; }
 }
 
-/* Keyframes: del centro a su destino (usa --tx/--ty) */
-@keyframes popInMove {
-  0%   { transform: translate(-50%, -50%) scale(0.05); opacity: 0; }
+/* Movimiento desde el centro a su destino (usa --tx/--ty) */
+@keyframes popInMove{
+  0%   { transform: translate(-50%,-50%) scale(0.05); opacity: 0; }
   60%  { opacity: 1; }
   100% { transform: translate(calc(-50% + var(--tx)), calc(-50% + var(--ty))) scale(1); opacity: 1; }
 }
 
-// .caption-below{
-//   /* añade estas 3 líneas */
-//   width: 100%;              /* que abarque todo el ancho del body */
-//   text-align: center;       /* centra el contenido */
-//   margin: $space-2 0 0;     /* evita que auto-margins lo desplacen raro en flex */
-
-//   /* (deja el resto tal cual) */
-//   color: $text-light;
-//   max-width: min(72ch, 92%);
-//   line-height: 1.35;
-//   font-size: 0.95rem;
-//   /* ... tus @include up(...) y la animación ... */
-// }
-
-
-/* Texto bajo el hero: centrado y responsive.
-   Está fuera del <section> para no alterar el tamaño del vídeo. */
+/* ================= Texto bajo el hero (caption) =================
+   - Siempre centrado.
+   - Más separación en móvil (estaba “pegado” a la imagen).
+   - Tamaño progresivo (móvil → tablet → desktop). */
 .caption-below{
-  /* centrado y ancho seguro en contenedor flex */
   width: 100%;
   align-self: stretch;
-  margin: $space-2 auto 0;
-  text-align: center;
 
+  /* MÁS margen superior en móvil (antes se veía pegado)
+     Sustituimos $space-5 (no existe en tokens) por $space-3 * 2 */
+  margin: clamp($space-3, 4vh, $space-3 * 2) auto 0;
+
+  text-align: center;
   color: $text-light;
   line-height: 1.35;
   max-width: min(72ch, 92%);
 
-  /* Animación de entrada (colocada ANTES de los @include para evitar el warning de Sass) */
-  opacity: 0;
-  transform: translateY(6px);
+  /* Animación de entrada discreta */
+  opacity: 0; transform: translateY(6px);
   animation: captionIn 500ms ease 160ms forwards;
 
   /* Tamaños por dispositivo */
   font-size: 0.95rem;            /* móvil */
   @include up($bp-md){ font-size: 1.10rem; }  /* tablet */
-  @include up($bp-lg){ font-size: 1.25rem; }  /* pc */
+  @include up($bp-lg){ font-size: 1.25rem; }  /* desktop */
 }
 
-@keyframes captionIn {
-  to { opacity: 1; transform: translateY(0); }
-}
+@keyframes captionIn { to { opacity: 1; transform: translateY(0); } }

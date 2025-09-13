@@ -21,25 +21,23 @@
       [class.visible]="showImage">
   </div>
 
-  <!-- Enlaces: aparecen SOLO al terminar el fade del vídeo -->
+  <!-- Enlaces: overlay, aparecen SOLO cuando termina el fade del vídeo -->
   @if (showLinks) {
     <nav class="link-layer">
-      <!-- Orden aleatorio + delay escalonado desde TS -->
       @for (item of displayLinks; track item.route; let i = $index) {
         <a class="link {{ item.cls }}"
            [routerLink]="item.route"
            [style.animationDelay.ms]="baseDelay + stagger * i">
-          {{ item.label }}
+          {{ item.key | t }}
         </a>
       }
     </nav>
   }
 </section>
 
-<!-- Caption: aparece cuando termina el fade del vídeo.
-     Está fuera del <section> para no alterar el tamaño del hero -->
+<!-- Caption (debajo del hero para no alterar el tamaño del vídeo) -->
 @if (showLinks) {
   <p class="caption-below">
-    Una comunidad apasionada por el descubrimiento, el aprendizaje y el aporte entre culturas
+    {{ 'home.caption' | t }}
   </p>
 }
