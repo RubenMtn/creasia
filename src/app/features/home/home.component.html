@@ -4,7 +4,10 @@
       #vid
       class="layer video"
       src="assets/video/facev.mp4"
-      autoplay muted playsinline preload="auto"
+      autoplay
+      muted
+      playsinline
+      preload="auto"
       (loadedmetadata)="onMeta(vid)"
       (ended)="startFade(vid)"
       (transitionend)="onFadeEnd($event)"
@@ -18,15 +21,25 @@
       [class.visible]="showImage">
   </div>
 
-  <!-- Enlaces: aparecen SOLO cuando termina de desvanecerse el vídeo -->
+  <!-- Enlaces: aparecen SOLO al terminar el fade del vídeo -->
   @if (showLinks) {
     <nav class="link-layer">
-      <a class="link l-top-left"  routerLink="/seccion-1">Sección 1</a>
-      <a class="link l-mid-left"  routerLink="/seccion-2">Sección 2</a>
-      <a class="link l-bot-left"  routerLink="/seccion-3">Sección 3</a>
-      <a class="link l-top-right" routerLink="/seccion-4">Sección 4</a>
-      <a class="link l-mid-right" routerLink="/seccion-5">Sección 5</a>
-      <a class="link l-bot-right" routerLink="/seccion-6">Sección 6</a>
+      <!-- Orden aleatorio + delay escalonado desde TS -->
+      @for (item of displayLinks; track item.route; let i = $index) {
+        <a class="link {{ item.cls }}"
+           [routerLink]="item.route"
+           [style.animationDelay.ms]="baseDelay + stagger * i">
+          {{ item.label }}
+        </a>
+      }
     </nav>
   }
 </section>
+
+<!-- Caption: aparece cuando termina el fade del vídeo.
+     Está fuera del <section> para no alterar el tamaño del hero -->
+@if (showLinks) {
+  <p class="caption-below">
+    Una comunidad apasionada por el descubrimiento, el aprendizaje y el aporte entre culturas
+  </p>
+}

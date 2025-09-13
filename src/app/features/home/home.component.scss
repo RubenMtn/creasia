@@ -1,5 +1,5 @@
-@use 'tokens' as *;        // variables globales (colores, tipografías, etc.)
-@use 'breakpoints' as *;   // $bp-sm/$bp-md/$bp-lg + mixin up()
+@use 'tokens' as *;        // variables globales
+@use 'breakpoints' as *;   // $bp-md/$bp-lg + mixin up()
 
 /* =========================
    Hero + media (vídeo/imagen)
@@ -8,38 +8,30 @@
   display: grid;
   place-items: center;
   padding: $space-2 0;
-  position: relative; // permite superponer la capa de enlaces
+  position: relative; // capa de enlaces superpuesta
 }
 
 .media-wrap {
   position: relative;
   width: 100%;
-  /* La altura se calcula con [style.aspect-ratio] en el HTML */
-  line-height: 0; // elimina posibles gaps
+  line-height: 0; // elimina gaps verticales del contenedor
 }
 
-/* Capas superpuestas: imagen y vídeo ocupan exactamente la misma caja */
+/* Capas superpuestas: encaje exacto */
 .layer {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
-  object-fit: contain; // misma escala para ambos
+  object-fit: contain; // misma escala para vídeo e imagen
   display: block;
 }
 
-/* Crossfade del vídeo → imagen */
-.video {
-  z-index: 2;
-  transition: opacity 1200ms ease; // un poco más lento para elegancia
-}
+/* Crossfade vídeo → imagen */
+.video { z-index: 2; transition: opacity 700ms ease; }
 .video.fade-out { opacity: 0; }
 
-.image {
-  z-index: 1;
-  opacity: 0;
-  transition: opacity 800ms ease;
-}
+.image { z-index: 1; opacity: 0; transition: opacity 800ms ease; }
 .image.visible { opacity: 1; }
 
 /* =========================
@@ -52,50 +44,56 @@
   pointer-events: none; // esta capa no bloquea
 }
 
-/* Cuadro base: borde/texto blanco, fondo transparente */
-.link {
-  position: absolute;
-  top: 50%;
-  left: 50%;
+/* Cuadro base centrado y con ancho según contenido */
+.link{
+  position: absolute; top: 50%; left: 50%;
   transform: translate(-50%,-50%) scale(0.05);
   opacity: 0;
 
-  pointer-events: auto; // cada enlace sí es clicable
-  color: #fff;
-  text-decoration: none;
-  border: 1px solid #fff;
-  background: transparent;
-  text-transform: uppercase;
-  letter-spacing: .06em;
-  font-weight: 600;
-  border-radius: .5rem;
+  pointer-events: auto;
+  color: #fff; text-decoration: none;
+  border: 1px solid #fff; background: transparent;
+  text-transform: uppercase; letter-spacing: .06em;
+  font-weight: 600; border-radius: .5rem;
 
-  /* Tamaños base (MÓVIL por defecto) */
-  /* Móvil: más pequeño */
-  font-size: 0.875rem;             // ~14px
-  padding: .45rem .75rem;
-  min-width: clamp(6.5rem, 36vw, 10rem);
+  /* CENTRADO PERFECTO del texto */
+  display: inline-flex;             /* caja según contenido */
+  align-items: center;              /* centra vertical */
+  justify-content: center;          /* centra horizontal */
+  text-align: center;
 
-  /* Animación: nacen desde el centro y van a su posición */
+  /* Tamaño adaptable al contenido */
+  padding: .5rem .9rem;
+  inline-size: fit-content;         /* ancho según contenido (fallback abajo) */
+  /* width: fit-content; */          /* usa esta si tu editor se queja de inline-size */
+
+  /* Límites razonables (en caracteres) para no crecer de más */
+  min-inline-size: 8ch;             /* ancho mínimo ≈ 8 caracteres */
+  max-inline-size: 28ch;            /* si supera, permitirá salto de línea */
+
+  /* Si NO quieres salto de línea, descomenta esto: */
+  /* white-space: nowrap; */
+
+  /* Animación (igual que antes; el delay se lo das en TS si quieres) */
   will-change: transform, opacity;
-  animation: popInMove 1200ms cubic-bezier(.2,.7,.2,1) forwards;
+  animation: popInMove 500ms cubic-bezier(.2,.7,.2,1) forwards;
 
-  /* Hover/activo (suave) */
   &:hover  { outline: 2px solid rgba(255,255,255,.30); }
   &:active { scale: .98; }
 }
 
-/* Posiciones finales: 3 izquierda / 3 derecha (arriba, centro, abajo)
-   Usamos variables CSS (--tx/--ty) para no repetir keyframes */
-.l-top-left  { --tx: -32vw; --ty: -18vh; animation-delay: 200ms; } // móvil: desplazamiento algo menor
-.l-mid-left  { --tx: -32vw; --ty:   0vh; animation-delay: 320ms; }
-.l-bot-left  { --tx: -32vw; --ty:  18vh; animation-delay: 440ms; }
 
-.l-top-right { --tx:  32vw; --ty: -18vh; animation-delay: 560ms; }
-.l-mid-right { --tx:  32vw; --ty:   0vh; animation-delay: 680ms; }
-.l-bot-right { --tx:  32vw; --ty:  18vh; animation-delay: 800ms; }
+/* Posiciones finales (NO tienen delay aquí; solo movimiento).
+   Usamos variables CSS (--tx/--ty) que dependen del viewport. */
+.l-top-left  { --tx: -32vw; --ty: -18vh; }
+.l-mid-left  { --tx: -32vw; --ty:   0vh; }
+.l-bot-left  { --tx: -32vw; --ty:  18vh; }
 
-/* TABLET: algo más grande y más separados */
+.l-top-right { --tx:  32vw; --ty: -18vh; }
+.l-mid-right { --tx:  32vw; --ty:   0vh; }
+.l-bot-right { --tx:  32vw; --ty:  18vh; }
+
+/* TABLET: tamaño medio y más separación */
 @include up($bp-md) {
   .link {
     font-size: 0.95rem;
@@ -111,12 +109,12 @@
   .l-bot-right { --tx:  36vw; --ty:  20vh; }
 }
 
-/* PC/Escritorio: como estaban originalmente (tamaño y separación) */
+/* PC/Escritorio: tamaño original y separación amplia */
 @include up($bp-lg) {
   .link {
     font-size: 1rem;
     padding: .6rem 1rem;
-    min-width: clamp(8rem, 18vw, 14rem); // valores “como estaban”
+    min-width: clamp(8rem, 18vw, 14rem);
   }
   .l-top-left  { --tx: -38vw; --ty: -22vh; }
   .l-mid-left  { --tx: -38vw; --ty:   0vh; }
@@ -132,4 +130,47 @@
   0%   { transform: translate(-50%, -50%) scale(0.05); opacity: 0; }
   60%  { opacity: 1; }
   100% { transform: translate(calc(-50% + var(--tx)), calc(-50% + var(--ty))) scale(1); opacity: 1; }
+}
+
+// .caption-below{
+//   /* añade estas 3 líneas */
+//   width: 100%;              /* que abarque todo el ancho del body */
+//   text-align: center;       /* centra el contenido */
+//   margin: $space-2 0 0;     /* evita que auto-margins lo desplacen raro en flex */
+
+//   /* (deja el resto tal cual) */
+//   color: $text-light;
+//   max-width: min(72ch, 92%);
+//   line-height: 1.35;
+//   font-size: 0.95rem;
+//   /* ... tus @include up(...) y la animación ... */
+// }
+
+
+/* Texto bajo el hero: centrado y responsive.
+   Está fuera del <section> para no alterar el tamaño del vídeo. */
+.caption-below{
+  /* centrado y ancho seguro en contenedor flex */
+  width: 100%;
+  align-self: stretch;
+  margin: $space-2 auto 0;
+  text-align: center;
+
+  color: $text-light;
+  line-height: 1.35;
+  max-width: min(72ch, 92%);
+
+  /* Animación de entrada (colocada ANTES de los @include para evitar el warning de Sass) */
+  opacity: 0;
+  transform: translateY(6px);
+  animation: captionIn 500ms ease 160ms forwards;
+
+  /* Tamaños por dispositivo */
+  font-size: 0.95rem;            /* móvil */
+  @include up($bp-md){ font-size: 1.10rem; }  /* tablet */
+  @include up($bp-lg){ font-size: 1.25rem; }  /* pc */
+}
+
+@keyframes captionIn {
+  to { opacity: 1; transform: translateY(0); }
 }

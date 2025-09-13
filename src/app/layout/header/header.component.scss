@@ -1,10 +1,68 @@
-@use 'tokens' as *; // o '../../../styles/tokens' si no tienes includePaths
+@use 'tokens' as *;       // Variables globales (colores, tipografías, espaciado)
+@use 'breakpoints' as *;  // $bp-md (tablet), $bp-lg (desktop) + mixin up()
 
 .hdr{
-  display: flex; align-items: center; justify-content: center;
-  padding: $space-2; background: $bg-dark; border-bottom: 1px solid $border-dk;
+  display:flex; align-items:center; justify-content:center;
+  padding:$space-2 $space-2;
+  background: transparent;            // o $bg-dark si lo prefieres
+  border-bottom:1px solid $border-dk; // línea sutil
+  box-sizing:border-box;
 }
+
+/* Efecto “tinta + trazo dorado” */
 .brand{
-  color: $text-light; font-family: $font-title; font-weight: 700;
-  font-size: clamp(1.5rem, 4vw, 2.25rem); text-transform: uppercase; letter-spacing: .08em; margin: 0;
+  margin:0;
+  font-family:$font-title;
+  color:$text-light;
+  text-transform:uppercase;
+  letter-spacing:.08em;
+  line-height:1.1;
+  position:relative;
+  overflow:visible;
+
+  /* Tamaños progresivos */
+  font-size:clamp(1.75rem, 6vw, 2rem);
+  @include up($bp-md){ font-size:clamp(2.25rem, 4.5vw, 2.75rem); }
+  @include up($bp-lg){ font-size:clamp(2.75rem, 3.8vw, 3.5rem); }
+
+  /* Entrada más lenta */
+  animation: inkIn 1200ms 180ms cubic-bezier(.2,.7,.2,1) both; // ← ajustado
+}
+
+/* Subrayado dorado, un poco más largo y dibujado más despacio */
+.brand::after{
+  content:'';
+  position:absolute;
+  left:50%;
+  bottom:-0.35em;
+  width:0;                         /* se anima */
+  height:2px;
+  transform:translateX(-50%);
+  border-radius:2px;
+  background:linear-gradient(90deg,
+              transparent 0 10%,
+              $gold-soft 30% 70%,
+              transparent 90% 100%);
+  box-shadow:0 0 10px rgba($gold-soft, .45);
+
+  animation: strokeIn 1100ms 500ms cubic-bezier(.2,.7,.2,1) forwards; // ← ajustado
+
+  @include up($bp-md){ height:3px; }
+  @include up($bp-lg){ height:4px; }
+}
+
+/* Accesibilidad */
+@media (prefers-reduced-motion: reduce){
+  .brand{ animation:none; opacity:1; transform:none; }
+  .brand::after{ animation:none; width:70%; } // ← ajustado (coherente con el final)
+}
+
+/* Keyframes */
+@keyframes inkIn{
+  0%   { opacity:0; transform:translateY(8px); letter-spacing:.30em; filter:blur(2px); }
+  60%  { opacity:1; filter:blur(0); }
+  100% { transform:none; letter-spacing:.10em; }
+}
+@keyframes strokeIn{
+  to { width:70%; } // ← ajustado (antes ~62%)
 }
