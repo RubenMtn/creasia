@@ -1,24 +1,32 @@
-<!-- <section class="hero">
-  <h2 class="t">Bienvenido a Creasia</h2>
-  <p class="s">Cultura oriental, diseño sereno y contenido cuidado.</p>
-</section> -->
-
 <section class="hero">
   <div class="media-wrap" [style.aspect-ratio]="videoAR">
     <video
       #vid
       class="layer video"
-      src="assets/video/facesvid.mp4"
+      src="assets/video/facev.mp4"
       autoplay muted playsinline preload="auto"
       (loadedmetadata)="onMeta(vid)"
       (ended)="startFade(vid)"
+      (transitionend)="onFadeEnd($event)"
       [class.fade-out]="fading">
     </video>
 
     <img
       class="layer image"
-      src="assets/images/facedrw.jpg"
+      src="assets/images/facedok.png"
       alt="Ilustración"
       [class.visible]="showImage">
   </div>
+
+  <!-- Enlaces: aparecen SOLO cuando termina de desvanecerse el vídeo -->
+  @if (showLinks) {
+    <nav class="link-layer">
+      <a class="link l-top-left"  routerLink="/seccion-1">Sección 1</a>
+      <a class="link l-mid-left"  routerLink="/seccion-2">Sección 2</a>
+      <a class="link l-bot-left"  routerLink="/seccion-3">Sección 3</a>
+      <a class="link l-top-right" routerLink="/seccion-4">Sección 4</a>
+      <a class="link l-mid-right" routerLink="/seccion-5">Sección 5</a>
+      <a class="link l-bot-right" routerLink="/seccion-6">Sección 6</a>
+    </nav>
+  }
 </section>

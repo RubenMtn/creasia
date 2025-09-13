@@ -2,6 +2,7 @@ $bp-sm: 640px;   // móvil
 $bp-md: 1024px;  // tablet
 $bp-lg: 1280px;  // desktop
 
+// Uso: @include up($bp-md) { ... }  → aplica a tablet y superior.
 @mixin up($w) {
   @media (min-width: $w) {
     @content;

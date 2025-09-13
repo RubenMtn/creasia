@@ -1,24 +1,135 @@
-@use 'tokens' as *; // o ruta relativa
-@use 'breakpoints' as *;
+@use 'tokens' as *;        // variables globales (colores, tipografías, etc.)
+@use 'breakpoints' as *;   // $bp-sm/$bp-md/$bp-lg + mixin up()
 
-.hero { display:grid; place-items:center; padding:$space-2 0; }
+/* =========================
+   Hero + media (vídeo/imagen)
+   ========================= */
+.hero {
+  display: grid;
+  place-items: center;
+  padding: $space-2 0;
+  position: relative; // permite superponer la capa de enlaces
+}
 
 .media-wrap {
   position: relative;
   width: 100%;
-  line-height: 0;          // elimina posibles gaps
+  /* La altura se calcula con [style.aspect-ratio] en el HTML */
+  line-height: 0; // elimina posibles gaps
 }
 
+/* Capas superpuestas: imagen y vídeo ocupan exactamente la misma caja */
 .layer {
-  position: absolute; inset: 0;
-  width: 100%; height: 100%;
-  object-fit: contain;     // misma escala para ambos
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain; // misma escala para ambos
   display: block;
 }
 
-.video { transition: opacity 800ms ease; z-index: 2; }
+/* Crossfade del vídeo → imagen */
+.video {
+  z-index: 2;
+  transition: opacity 1200ms ease; // un poco más lento para elegancia
+}
 .video.fade-out { opacity: 0; }
 
-.image { opacity: 0; transition: opacity 800ms ease; z-index: 1; }
+.image {
+  z-index: 1;
+  opacity: 0;
+  transition: opacity 800ms ease;
+}
 .image.visible { opacity: 1; }
 
+/* =========================
+   Capa de enlaces animados
+   ========================= */
+.link-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none; // esta capa no bloquea
+}
+
+/* Cuadro base: borde/texto blanco, fondo transparente */
+.link {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%,-50%) scale(0.05);
+  opacity: 0;
+
+  pointer-events: auto; // cada enlace sí es clicable
+  color: #fff;
+  text-decoration: none;
+  border: 1px solid #fff;
+  background: transparent;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  font-weight: 600;
+  border-radius: .5rem;
+
+  /* Tamaños base (MÓVIL por defecto) */
+  /* Móvil: más pequeño */
+  font-size: 0.875rem;             // ~14px
+  padding: .45rem .75rem;
+  min-width: clamp(6.5rem, 36vw, 10rem);
+
+  /* Animación: nacen desde el centro y van a su posición */
+  will-change: transform, opacity;
+  animation: popInMove 1200ms cubic-bezier(.2,.7,.2,1) forwards;
+
+  /* Hover/activo (suave) */
+  &:hover  { outline: 2px solid rgba(255,255,255,.30); }
+  &:active { scale: .98; }
+}
+
+/* Posiciones finales: 3 izquierda / 3 derecha (arriba, centro, abajo)
+   Usamos variables CSS (--tx/--ty) para no repetir keyframes */
+.l-top-left  { --tx: -32vw; --ty: -18vh; animation-delay: 200ms; } // móvil: desplazamiento algo menor
+.l-mid-left  { --tx: -32vw; --ty:   0vh; animation-delay: 320ms; }
+.l-bot-left  { --tx: -32vw; --ty:  18vh; animation-delay: 440ms; }
+
+.l-top-right { --tx:  32vw; --ty: -18vh; animation-delay: 560ms; }
+.l-mid-right { --tx:  32vw; --ty:   0vh; animation-delay: 680ms; }
+.l-bot-right { --tx:  32vw; --ty:  18vh; animation-delay: 800ms; }
+
+/* TABLET: algo más grande y más separados */
+@include up($bp-md) {
+  .link {
+    font-size: 0.95rem;
+    padding: .55rem .9rem;
+    min-width: clamp(7.5rem, 22vw, 12rem);
+  }
+  .l-top-left  { --tx: -36vw; --ty: -20vh; }
+  .l-mid-left  { --tx: -36vw; --ty:   0vh; }
+  .l-bot-left  { --tx: -36vw; --ty:  20vh; }
+
+  .l-top-right { --tx:  36vw; --ty: -20vh; }
+  .l-mid-right { --tx:  36vw; --ty:   0vh; }
+  .l-bot-right { --tx:  36vw; --ty:  20vh; }
+}
+
+/* PC/Escritorio: como estaban originalmente (tamaño y separación) */
+@include up($bp-lg) {
+  .link {
+    font-size: 1rem;
+    padding: .6rem 1rem;
+    min-width: clamp(8rem, 18vw, 14rem); // valores “como estaban”
+  }
+  .l-top-left  { --tx: -38vw; --ty: -22vh; }
+  .l-mid-left  { --tx: -38vw; --ty:   0vh; }
+  .l-bot-left  { --tx: -38vw; --ty:  22vh; }
+
+  .l-top-right { --tx:  38vw; --ty: -22vh; }
+  .l-mid-right { --tx:  38vw; --ty:   0vh; }
+  .l-bot-right { --tx:  38vw; --ty:  22vh; }
+}
+
+/* Keyframes: del centro a su destino (usa --tx/--ty) */
+@keyframes popInMove {
+  0%   { transform: translate(-50%, -50%) scale(0.05); opacity: 0; }
+  60%  { opacity: 1; }
+  100% { transform: translate(calc(-50% + var(--tx)), calc(-50% + var(--ty))) scale(1); opacity: 1; }
+}
