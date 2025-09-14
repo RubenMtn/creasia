@@ -1,19 +1,88 @@
 @use 'tokens' as *;
+@use 'breakpoints' as *;
 
-.lang-select{
-  appearance: none;
+/* El host debe estar por encima de overlays del hero */
+:host{
+  display: block;
+  position: relative;
+  z-index: 9500;
+}
+
+/* Contenedor referencia para posicionar el menú */
+.switcher{ position: relative; }
+
+/* Botón compacto (icono idioma) */
+.switch{
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 32px; height: 24px;        /* reducido */
+  padding: 0; margin: 0;
   background: transparent;
   color: $text-light;
   border: 1px solid $border-dk;
-  padding: .25rem .5rem;
   border-radius: .375rem;
-  font: inherit;
   cursor: pointer;
   outline: none;
 }
-.lang-select:focus{ box-shadow: 0 0 0 2px rgba(255,255,255,.15); }
+.switch:focus-visible{ box-shadow: 0 0 0 2px rgba(255,255,255,.18); }
 
+/* Escala ligera en pantallas mayores */
+@include up($bp-md){ .switch{ width: 36px; height: 26px; } }
+@include up($bp-lg){ .switch{ width: 40px; height: 28px; } }
+
+/* Icono del botón (del tamaño de una bandera) */
+.icon{
+  display: block;
+  width: 18px; height: auto;
+}
+@include up($bp-md){ .icon{ width: 20px; } }
+@include up($bp-lg){ .icon{ width: 22px; } }
+
+/* ======= MENÚ: a la IZQUIERDA del botón, HORIZONTAL ======= */
+.menu{
+  position: absolute;
+  right: calc(100% + .35rem);   /* se abre hacia la izquierda del botón */
+  top: 50%;
+  transform: translateY(-50%);  /* centrado vertical con respecto al botón */
+  z-index: 10000;
+  pointer-events: auto;
+
+  list-style: none; margin: 0; padding: .20rem .25rem;
+
+  /* Fondo EXACTO del footer: negro tinta */
+  background: $ink-black;       /* #121212 */
+  border: 1px solid $border-dk;
+  border-radius: .5rem;
+  box-shadow: 0 8px 22px rgba(0,0,0,.35);
+
+  /* Horizontal: dos opciones en línea, sin saltos */
+  display: flex; align-items: center; gap: .20rem;
+  white-space: nowrap;          /* evita salto de línea accidental */
+}
+
+/* Opción del menú (bandera clicable) */
+.opt{
+  display: inline-flex; align-items: center; justify-content: center;
+  padding: .20rem .30rem;       /* compacto */
+  background: transparent; color: inherit;
+  border: 0; border-radius: .375rem;
+  cursor: pointer; pointer-events: auto;
+}
+.opt:hover{ outline: 1px solid rgba(255,255,255,.25); }
+.opt:focus-visible{ outline: 2px solid rgba(255,255,255,.25); }
+
+/* Banderas (más pequeñas, coherentes con el botón) */
+.flag{
+  display: block;
+  width: 18px; height: auto;
+  border-radius: 2px;
+  object-fit: cover;
+}
+@include up($bp-md){ .flag{ width: 20px; } }
+@include up($bp-lg){ .flag{ width: 22px; } }
+
+/* Texto solo para lectores de pantalla */
 .sr-only{
   position: absolute; width: 1px; height: 1px; margin: -1px;
-  padding: 0; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+  padding: 0; overflow: hidden; clip: rect(0,0,0,0);
+  white-space: nowrap; border: 0;
 }

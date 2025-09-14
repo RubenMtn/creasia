@@ -8,7 +8,7 @@ export type Lang = 'es' | 'en' | 'zh';
 /** Diccionario i18n: cada clave puede ser string o un sub-árbol (Dict). */
 export interface Dict { [key: string]: string | Dict; }
 
-/* Fallback ES en memoria: muestra español aunque el JSON tarde en llegar */
+/* Fallback ES en memoria (si aún no cargó el JSON, nunca verás “keys”) */
 const ES_FALLBACK: Dict = {
   links: {
     section1: 'Actividades',
@@ -29,7 +29,7 @@ export class TranslationService {
   private readonly platformId = inject(PLATFORM_ID);
 
   private readonly currentLang$ = new BehaviorSubject<Lang>('es');
-  private readonly dicts = new Map<Lang, Dict>([['es', ES_FALLBACK]]); // ← fallback listo
+  private readonly dicts = new Map<Lang, Dict>([['es', ES_FALLBACK]]);
 
   constructor() {
     // Precarga español SOLO en navegador; al terminar, notifica para repintar
@@ -38,50 +38,46 @@ export class TranslationService {
     }
   }
 
-  /** Idioma actual (lectura inmediata) */
   get lang(): Lang { return this.currentLang$.value; }
-
-  /** Cambios de idioma (lo usa el pipe impuro si lo necesitaras) */
   get langChanges(): Observable<Lang> { return this.currentLang$.asObservable(); }
 
-  /** Cambia idioma y asegura carga de su JSON */
   async setLang(lang: Lang): Promise<void> {
-    await this.ensureLoaded(lang);
-    this.currentLang$.next(lang);
+    await this.ensureLoaded(lang);       // carga si falta
+    this.currentLang$.next(lang);        // emite cambio de idioma
+    this.bump();                         // fuerza reevaluación inmediata (por si hay coalescing)
   }
 
-  /** Traduce 'a.b.c'; si no existe, devuelve la propia clave */
+  /** Traduce 'a.b.c'; si no existe en el idioma activo, cae a 'es'. */
   t(key: string): string {
-    const dict = this.dicts.get(this.lang);
-    if (!dict) return key;
-    const val = this.resolve(dict, key);
-    return val ?? key;
+    const active = this.dicts.get(this.lang);
+    const esDict = this.dicts.get('es');
+    const valActive = active ? this.resolve(active, key) : undefined;
+    if (valActive !== undefined) return valActive;
+    const valEs = esDict ? this.resolve(esDict, key) : undefined;
+    return valEs ?? key;
   }
 
   // -------- internos --------
 
-  /** Fuerza una emisión aunque el idioma no cambie (primer load o recarga) */
   private bump(): void {
+    // Re-emite el valor actual para que pipes/plantillas impuras reevaluen sin esperar a otro evento
     this.currentLang$.next(this.currentLang$.value);
   }
 
-  /** Carga y cachea el JSON del idioma si aún no está */
   private async ensureLoaded(lang: Lang): Promise<void> {
     if (this.dicts.has(lang)) return;
     try {
       const data = await firstValueFrom(this.http.get<Dict>(`assets/i18n/${lang}.json`));
       this.dicts.set(lang, data);
     } catch (err) {
-      // Si falla, deja el fallback de ES (u otro si fallara EN/ZH), y log suave
       console.warn('[i18n] No se pudo cargar', lang, err);
       if (!this.dicts.has(lang)) this.dicts.set(lang, {}); // evita reintentos en bucle
     } finally {
-      // Si he cargado el idioma actual, notifica para repintar
+      // si cargamos el idioma que ya está activo, avisa para repintar
       if (lang === this.lang) this.bump();
     }
   }
 
-  /** Navega por el árbol usando 'a.b.c' y devuelve el string si existe */
   private resolve(obj: Dict, path: string): string | undefined {
     let cur: string | Dict | undefined = obj;
     for (const part of path.split('.')) {

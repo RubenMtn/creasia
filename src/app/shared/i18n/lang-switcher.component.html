@@ -1,8 +1,30 @@
-<label class="sr-only" for="langSel">Idioma</label>
-<select
-  id="langSel"
-  class="lang-select"
-  [value]="current"
-  (change)="onChange($event)">
-  <option *ngFor="let l of langs" [value]="l.code">{{ l.label }}</option>
-</select>
+<div class="switcher">
+  <!-- Botón (icono idioma) -->
+  <button
+    type="button"
+    class="switch"
+    aria-haspopup="menu"
+    [attr.aria-expanded]="open"
+    [attr.aria-label]="'Idioma: ' + currentAlt()"
+    (click)="toggle($event)">
+    <img class="icon" src="assets/icons/idiomw.png" alt="Seleccionar idioma" />
+  </button>
+
+  <!-- Menú: a la IZQUIERDA del botón, solo 2 banderas restantes -->
+  <ul *ngIf="open" class="menu" role="menu">
+    <li *ngFor="let l of otherLangs" role="none">
+      <button
+        type="button"
+        role="menuitem"
+        class="opt"
+        (click)="onChoose(l.code, $event)">
+        <img
+          class="flag"
+          [src]="flagSrc(l.code)"
+          [alt]="l.label"
+          (error)="onFlagError($event, l.code)" />
+        <span class="sr-only">{{ l.label }}</span>
+      </button>
+    </li>
+  </ul>
+</div>

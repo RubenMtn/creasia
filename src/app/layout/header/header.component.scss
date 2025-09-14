@@ -1,71 +1,146 @@
-@use 'tokens' as *;       // paleta, tipografías, espaciado
-@use 'breakpoints' as *;  // $bp-md, $bp-lg + mixin up()
+@use 'tokens' as *; // paleta, tipografías, espaciado
+@use 'breakpoints' as *; // $bp-md, $bp-lg + mixin up()
 
-/* Contenedor del header:
-   - El título se centra con flex.
-   - El selector de idioma se posiciona a la derecha sin descentrar el título. */
-.hdr{
+/* ================= Header =================
+   - Contenedor principal del header.
+   - Centra el título.
+   - El selector de idioma se fija a la derecha.
+   - z-index alto para estar por encima del hero/overlays. */
+.hdr {
   position: relative;
-  display: flex; align-items: center; justify-content: center;
-  padding: $space-2;
+  z-index: 9000;
+  /* ↑ asegura clics sobre overlays del hero */
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  /* MÓVIL: un pelín más alto (más aire arriba/abajo del “CREASIA”) */
+  padding: $space-2 * 1.25 $space-2;
+
   background: $bg-dark;
   border-bottom: 1px solid $border-dk;
 }
 
-/* Selector de idioma fijado a la derecha (verticalmente centrado). */
-.lang{
-  position: absolute; right: $space-2; top: 50%; transform: translateY(-50%);
+/* A partir de tablet, el padding vuelve al valor estándar */
+@include up($bp-md) {
+  .hdr {
+    padding: $space-2;
+  }
 }
 
-/* ================= Efecto de entrada “tinta + trazo dorado” =================
-   - Encaja con estética oriental sin ser estridente.
-   - Reaparece suave en cada carga (no interfiere con i18n ni layout).
-   - Tamaños PROGRESIVOS (móvil → tablet → desktop), empezando ya “algo grande” en móvil. */
-.brand{
+/* Selector de idioma fijado a la derecha, respetando gutter por breakpoint */
+/* Selector de idioma fijado a la derecha, con gutter FLUIDO */
+.lang{
+  position: absolute;
+  inset-inline-end: var(--lang-gutter);  /* ← aquí usamos el valor fluido */
+  top: 50%;
+  transform: translateY(-50%);
+  min-width: 32px;
+  min-height: 24px;
+}
+
+@include up($bp-md){ .lang{ inset-inline-end: var(--lang-gutter-tablet); } }
+@include up($bp-lg){ .lang{ inset-inline-end: var(--lang-gutter-desktop); } }
+
+
+
+/* ================= Marca (CREASIA) =================
+   - Tipografía con aire oriental.
+   - Tamaños responsivos (ya “algo grande” en móvil).
+   - Animación tipo tinta + subrayado dorado. */
+.brand {
   margin: 0;
   font-family: $font-title;
   color: $text-light;
   text-transform: uppercase;
-  letter-spacing: .08em;  /* tracking final */
+  letter-spacing: .08em;
+  /* tracking final */
   line-height: 1.1;
   position: relative;
 
   /* Entrada con leve blur y ascenso (tinta)
-     IMPORTANTE: colocada ANTES de los @include para evitar el warning de Sass */
-  animation: inkIn 1200ms 180ms cubic-bezier(.2,.7,.2,1) both;
+     IMPORTANTE: antes de los @include para evitar el warning de Sass */
+  animation: inkIn 1200ms 180ms cubic-bezier(.2, .7, .2, 1) both;
 
-  /* Tamaño responsivo: móvil ya “algo grande”, y sube en tablet/desktop */
-  font-size: clamp(2rem, 7vw, 2.4rem);         /* móvil */
-  @include up($bp-md){ font-size: clamp(2.6rem, 5vw, 3.2rem); }  /* tablet */
-  @include up($bp-lg){ font-size: clamp(3.2rem, 4vw, 4rem); }    /* desktop */
+  /* Tamaño responsivo: móvil → tablet → desktop */
+  font-size: clamp(2rem, 7vw, 2.4rem);
+
+  /* móvil */
+  @include up($bp-md) {
+    font-size: clamp(2.6rem, 5vw, 3.2rem);
+  }
+
+  /* tablet */
+  @include up($bp-lg) {
+    font-size: clamp(3.2rem, 4vw, 4rem);
+  }
+
+  /* desktop */
 }
 
 /* Subrayado dorado “tipo pincel” (se dibuja desde el centro) */
-.brand::after{
-  content:'';
-  position:absolute; left:50%; bottom:-0.35em; transform:translateX(-50%);
-  width:0; height:2px; border-radius:2px;
-  background:linear-gradient(90deg, transparent 0 10%, $gold-soft 30% 70%, transparent 90% 100%);
-  box-shadow:0 0 10px rgba($gold-soft, .45);
+.brand::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: -0.35em;
+  transform: translateX(-50%);
+  width: 0;
+  height: 2px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, transparent 0 10%, $gold-soft 30% 70%, transparent 90% 100%);
+  box-shadow: 0 0 10px rgba($gold-soft, .45);
 
-  animation: strokeIn 1100ms 500ms cubic-bezier(.2,.7,.2,1) forwards;
+  animation: strokeIn 1100ms 500ms cubic-bezier(.2, .7, .2, 1) forwards;
 
-  @include up($bp-md){ height:3px; }
-  @include up($bp-lg){ height:4px; }
+  @include up($bp-md) {
+    height: 3px;
+  }
+
+  @include up($bp-lg) {
+    height: 4px;
+  }
 }
 
 /* Accesibilidad: reduce movimiento cuando el sistema lo pide */
-@media (prefers-reduced-motion: reduce){
-  .brand{ animation:none; opacity:1; transform:none; }
-  .brand::after{ animation:none; width:70%; }
+@media (prefers-reduced-motion: reduce) {
+  .brand {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+
+  .brand::after {
+    animation: none;
+    width: 70%;
+  }
 }
 
 /* ================= Keyframes ================= */
-@keyframes inkIn{
-  0%   { opacity:0; transform:translateY(8px); letter-spacing:.30em; filter:blur(2px); }
-  60%  { opacity:1; filter:blur(0); }
-  100% { transform:none; letter-spacing:.10em; }
+@keyframes inkIn {
+  0% {
+    opacity: 0;
+    transform: translateY(8px);
+    letter-spacing: .30em;
+    filter: blur(2px);
+  }
+
+  60% {
+    opacity: 1;
+    filter: blur(0);
+  }
+
+  100% {
+    transform: none;
+    letter-spacing: .10em;
+  }
 }
-@keyframes strokeIn{
-  to { width:70%; } /* subrayado un poco más largo */
+
+@keyframes strokeIn {
+  to {
+    width: 70%;
+  }
+
+  /* subrayado un poco más largo */
 }
