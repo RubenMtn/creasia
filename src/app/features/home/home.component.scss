@@ -108,33 +108,33 @@
 
 /* Posiciones finales (variables CSS) — MOBILE por defecto */
 .l-top-left {
-  --tx: -32vw;
-  --ty: -18vh;
+  --tx: -28vw;
+  --ty: -12vh;
 }
 
 .l-mid-left {
-  --tx: -32vw;
+  --tx: -28vw;
   --ty: 0vh;
 }
 
 .l-bot-left {
-  --tx: -32vw;
-  --ty: 18vh;
+  --tx: -28vw;
+  --ty: 12vh;
 }
 
 .l-top-right {
-  --tx: 32vw;
-  --ty: -18vh;
+  --tx: 28vw;
+  --ty: -12vh;
 }
 
 .l-mid-right {
-  --tx: 32vw;
+  --tx: 28vw;
   --ty: 0vh;
 }
 
 .l-bot-right {
-  --tx: 32vw;
-  --ty: 18vh;
+  --tx: 28vw;
+  --ty: 12vh;
 }
 
 /* TABLET (>= $bp-md): sube un punto tamaño y separación */
