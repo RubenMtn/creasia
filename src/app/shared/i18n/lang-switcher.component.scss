@@ -1,20 +1,29 @@
 @use 'tokens' as *;
 @use 'breakpoints' as *;
 
-/* El host debe estar por encima de overlays del hero */
+/* El host por encima de overlays */
 :host{
   display: block;
   position: relative;
   z-index: 9500;
+
+  /* controla separación menú↔botón en todos los tamaños */
+  --menu-gap: 4px;
 }
 
-/* Contenedor referencia para posicionar el menú */
-.switcher{ position: relative; }
+/* Contenedor: inline-flex + row-reverse = botón a la derecha, menú a la izquierda */
+.switcher{
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  flex-direction: row-reverse;  /* ← botón a la derecha */
+  gap: var(--menu-gap);         /* ← distancia ajustable */
+}
 
 /* Botón compacto (icono idioma) */
 .switch{
   display: inline-flex; align-items: center; justify-content: center;
-  width: 32px; height: 24px;        /* reducido */
+  width: 32px; height: 24px;
   padding: 0; margin: 0;
   background: transparent;
   color: $text-light;
@@ -25,11 +34,11 @@
 }
 .switch:focus-visible{ box-shadow: 0 0 0 2px rgba(255,255,255,.18); }
 
-/* Escala ligera en pantallas mayores */
+/* Escala ligera */
 @include up($bp-md){ .switch{ width: 36px; height: 26px; } }
 @include up($bp-lg){ .switch{ width: 40px; height: 28px; } }
 
-/* Icono del botón (del tamaño de una bandera) */
+/* Icono del botón */
 .icon{
   display: block;
   width: 18px; height: auto;
@@ -37,44 +46,45 @@
 @include up($bp-md){ .icon{ width: 20px; } }
 @include up($bp-lg){ .icon{ width: 22px; } }
 
-/* ======= MENÚ: a la IZQUIERDA del botón, HORIZONTAL ======= */
+/* ======= MENÚ: ahora en FLUJO (no absoluto), a la IZQUIERDA del botón =======
+   - Gracias a row-reverse, el menú queda a la izquierda.
+   - El gap controla la separación. */
 .menu{
-  position: absolute;
-  right: calc(100% + .35rem);   /* se abre hacia la izquierda del botón */
-  top: 50%;
-  transform: translateY(-50%);  /* centrado vertical con respecto al botón */
+  position: static;              /* ⬅️ ya no absoluto */
   z-index: 10000;
   pointer-events: auto;
 
-  list-style: none; margin: 0; padding: .20rem .25rem;
+  //list-style: none; margin: 0; padding: .16rem .18rem;
+  list-style: none; margin: 0; padding: .12rem .14rem; /* más estrecho */
 
-  /* Fondo EXACTO del footer: negro tinta */
-  background: $ink-black;       /* #121212 */
+  background: black;
   border: 1px solid $border-dk;
   border-radius: .5rem;
   box-shadow: 0 8px 22px rgba(0,0,0,.35);
 
-  /* Horizontal: dos opciones en línea, sin saltos */
-  display: flex; align-items: center; gap: .20rem;
-  white-space: nowrap;          /* evita salto de línea accidental */
+  display: grid;
+  grid-auto-flow: row;           /* vertical */
+  justify-items: center;
+  gap: .14rem;
+  min-width: 30px;
 }
 
 /* Opción del menú (bandera clicable) */
 .opt{
   display: inline-flex; align-items: center; justify-content: center;
-  padding: .20rem .30rem;       /* compacto */
+  padding: .12rem .14rem;
   background: transparent; color: inherit;
   border: 0; border-radius: .375rem;
-  cursor: pointer; pointer-events: auto;
+  cursor: pointer;
 }
 .opt:hover{ outline: 1px solid rgba(255,255,255,.25); }
 .opt:focus-visible{ outline: 2px solid rgba(255,255,255,.25); }
 
-/* Banderas (más pequeñas, coherentes con el botón) */
+/* Banderas */
 .flag{
   display: block;
   width: 18px; height: auto;
-  border-radius: 2px;
+  border-radius: 1px;
   object-fit: cover;
 }
 @include up($bp-md){ .flag{ width: 20px; } }

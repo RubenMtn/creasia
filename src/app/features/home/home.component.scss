@@ -31,7 +31,8 @@
 /* Crossfade vídeo → imagen (velocidad ajustable) */
 .video {
   z-index: 2;
-  transition: opacity 1200ms ease;
+  /* Velocidad con la que desaparece (fade out) el video */
+  transition: opacity 900ms ease;
 }
 
 .video.fade-out {
@@ -41,7 +42,8 @@
 .image {
   z-index: 1;
   opacity: 0;
-  transition: opacity 800ms ease;
+  /* Velocidad con la que aparece (fade-in) la imagen de la cara */
+  transition: opacity 1000ms ease;
 }
 
 .image.visible {
@@ -95,7 +97,8 @@
   max-inline-size: 28ch;
 
   will-change: transform, opacity;
-  animation: popInMove 1200ms cubic-bezier(.2, .7, .2, 1) forwards;
+  // Velocidad de aparición/colocación de los cuadros de texto:
+  animation: popInMove 900ms cubic-bezier(.2, .7, .2, 1) forwards;
 
   &:hover {
     outline: 2px solid rgba(255, 255, 255, .30);

@@ -13,6 +13,9 @@ export class LangSwitcherComponent {
   private readonly i18n = inject(TranslationService);
   private readonly host = inject(ElementRef<HTMLElement>);
 
+  // Timer para autocerrar el menú
+  private autoCloseTimer?: ReturnType<typeof setTimeout>;
+
   // Lista fija de idiomas
   readonly langs: readonly { code: Lang; label: string }[] = [
     { code: 'es', label: 'Español' },
@@ -25,19 +28,29 @@ export class LangSwitcherComponent {
 
   // Solo mostrar los que NO son el idioma actual
   get otherLangs(): readonly { code: Lang; label: string }[] {
-    return this.langs.filter(l => l.code !== this.current) as readonly { code: Lang; label: string }[];
+    return this.langs.filter(l => l.code !== this.current) as readonly {
+      code: Lang; label: string;
+    }[];
   }
 
+  /** Abre/cierra el menú. Al abrir, programa autocierre en 7s. */
   toggle(ev?: Event) {
     ev?.stopPropagation();
     this.open = !this.open;
+    if (this.open) {
+      this.startAutoClose();
+    } else {
+      this.clearAutoClose();
+    }
   }
 
+  /** Selección de idioma: aplica cambio y cierra (cancela timer). */
   async onChoose(code: Lang, ev: Event) {
     ev.stopPropagation();
     this.current = code;
     await this.i18n.setLang(code);
     this.open = false;
+    this.clearAutoClose();
   }
 
   flagSrc(code: Lang): string {
@@ -62,11 +75,35 @@ export class LangSwitcherComponent {
     return found ? found.label : this.current.toUpperCase();
   }
 
-  // Cerrar al clicar fuera o con Escape
+  /** Programa autocierre a los 7s si el menú sigue abierto. */
+  private startAutoClose(delayMs = 7000) {
+    this.clearAutoClose();
+    this.autoCloseTimer = setTimeout(() => {
+      if (this.open) this.open = false;
+      this.clearAutoClose();
+    }, delayMs);
+  }
+
+  /** Cancela el temporizador de autocierre. */
+  private clearAutoClose() {
+    if (this.autoCloseTimer) {
+      clearTimeout(this.autoCloseTimer);
+      this.autoCloseTimer = undefined;
+    }
+  }
+
+  // Cierra al clicar fuera o con Escape (y cancela timer)
   @HostListener('document:click', ['$event'])
   onDocClick(ev: MouseEvent) {
-    if (!this.host.nativeElement.contains(ev.target as Node)) this.open = false;
+    if (!this.host.nativeElement.contains(ev.target as Node)) {
+      this.open = false;
+      this.clearAutoClose();
+    }
   }
+
   @HostListener('document:keydown.escape')
-  onEsc() { this.open = false; }
+  onEsc() {
+    this.open = false;
+    this.clearAutoClose();
+  }
 }

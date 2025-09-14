@@ -1,5 +1,5 @@
-@use 'tokens' as *; // paleta, tipografías, espaciado
-@use 'breakpoints' as *; // $bp-md, $bp-lg + mixin up()
+@use 'tokens' as *;       // paleta, tipografías, espaciado
+@use 'breakpoints' as *;  // $bp-md, $bp-lg + mixin up()
 
 /* ================= Header =================
    - Contenedor principal del header.
@@ -8,14 +8,13 @@
    - z-index alto para estar por encima del hero/overlays. */
 .hdr {
   position: relative;
-  z-index: 9000;
-  /* ↑ asegura clics sobre overlays del hero */
+  z-index: 9000; /* asegura clics por encima de overlays */
 
   display: flex;
   align-items: center;
   justify-content: center;
 
-  /* MÓVIL: un pelín más alto (más aire arriba/abajo del “CREASIA”) */
+  /* MÓVIL: un pelín más alto (más aire para “CREASIA”) */
   padding: $space-2 * 1.25 $space-2;
 
   background: $bg-dark;
@@ -24,29 +23,30 @@
 
 /* A partir de tablet, el padding vuelve al valor estándar */
 @include up($bp-md) {
-  .hdr {
-    padding: $space-2;
-  }
+  .hdr { padding: $space-2; }
 }
 
-/* Selector de idioma fijado a la derecha, respetando gutter por breakpoint */
-/* Selector de idioma fijado a la derecha, con gutter FLUIDO */
+/* ================= Selector de idioma =================
+   - Fijado a la derecha con GUTTER FLUIDO mediante CSS var.
+   - Si no existe --lang-gutter (definida en styles.scss), cae a 10vw. */
 .lang{
   position: absolute;
-  inset-inline-end: var(--lang-gutter);  /* ← aquí usamos el valor fluido */
+  inset-inline-end: var(--lang-gutter, 10vw); /* gutter fluido */
   top: 50%;
   transform: translateY(-50%);
-  min-width: 32px;
+  min-width: 30px;   /* acorde al tamaño reducido actual del botón */
   min-height: 24px;
+  overflow: visible;
 }
 
-@include up($bp-md){ .lang{ inset-inline-end: var(--lang-gutter-tablet); } }
-@include up($bp-lg){ .lang{ inset-inline-end: var(--lang-gutter-desktop); } }
-
-
+/* Ajuste fino de la separación del MENÚ respecto al botón (gap horizontal).
+   Valores más NEGATIVOS = menú más pegado al botón. */
+.hdr .lang { --menu-gap: -2px; }                 /* móvil */
+@include up($bp-md){ .hdr .lang { --menu-gap: -4px; } }  /* tablet */
+@include up($bp-lg){ .hdr .lang { --menu-gap: -6px; } }  /* desktop */
 
 /* ================= Marca (CREASIA) =================
-   - Tipografía con aire oriental.
+   - Tipografía con aire oriental en mayúsculas.
    - Tamaños responsivos (ya “algo grande” en móvil).
    - Animación tipo tinta + subrayado dorado. */
 .brand {
@@ -54,8 +54,7 @@
   font-family: $font-title;
   color: $text-light;
   text-transform: uppercase;
-  letter-spacing: .08em;
-  /* tracking final */
+  letter-spacing: .08em;  /* tracking final */
   line-height: 1.1;
   position: relative;
 
@@ -64,19 +63,9 @@
   animation: inkIn 1200ms 180ms cubic-bezier(.2, .7, .2, 1) both;
 
   /* Tamaño responsivo: móvil → tablet → desktop */
-  font-size: clamp(2rem, 7vw, 2.4rem);
-
-  /* móvil */
-  @include up($bp-md) {
-    font-size: clamp(2.6rem, 5vw, 3.2rem);
-  }
-
-  /* tablet */
-  @include up($bp-lg) {
-    font-size: clamp(3.2rem, 4vw, 4rem);
-  }
-
-  /* desktop */
+  font-size: clamp(2rem, 7vw, 2.4rem);                 /* móvil */
+  @include up($bp-md) { font-size: clamp(2.6rem, 5vw, 3.2rem); } /* tablet */
+  @include up($bp-lg) { font-size: clamp(3.2rem, 4vw, 4rem); }   /* desktop */
 }
 
 /* Subrayado dorado “tipo pincel” (se dibuja desde el centro) */
@@ -89,58 +78,32 @@
   width: 0;
   height: 2px;
   border-radius: 2px;
-  background: linear-gradient(90deg, transparent 0 10%, $gold-soft 30% 70%, transparent 90% 100%);
+
+  background: linear-gradient(
+    90deg,
+    transparent 0 10%,
+    $gold-soft 30% 70%,
+    transparent 90% 100%
+  );
   box-shadow: 0 0 10px rgba($gold-soft, .45);
 
   animation: strokeIn 1100ms 500ms cubic-bezier(.2, .7, .2, 1) forwards;
 
-  @include up($bp-md) {
-    height: 3px;
-  }
-
-  @include up($bp-lg) {
-    height: 4px;
-  }
+  @include up($bp-md) { height: 3px; }
+  @include up($bp-lg) { height: 4px; }
 }
 
 /* Accesibilidad: reduce movimiento cuando el sistema lo pide */
 @media (prefers-reduced-motion: reduce) {
-  .brand {
-    animation: none;
-    opacity: 1;
-    transform: none;
-  }
-
-  .brand::after {
-    animation: none;
-    width: 70%;
-  }
+  .brand { animation: none; opacity: 1; transform: none; }
+  .brand::after { animation: none; width: 70%; }
 }
 
 /* ================= Keyframes ================= */
 @keyframes inkIn {
-  0% {
-    opacity: 0;
-    transform: translateY(8px);
-    letter-spacing: .30em;
-    filter: blur(2px);
-  }
-
-  60% {
-    opacity: 1;
-    filter: blur(0);
-  }
-
-  100% {
-    transform: none;
-    letter-spacing: .10em;
-  }
+  0%   { opacity: 0; transform: translateY(8px); letter-spacing: .30em; filter: blur(2px); }
+  60%  { opacity: 1; filter: blur(0); }
+  100% { transform: none; letter-spacing: .10em; }
 }
 
-@keyframes strokeIn {
-  to {
-    width: 70%;
-  }
-
-  /* subrayado un poco más largo */
-}
+@keyframes strokeIn { to { width: 70%; } } /* subrayado un poco más largo */
