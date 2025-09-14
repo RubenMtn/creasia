@@ -63,7 +63,7 @@
   animation: inkIn 1200ms 180ms cubic-bezier(.2, .7, .2, 1) both;
 
   /* Tamaño responsivo: móvil → tablet → desktop */
-  font-size: clamp(2rem, 7vw, 2.4rem);                 /* móvil */
+  font-size: clamp(2.25rem, 8vw, 2.8rem); /* un poquito más grande en móvil */
   @include up($bp-md) { font-size: clamp(2.6rem, 5vw, 3.2rem); } /* tablet */
   @include up($bp-lg) { font-size: clamp(3.2rem, 4vw, 4rem); }   /* desktop */
 }
@@ -73,7 +73,7 @@
   content: '';
   position: absolute;
   left: 50%;
-  bottom: -0.35em;
+  bottom: -0.37em;
   transform: translateX(-50%);
   width: 0;
   height: 2px;
