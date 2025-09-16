@@ -6,7 +6,8 @@ import {
   OnDestroy,
   QueryList,
   ViewChild,
-  ViewChildren
+  ViewChildren,
+  HostListener
 } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { TPipe } from '../../shared/i18n/t.pipe';
@@ -54,6 +55,9 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
   @ViewChild('mediaWrap', { static: true })
   private readonly mediaWrapRef!: ElementRef<HTMLDivElement>;
 
+  @ViewChild('vid', { static: true })
+  private readonly videoRef?: ElementRef<HTMLVideoElement>;
+
   @ViewChildren('facePoint')
   private readonly pointRefs!: QueryList<ElementRef<HTMLSpanElement>>;
 
@@ -73,6 +77,7 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
   private connectorsReady = false;
   private pendingConnectorUpdate = false;
   private connectorProgress = 0;
+  private animationDone = false;
   
   private readonly hasDOM = typeof window !== 'undefined' && typeof document !== 'undefined';
   private readonly supportsResizeObserver = this.hasDOM && typeof window.ResizeObserver !== 'undefined';
@@ -89,6 +94,7 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
   private readonly LINKS_BUFFER = 160;
 
   fading = false;
+  skipToEnd = false;
   showImage = false;
   showPoints = false;
   showLinks = false;
@@ -177,6 +183,10 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
 
   startFade(video: HTMLVideoElement): void {
     video.pause();
+
+    if (this.animationDone) {
+      return;
+    }
     try {
       video.currentTime = Math.max(0, video.duration - 0.05);
     } catch {
@@ -204,6 +214,8 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
     this.phaseQueue = [];
     this.runningPhase = null;
     this.fading = true;
+    this.animationDone = false;
+    this.skipToEnd = false;
   }
 
   onFadeEnd(event: TransitionEvent): void {
@@ -212,9 +224,62 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
       return;
     }
 
-    if (this.fading && element.classList.contains('video')) {
+    if (this.fading && !this.animationDone && element.classList.contains('video')) {
       this.preparePhases(['connectors', 'points']);
     }
+  }
+
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    if (!this.shouldHandleGlobalClick(event)) {
+      return;
+    }
+
+    this.finalizeAnimation(true);
+  }
+
+  @HostListener('window:keydown', ['$event'])
+  onDocumentKey(event: KeyboardEvent): void {
+    if (!this.shouldHandleGlobalKey(event)) {
+      return;
+    }
+
+    this.finalizeAnimation(true);
+  }
+
+  private shouldHandleGlobalClick(event: MouseEvent): boolean {
+    if (!this.hasDOM || this.animationDone) {
+      return false;
+    }
+
+    const element = event.target instanceof Element ? event.target : null;
+    if (!element) {
+      return true;
+    }
+
+    return !this.isInteractiveTarget(element);
+  }
+
+  private shouldHandleGlobalKey(event: KeyboardEvent): boolean {
+    if (!this.hasDOM || this.animationDone) {
+      return false;
+    }
+
+    const element = event.target instanceof Element ? event.target : null;
+    if (this.isInteractiveTarget(element)) {
+      return false;
+    }
+
+    return true;
+  }
+
+  private isInteractiveTarget(element: Element | null): boolean {
+    if (!element) {
+      return false;
+    }
+
+    return !!element.closest('a, button, input, textarea, select, [contenteditable]');
   }
 
   private preparePhases(order: AnimationPhase[]): void {
@@ -249,6 +314,10 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
 
     this.runningPhase = null;
     this.advancePhase();
+
+    if (this.runningPhase === null && this.phaseQueue.length === 0) {
+      this.finalizeAnimation();
+    }
   }
 
   private runPointsPhase(): void {
@@ -335,6 +404,69 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
     };
 
     this.trackingHandle = window.requestAnimationFrame(step);
+  }
+
+  private finalizeAnimation(force = false): void {
+    if (this.animationDone && !force) {
+      return;
+    }
+
+    if (force && this.hasDOM) {
+      const video = this.videoRef?.nativeElement;
+      if (video) {
+        try {
+          video.pause();
+          if (!Number.isNaN(video.duration) && Number.isFinite(video.duration)) {
+            video.currentTime = video.duration;
+          }
+        } catch {
+          // ignored
+        }
+      }
+    }
+
+    if (force) {
+      this.pointsTimeout = this.clearTimeout(this.pointsTimeout);
+      this.connectorsTimeout = this.clearTimeout(this.connectorsTimeout);
+
+      if (this.trackingHandle !== null && this.hasDOM) {
+        window.cancelAnimationFrame(this.trackingHandle);
+        this.trackingHandle = null;
+      }
+
+      if (this.pendingFrame !== -1 && this.hasDOM) {
+        window.cancelAnimationFrame(this.pendingFrame);
+        this.pendingFrame = -1;
+      }
+
+      this.phaseQueue = [];
+      this.runningPhase = null;
+      this.skipToEnd = true;
+
+      if (!this.displayLinks.length) {
+        this.displayLinks = [...this.links].sort(() => Math.random() - 0.5);
+      }
+
+      this.showLinks = true;
+      this.showPoints = true;
+      this.linksPhaseOffset = 0;
+    }
+
+    this.animationDone = true;
+    this.fading = true;
+    this.showImage = true;
+    this.showLinks = true;
+    this.showPoints = true;
+    this.showConnectors = true;
+    this.connectorProgress = 1;
+    this.connectorsReady = true;
+    this.pendingConnectorUpdate = false;
+
+    if (this.hasDOM) {
+      this.requestConnectorUpdate(true);
+    } else {
+      this.updateConnectors();
+    }
   }
 
   private updatePoints(): void {

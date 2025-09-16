@@ -8,6 +8,26 @@
   padding: $space-2 0;
 }
 
+.hero.skip-to-end {
+  .video,
+  .image {
+    transition: none !important;
+  }
+
+  .link {
+    transition: none !important;
+    animation: none !important;
+    transform: translate(calc(-50% + var(--tx)), calc(-50% + var(--ty))) scale(1);
+    opacity: 1;
+  }
+
+  .point,
+  .lines-layer line {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
 .media-wrap {
   position: relative;
   width: 100%;
