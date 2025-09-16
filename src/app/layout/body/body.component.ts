@@ -2,10 +2,8 @@ import { Component } from '@angular/core';
 
 @Component({
   selector: 'app-body',
-  imports: [],
+  standalone: true,
   templateUrl: './body.component.html',
   styleUrl: './body.component.scss'
 })
-export class BodyComponent {
-
-}
+export class BodyComponent {}

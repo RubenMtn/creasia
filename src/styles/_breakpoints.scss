@@ -1,10 +1,48 @@
-$bp-sm: 640px;   // móvil
-$bp-md: 1024px;  // tablet
-$bp-lg: 1280px;  // desktop
+// Centraliza los tres puntos de corte principales del diseno.
+// Movil usa los estilos base; tablet arranca en 1024px; escritorio a partir de 1280px.
+$bp-mobile-max: 1023px;
+$bp-tablet-min: 1024px;
+$bp-desktop-min: 1280px;
 
-// Uso: @include up($bp-md) { ... }  → aplica a tablet y superior.
+// Alias historicos para compatibilidad con codigo existente.
+$bp-sm: 640px;
+$bp-md: $bp-tablet-min;
+$bp-lg: $bp-desktop-min;
+
+// Mixin generico de min-width (legado).
 @mixin up($w) {
   @media (min-width: $w) {
+    @content;
+  }
+}
+
+// Mixins de ayuda para los tres tamanos principales.
+@mixin for-mobile {
+  @media (max-width: $bp-tablet-min - 1) {
+    @content;
+  }
+}
+
+@mixin for-tablet {
+  @media (min-width: $bp-tablet-min) and (max-width: $bp-desktop-min - 1) {
+    @content;
+  }
+}
+
+@mixin for-desktop {
+  @media (min-width: $bp-desktop-min) {
+    @content;
+  }
+}
+
+@mixin from-tablet {
+  @include up($bp-tablet-min) {
+    @content;
+  }
+}
+
+@mixin from-desktop {
+  @include up($bp-desktop-min) {
     @content;
   }
 }

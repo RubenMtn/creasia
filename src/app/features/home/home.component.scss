@@ -1,11 +1,8 @@
-@use 'tokens' as *;
-@use 'breakpoints' as *;
+@use "tokens" as *;
+@use "breakpoints" as *;
 
-/* ================= Hero + media (vídeo/imagen) =================
-   - Mantiene el overlay y no altera el encaje del vídeo/imagen. */
 .hero {
   position: relative;
-  /* CLAVE para el overlay de los links */
   display: grid;
   place-items: center;
   padding: $space-2 0;
@@ -15,7 +12,8 @@
   position: relative;
   width: 100%;
   line-height: 0;
-  /* evita gaps verticales */
+  max-height: clamp(340px, 60vh, 580px); // evita que el video ocupe todo el viewport
+  margin: 0 auto;
 }
 
 .layer {
@@ -24,14 +22,11 @@
   width: 100%;
   height: 100%;
   object-fit: contain;
-  /* vídeo e imagen escalan idéntico */
   display: block;
 }
 
-/* Crossfade vídeo → imagen (velocidad ajustable) */
 .video {
   z-index: 2;
-  /* Velocidad con la que desaparece (fade out) el video */
   transition: opacity 900ms ease;
 }
 
@@ -42,7 +37,6 @@
 .image {
   z-index: 1;
   opacity: 0;
-  /* Velocidad con la que aparece (fade-in) la imagen de la cara */
   transition: opacity 1000ms ease;
 }
 
@@ -50,66 +44,66 @@
   opacity: 1;
 }
 
-/* ================= Overlay de enlaces animados =================
-   - Nacen del centro y se mueven a su posición final. */
+.points-layer {
+  z-index: 4;
+  pointer-events: none;
+}
+
+.point {
+  position: absolute;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 0 3px rgba(0, 0, 0, 0.35);
+  transform: translate(-50%, -50%);
+  transition: top 180ms ease, left 180ms ease, transform 180ms ease;
+  will-change: top, left, transform;
+}
+
 .link-layer {
   position: absolute;
   inset: 0;
   z-index: 5;
   pointer-events: none;
-  /* la capa no bloquea */
 }
 
-/* Cuadro base centrado, ancho según contenido, con animación. */
 .link {
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%) scale(0.05);
   opacity: 0;
-
   pointer-events: auto;
-  /* cada enlace sí es clicable */
-  color: #fff;
+  color: #ffffff;
   text-decoration: none;
-  border: 1px solid #fff;
+  border: 1px solid #ffffff;
   background: transparent;
-  /*text-transform: uppercase; -> obliga a mostrar los textos en mayúsculas, quitar si no se quiere*/
   text-transform: uppercase;
-  letter-spacing: .06em;
+  letter-spacing: 0.06em;
   font-weight: 600;
-  border-radius: .5rem;
-
+  border-radius: 0.5rem;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   text-align: center;
-
-  /* TAMAÑOS POR DISPOSITIVO:
-     - Móvil: algo más pequeño para que “respire”.
-     - Tablet: intermedio.
-     - Desktop: como veníamos usando. */
-  /* móvil (base) */
   font-size: 0.82rem;
-  padding: .45rem .75rem;
+  padding: 0.45rem 0.75rem;
   inline-size: fit-content;
   min-inline-size: 8ch;
   max-inline-size: 28ch;
-
   will-change: transform, opacity;
-  // Velocidad de aparición/colocación de los cuadros de texto:
-  animation: popInMove 900ms cubic-bezier(.2, .7, .2, 1) forwards;
+  animation: popInMove 900ms cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
 
   &:hover {
-    outline: 2px solid rgba(255, 255, 255, .30);
+    outline: 2px solid rgba(255, 255, 255, 0.30);
   }
 
   &:active {
-    scale: .98;
+    scale: 0.98;
   }
 }
 
-/* Posiciones finales (variables CSS) — MOBILE por defecto */
 .l-top-left {
   --tx: -28vw;
   --ty: -12vh;
@@ -140,85 +134,92 @@
   --ty: 12vh;
 }
 
-/* TABLET (>= $bp-md): sube un punto tamaño y separación */
-@include up($bp-md) {
+@include from-tablet {
+  // Tablet (>= 1024px)
   .link {
     font-size: 0.95rem;
-    padding: .55rem .9rem;
+    padding: 0.55rem 0.9rem;
     min-inline-size: 9ch;
   }
 
+  .media-wrap {
+    max-height: clamp(360px, 58vh, 540px);
+  }
+
   .l-top-left {
-    --tx: -36vw;
-    --ty: -20vh;
+    --tx: -32vw;
+    --ty: -18vh;
   }
 
   .l-mid-left {
-    --tx: -36vw;
+    --tx: -32vw;
     --ty: 0vh;
   }
 
   .l-bot-left {
-    --tx: -36vw;
-    --ty: 20vh;
+    --tx: -32vw;
+    --ty: 18vh;
   }
 
   .l-top-right {
-    --tx: 36vw;
-    --ty: -20vh;
+    --tx: 32vw;
+    --ty: -18vh;
   }
 
   .l-mid-right {
-    --tx: 36vw;
+    --tx: 32vw;
     --ty: 0vh;
   }
 
   .l-bot-right {
-    --tx: 36vw;
-    --ty: 20vh;
+    --tx: 32vw;
+    --ty: 18vh;
   }
 }
 
-/* DESKTOP (>= $bp-lg): tamaño y separación amplios */
-@include up($bp-lg) {
+@include from-desktop {
+  // Escritorio (>= 1280px)
   .link {
     font-size: 1rem;
-    padding: .6rem 1rem;
+    padding: 0.6rem 1rem;
     min-inline-size: 10ch;
   }
 
+  .media-wrap {
+    max-height: clamp(380px, 54vh, 520px);
+  }
+
   .l-top-left {
-    --tx: -38vw;
-    --ty: -22vh;
+    --tx: -30vw;
+    --ty: -16vh;
   }
 
   .l-mid-left {
-    --tx: -38vw;
+    --tx: -30vw;
     --ty: 0vh;
   }
 
   .l-bot-left {
-    --tx: -38vw;
-    --ty: 22vh;
+    --tx: -30vw;
+    --ty: 16vh;
   }
 
   .l-top-right {
-    --tx: 38vw;
-    --ty: -22vh;
+    --tx: 30vw;
+    --ty: -16vh;
   }
 
   .l-mid-right {
-    --tx: 38vw;
+    --tx: 30vw;
     --ty: 0vh;
   }
 
   .l-bot-right {
-    --tx: 38vw;
-    --ty: 22vh;
+    --tx: 30vw;
+    --ty: 16vh;
   }
 }
 
-/* Movimiento desde el centro a su destino (usa --tx/--ty) */
 @keyframes popInMove {
   0% {
     transform: translate(-50%, -50%) scale(0.05);
@@ -235,50 +236,58 @@
   }
 }
 
-/* ================= Texto bajo el hero (caption) =================
-   - Siempre centrado.
-   - Más separación en móvil (estaba “pegado” a la imagen).
-   - Tamaño progresivo (móvil → tablet → desktop). */
 .caption-below {
   width: 100%;
   align-self: stretch;
-
-  /* MÁS aire en móvil, suave en pantallas mayores */
-  // margin: clamp($space-3 * 1.25, 6vh, $space-3 * 2.25) auto 0;
-
-  /* + separación respecto a lo de arriba (especialmente en móvil) */
-  margin: clamp($space-3 * 1.75, 8vh, $space-3 * 3) auto 0; // antes: 1.25, 6vh, 2.25
-
-
+  margin: clamp($space-2 * 1.5, 5vh, $space-3 * 2) auto 0;
   text-align: center;
   color: $text-light;
   line-height: 1.35;
   max-width: min(72ch, 92%);
-
-  /* Animación de entrada discreta */
   opacity: 0;
   transform: translateY(6px);
   animation: captionIn 500ms ease 160ms forwards;
-
-  /* Tamaños por dispositivo */
   font-size: 0.95rem;
+}
 
-  /* móvil */
-  @include up($bp-md) {
-    font-size: 1.10rem;
+@include from-tablet {
+  .caption-below {
+    font-size: 1.1rem;
   }
+}
 
-  /* tablet */
-  @include up($bp-lg) {
+@include from-desktop {
+  .caption-below {
     font-size: 1.25rem;
   }
-
-  /* desktop */
 }
 
 @keyframes captionIn {
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+.lines-layer {
+  z-index: 3;
+  pointer-events: none;
+}
+
+.lines-layer line {
+  stroke: rgba(255, 255, 255, 0.7);
+  stroke-width: 0.35;
+  stroke-linecap: round;
+  stroke-dasharray: var(--dash);
+  stroke-dashoffset: var(--dash);
+  opacity: 0;
+  animation: drawLine 520ms cubic-bezier(0.4, 0.6, 0.2, 1) forwards;
+  animation-delay: 160ms;
+}
+
+@keyframes drawLine {
+  to {
+    stroke-dashoffset: 0;
+    opacity: 1;
   }
 }

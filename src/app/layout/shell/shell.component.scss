@@ -1,13 +1,17 @@
-@use 'tokens' as *; // o ruta relativa
+@use "tokens" as *;
 
-:host{
-  display:flex;
-  flex-direction:column;
-  min-height:100dvh;      /* mejor que 100vh */
+:host {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
 }
 
-/* el contenido rellena y evita empujar el footer */
-main, app-body { flex:1; display:block; }
+main,
+app-body {
+  flex: 1;
+  display: block;
+}
 
-/* evita colapso de márgenes del primer/último hijo */
-main { display: flow-root; }
+main {
+  display: flow-root;
+}

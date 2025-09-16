@@ -1,5 +1,5 @@
 <section class="hero">
-  <div class="media-wrap" [style.aspect-ratio]="videoAR">
+  <div #mediaWrap class="media-wrap" [style.aspect-ratio]="frameAR">
     <video
       #vid
       class="layer video"
@@ -17,17 +17,48 @@
     <img
       class="layer image"
       src="assets/images/facedok.png"
-      alt="Ilustración"
+      alt="Ilustracion"
       [class.visible]="showImage">
+
+    @if (showPoints) {
+      <div class="layer points-layer" aria-hidden="true">
+        @for (point of scaledPoints; track point.id) {
+          <span
+            #facePoint
+            class="point"
+            [attr.data-point]="point.id"
+            [style.left.%]="point.left"
+            [style.top.%]="point.top">
+          </span>
+        }
+      </div>
+    }
+
+    @if (connectors.length) {
+      <svg class="layer lines-layer" viewBox="0 0 100 100" preserveAspectRatio="none">
+        @for (conn of connectors; track conn.id) {
+          <line
+            [attr.x1]="conn.x1"
+            [attr.y1]="conn.y1"
+            [attr.x2]="conn.x2"
+            [attr.y2]="conn.y2"
+            [style.--dash]="conn.length">
+          </line>
+        }
+      </svg>
+    }
   </div>
 
-  <!-- Enlaces: overlay, aparecen SOLO cuando termina el fade del vídeo -->
+  <!-- Enlaces superpuestos que aparecen al terminar el fade del video -->
   @if (showLinks) {
     <nav class="link-layer">
       @for (item of displayLinks; track item.route; let i = $index) {
         <a class="link {{ item.cls }}"
+           #linkEl
+           [attr.data-point]="item.pointId"
+           [attr.data-anchor]="item.anchor"
            [routerLink]="item.route"
-           [style.animationDelay.ms]="baseDelay + stagger * i">
+           [style.animationDelay.ms]="linksPhaseOffset + baseDelay + stagger * i">
           {{ item.key | t }}
         </a>
       }
@@ -35,7 +66,6 @@
   }
 </section>
 
-<!-- Caption (debajo del hero para no alterar el tamaño del vídeo) -->
 @if (showLinks) {
   <p class="caption-below">
     {{ 'home.caption' | t }}

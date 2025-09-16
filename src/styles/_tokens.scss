@@ -1,22 +1,22 @@
-/* Paleta base (oriental) */
-$red-carmine: #B2262E;
-$ink-black:   #121212;  // negro tinta
-$ivory:       #F7F4EF;
-$gold-soft:   #C8A96B;
-$tinta:       #2C2C2C;
+// Paleta base
+$red-carmine: #b2262e;
+$ink-black: #121212;
+$ivory: #f7f4ef;
+$gold-soft: #c8a96b;
+$tinta: #2c2c2c;
 
-/* Modo oscuro (layout) */
-$text-light:  #fff;               // texto sobre fondos oscuros
-$bg-dark:     black;         // header/body
-$bg-near:     $ink-black;            // footer (casi negro)
-$border-dk:   rgba(255, 255, 255, .08); // líneas sutiles en dark
+// Modo oscuro
+$text-light: #ffffff;
+$bg-dark: #000000;
+$bg-near: $ink-black;
+$border-dk: rgba(255, 255, 255, 0.08);
 
-/* Tipografías */
-$font-title: 'Noto Serif JP', serif;
-$font-body:  'Inter', system-ui, sans-serif;
+// Tipografias
+$font-title: "Noto Serif JP", serif;
+$font-body: "Inter", system-ui, sans-serif;
 
-/* Espaciado y radios */
-$space-1: .5rem;
+// Espaciado y radios
+$space-1: 0.5rem;
 $space-2: 1rem;
 $space-3: 1.5rem;
 $radius-2xl: 1.25rem;

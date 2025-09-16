@@ -1,14 +1,14 @@
-import { Injectable, inject, PLATFORM_ID } from '@angular/core';
+import { Injectable, PLATFORM_ID, inject } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, firstValueFrom, Observable } from 'rxjs';
+import { BehaviorSubject, Observable, firstValueFrom } from 'rxjs';
 
 export type Lang = 'es' | 'en' | 'zh';
 
-/** Diccionario i18n: cada clave puede ser string o un sub-árbol (Dict). */
-export interface Dict { [key: string]: string | Dict; }
+export interface Dict {
+  [key: string]: string | Dict;
+}
 
-/* Fallback ES en memoria (si aún no cargó el JSON, nunca verás “keys”) */
 const ES_FALLBACK: Dict = {
   links: {
     section1: 'Actividades',
@@ -16,11 +16,11 @@ const ES_FALLBACK: Dict = {
     section3: 'Cultura',
     section4: 'Idiomas',
     section5: 'Viajes',
-    section6: 'Puntos gourmet'
+    section6: 'Puntos gourmet',
   },
   home: {
-    caption: 'Una comunidad apasionada por el descubrimiento, el aprendizaje y el aporte entre culturas'
-  }
+    caption: 'Una comunidad apasionada por el descubrimiento, el aprendizaje y el aporte entre culturas',
+  },
 };
 
 @Injectable({ providedIn: 'root' })
@@ -32,58 +32,71 @@ export class TranslationService {
   private readonly dicts = new Map<Lang, Dict>([['es', ES_FALLBACK]]);
 
   constructor() {
-    // Precarga español SOLO en navegador; al terminar, notifica para repintar
     if (isPlatformBrowser(this.platformId)) {
       void this.ensureLoaded('es');
     }
   }
 
-  get lang(): Lang { return this.currentLang$.value; }
-  get langChanges(): Observable<Lang> { return this.currentLang$.asObservable(); }
+  get lang(): Lang {
+    return this.currentLang$.value;
+  }
+
+  get langChanges(): Observable<Lang> {
+    return this.currentLang$.asObservable();
+  }
 
   async setLang(lang: Lang): Promise<void> {
-    await this.ensureLoaded(lang);       // carga si falta
-    this.currentLang$.next(lang);        // emite cambio de idioma
-    this.bump();                         // fuerza reevaluación inmediata (por si hay coalescing)
+    await this.ensureLoaded(lang);
+    this.currentLang$.next(lang);
+    this.bump();
   }
 
-  /** Traduce 'a.b.c'; si no existe en el idioma activo, cae a 'es'. */
   t(key: string): string {
     const active = this.dicts.get(this.lang);
-    const esDict = this.dicts.get('es');
-    const valActive = active ? this.resolve(active, key) : undefined;
-    if (valActive !== undefined) return valActive;
-    const valEs = esDict ? this.resolve(esDict, key) : undefined;
-    return valEs ?? key;
+    const fallback = this.dicts.get('es');
+    const activeValue = active ? this.resolve(active, key) : undefined;
+    if (activeValue !== undefined) {
+      return activeValue;
+    }
+
+    const fallbackValue = fallback ? this.resolve(fallback, key) : undefined;
+    return fallbackValue ?? key;
   }
 
-  // -------- internos --------
-
   private bump(): void {
-    // Re-emite el valor actual para que pipes/plantillas impuras reevaluen sin esperar a otro evento
     this.currentLang$.next(this.currentLang$.value);
   }
 
   private async ensureLoaded(lang: Lang): Promise<void> {
-    if (this.dicts.has(lang)) return;
+    if (this.dicts.has(lang)) {
+      return;
+    }
+
     try {
       const data = await firstValueFrom(this.http.get<Dict>(`assets/i18n/${lang}.json`));
       this.dicts.set(lang, data);
     } catch (err) {
       console.warn('[i18n] No se pudo cargar', lang, err);
-      if (!this.dicts.has(lang)) this.dicts.set(lang, {}); // evita reintentos en bucle
+      if (!this.dicts.has(lang)) {
+        this.dicts.set(lang, {});
+      }
     } finally {
-      // si cargamos el idioma que ya está activo, avisa para repintar
-      if (lang === this.lang) this.bump();
+      if (lang === this.lang) {
+        this.bump();
+      }
     }
   }
 
   private resolve(obj: Dict, path: string): string | undefined {
-    let cur: string | Dict | undefined = obj;
+    let current: string | Dict | undefined = obj;
     for (const part of path.split('.')) {
-      if (cur && typeof cur === 'object') cur = (cur as Dict)[part];
-      else return undefined;
+      if (current && typeof current === 'object') {
+        current = (current as Dict)[part];
+      } else {
+        return undefined;
+      }
     }
-    return typeof cur === 'string' ? cur : undefined;
+
+    return typeof current === 'string' ? current : undefined;
   }
 }
