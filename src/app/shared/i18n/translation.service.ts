@@ -19,7 +19,8 @@ const ES_FALLBACK: Dict = {
     section6: 'Puntos gourmet',
   },
   home: {
-    caption: 'Una comunidad apasionada por el descubrimiento, el aprendizaje y el aporte entre culturas',
+    title: 'Un puente vivo entre España y China',
+    caption: 'Somos una asociación creada por personas que han vivido en China y saben el vértigo de empezar de cero. Aquí lo que importa eres tú: tu curiosidad, tus ganas de aprender y conectar. Nos une construir un puente cultural y profesional, sin importar edad, origen, identidad u orientación'
   },
 };
 

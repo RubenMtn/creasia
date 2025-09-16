@@ -40,6 +40,7 @@ interface Connector {
   x2: number;
   y2: number;
   length: number;
+  progress: number;
 }
 
 @Component({
@@ -71,16 +72,19 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
 
   private connectorsReady = false;
   private pendingConnectorUpdate = false;
-
+  private connectorProgress = 0;
+  
   private readonly hasDOM = typeof window !== 'undefined' && typeof document !== 'undefined';
   private readonly supportsResizeObserver = this.hasDOM && typeof window.ResizeObserver !== 'undefined';
 
   private phaseQueue: AnimationPhase[] = [];
   private runningPhase: AnimationPhase | null = null;
 
-  private readonly POINTS_DELAY = 320;
+  private readonly POINTS_DELAY = 120;
   private readonly LINES_LEAD = 180;
-  private readonly LINES_DRAW_DURATION = 540;
+  // prueba
+  //private readonly LINES_DRAW_DURATION = 540;
+  private readonly LINES_DRAW_DURATION = 140;
   private readonly LINKS_DURATION = 900;
   private readonly LINKS_BUFFER = 160;
 
@@ -88,7 +92,8 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
   showImage = false;
   showPoints = false;
   showLinks = false;
-
+  showConnectors = false;
+  
   displayLinks: LinkItem[] = [];
   baseDelay = 200;
   stagger = 180;
@@ -96,11 +101,11 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
 
   readonly facePoints: FacePoint[] = [
     { id: 'eye-left', x: 34.5, y: 31.2 },
-    { id: 'eye-right', x: 65.5, y: 31.2 },
+    { id: 'eye-right', x: 67, y: 31.2 },
     { id: 'nose-left', x: 40.3, y: 53.1 },
-    { id: 'nose-right', x: 59.2, y: 53.1 },
-    { id: 'mouth-left', x: 43.4, y: 74.6 },
-    { id: 'mouth-right', x: 56.4, y: 74.6 }
+    { id: 'nose-right', x: 59.2, y: 58 },
+    { id: 'mouth-left', x: 42, y: 85 },
+    { id: 'mouth-right', x: 56.4, y: 90 }
   ];
 
   scaledPoints: ScaledFacePoint[] = [];
@@ -115,6 +120,7 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
     { key: 'links.section6', route: '/seccion-6', cls: 'l-bot-right', pointId: 'mouth-right', anchor: 'top' }
   ];
 
+  // eslint-disable-next-line @angular-eslint/prefer-inject
   constructor(private readonly zone: NgZone) {
     this.updatePoints();
   }
@@ -158,6 +164,7 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
     this.runningPhase = null;
     this.pendingConnectorUpdate = false;
     this.connectorsReady = false;
+    this.connectorProgress = 0;
   }
 
   onMeta(video: HTMLVideoElement): void {
@@ -179,6 +186,7 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
     this.showImage = true;
     this.showPoints = false;
     this.showLinks = false;
+    this.showConnectors = false;
     this.connectors = [];
     this.linksPhaseOffset = 0;
 
@@ -205,7 +213,7 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
     }
 
     if (this.fading && element.classList.contains('video')) {
-      this.preparePhases(['points', 'connectors']);
+      this.preparePhases(['connectors', 'points']);
     }
   }
 
@@ -259,12 +267,16 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
   private runConnectorsPhase(): void {
     this.displayLinks = [...this.links].sort(() => Math.random() - 0.5);
     this.showLinks = true;
+    this.showPoints = false;
+    this.showConnectors = false;
+    this.connectorProgress = 0;
     this.linksPhaseOffset = this.LINES_LEAD;
 
     this.connectorsReady = true;
     this.requestConnectorUpdate(true);
 
     if (!this.hasDOM) {
+      this.showConnectors = true;
       this.finishPhase('connectors');
       return;
     }
@@ -281,6 +293,7 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
 
   private startConnectorTracking(duration: number): void {
     if (!this.hasDOM) {
+      this.showConnectors = true;
       this.finishPhase('connectors');
       return;
     }
@@ -290,10 +303,25 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
     }
 
     const start = performance.now();
+    const half = duration / 2;
 
     const step = () => {
-      this.updateConnectors();
       const elapsed = performance.now() - start;
+
+      if (duration <= 0) {
+        this.connectorProgress = 1;
+      } else if (elapsed <= half) {
+        this.connectorProgress = 0;
+      } else {
+        const span = duration - half || 1;
+        this.connectorProgress = Math.min(1, (elapsed - half) / span);
+      }
+
+      if (!this.showConnectors && elapsed >= half) {
+        this.showConnectors = true;
+      }
+
+      this.updateConnectors();
 
       if (elapsed < duration) {
         this.trackingHandle = window.requestAnimationFrame(step);
@@ -301,6 +329,7 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
       }
 
       this.trackingHandle = null;
+      this.showConnectors = true;
       this.updateConnectors();
       this.finishPhase('connectors');
     };
@@ -382,17 +411,24 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
     }
 
     const points = new Map<string, { x: number; y: number }>();
-    this.pointRefs.forEach((ref) => {
-      const el = ref.nativeElement;
-      const id = el.dataset['point'];
-      if (!id) {
-        return;
-      }
-      const rect = el.getBoundingClientRect();
-      const x = ((rect.left + rect.right) / 2 - wrapRect.left) / wrapRect.width * 100;
-      const y = ((rect.top + rect.bottom) / 2 - wrapRect.top) / wrapRect.height * 100;
-      points.set(id, { x, y });
-    });
+    const pointRefs = this.pointRefs;
+    if (pointRefs && pointRefs.length) {
+      pointRefs.forEach((ref) => {
+        const el = ref.nativeElement;
+        const id = el.dataset['point'];
+        if (!id) {
+          return;
+        }
+        const rect = el.getBoundingClientRect();
+        const x = ((rect.left + rect.right) / 2 - wrapRect.left) / wrapRect.width * 100;
+        const y = ((rect.top + rect.bottom) / 2 - wrapRect.top) / wrapRect.height * 100;
+        points.set(id, { x, y });
+      });
+    } else {
+      this.scaledPoints.forEach(({ id, left, top }) => {
+        points.set(id, { x: left, y: top });
+      });
+    }
 
     const connectors: Connector[] = [];
     this.linkRefs.forEach((ref) => {
@@ -429,10 +465,11 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
 
       const { x: x2, y: y2 } = target;
       const length = Math.hypot(x2 - x1, y2 - y1);
-      connectors.push({ id, x1, y1, x2, y2, length });
+      connectors.push({ id, x1, y1, x2, y2, length, progress: 0 });
     });
 
-    this.connectors = connectors;
+    const progress = this.showConnectors ? this.connectorProgress : 0;
+    this.connectors = connectors.map(conn => ({ ...conn, progress }));
   }
 
   private scheduleTimeout(handle: number | null, callback: () => void, delay: number): number | null {
@@ -455,3 +492,5 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
     return null;
   }
 }
+
+

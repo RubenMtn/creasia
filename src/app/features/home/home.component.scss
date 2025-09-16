@@ -79,15 +79,11 @@
   text-decoration: none;
   border: 1px solid #ffffff;
   background: transparent;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  font-weight: 600;
   border-radius: 0.5rem;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   text-align: center;
-  font-size: 0.82rem;
   padding: 0.45rem 0.75rem;
   inline-size: fit-content;
   min-inline-size: 8ch;
@@ -137,7 +133,6 @@
 @include from-tablet {
   // Tablet (>= 1024px)
   .link {
-    font-size: 0.95rem;
     padding: 0.55rem 0.9rem;
     min-inline-size: 9ch;
   }
@@ -180,7 +175,6 @@
 @include from-desktop {
   // Escritorio (>= 1280px)
   .link {
-    font-size: 1rem;
     padding: 0.6rem 1rem;
     min-inline-size: 10ch;
   }
@@ -236,30 +230,28 @@
   }
 }
 
-.caption-below {
+.title-below {
   width: 100%;
   align-self: stretch;
-  margin: clamp($space-2 * 1.5, 5vh, $space-3 * 2) auto 0;
+  margin: clamp($space-2, 4vh, $space-3 * 1.5) auto 0;
   text-align: center;
   color: $text-light;
-  line-height: 1.35;
   max-width: min(72ch, 92%);
   opacity: 0;
   transform: translateY(6px);
   animation: captionIn 500ms ease 160ms forwards;
-  font-size: 0.95rem;
 }
 
-@include from-tablet {
-  .caption-below {
-    font-size: 1.1rem;
-  }
-}
-
-@include from-desktop {
-  .caption-below {
-    font-size: 1.25rem;
-  }
+.caption-below {
+  width: 100%;
+  align-self: stretch;
+  margin: $space-1 auto 0;
+  text-align: center;
+  color: $text-light;
+  max-width: min(72ch, 92%);
+  opacity: 0;
+  transform: translateY(6px);
+  animation: captionIn 500ms ease 160ms forwards;
 }
 
 @keyframes captionIn {
@@ -278,16 +270,5 @@
   stroke: rgba(255, 255, 255, 0.7);
   stroke-width: 0.35;
   stroke-linecap: round;
-  stroke-dasharray: var(--dash);
-  stroke-dashoffset: var(--dash);
-  opacity: 0;
-  animation: drawLine 520ms cubic-bezier(0.4, 0.6, 0.2, 1) forwards;
-  animation-delay: 160ms;
 }
 
-@keyframes drawLine {
-  to {
-    stroke-dashoffset: 0;
-    opacity: 1;
-  }
-}

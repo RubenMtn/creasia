@@ -34,7 +34,7 @@
       </div>
     }
 
-    @if (connectors.length) {
+    @if (showConnectors && connectors.length) {
       <svg class="layer lines-layer" viewBox="0 0 100 100" preserveAspectRatio="none">
         @for (conn of connectors; track conn.id) {
           <line
@@ -42,8 +42,8 @@
             [attr.y1]="conn.y1"
             [attr.x2]="conn.x2"
             [attr.y2]="conn.y2"
-            [style.--dash]="conn.length">
-          </line>
+            [attr.stroke-dasharray]="conn.length"
+            [attr.stroke-dashoffset]="conn.length * (1 - conn.progress)"></line>
         }
       </svg>
     }
@@ -53,7 +53,7 @@
   @if (showLinks) {
     <nav class="link-layer">
       @for (item of displayLinks; track item.route; let i = $index) {
-        <a class="link {{ item.cls }}"
+        <a class="link typography-button-text {{ item.cls }}"
            #linkEl
            [attr.data-point]="item.pointId"
            [attr.data-anchor]="item.anchor"
@@ -67,7 +67,10 @@
 </section>
 
 @if (showLinks) {
-  <p class="caption-below">
+  <p class="title-below typography-section-title">
+    {{ 'home.title' | t }}
+  </p>
+  <p class="caption-below typography-body-text">
     {{ 'home.caption' | t }}
   </p>
 }
