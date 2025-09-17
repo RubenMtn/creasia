@@ -158,7 +158,19 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
         this.resizeObserver.observe(this.mediaWrapRef.nativeElement);
       });
     }
+
+    const skipAnimations = this.route.snapshot.queryParamMap.get('skip') === '1';
+    if (skipAnimations) {
+      this.finalizeAnimation(true);
+      void this.router.navigate([], {
+        relativeTo: this.route,
+        queryParams: { skip: null },
+        queryParamsHandling: 'merge',
+        replaceUrl: true
+      });
+    }
   }
+
 
   ngOnDestroy(): void {
     if (this.pendingFrame !== -1 && this.hasDOM) {

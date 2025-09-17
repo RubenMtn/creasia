@@ -56,7 +56,8 @@ body {
   }
 }
 
-body {
+body,
+body *:not(input):not(textarea) {
   user-select: none;
   -webkit-user-select: none;
 }
@@ -66,4 +67,5 @@ textarea {
   user-select: text;
   -webkit-user-select: text;
 }
+
 
