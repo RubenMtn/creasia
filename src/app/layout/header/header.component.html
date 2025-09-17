@@ -1,7 +1,9 @@
-﻿<header class="hdr">
-  <button type="button" class="home" (click)="goHome($event)">
-    <img src="assets/icons/home.png" [alt]="'header.home' | t" />
-  </button>
+<header class="hdr">
+  @if (!isHome()) {
+    <button type="button" class="home" (click)="goHome($event)">
+      <img src="assets/icons/home.png" [alt]="'header.home' | t" />
+    </button>
+  }
   <h1 class="brand">{{ headerKey() | t }}</h1>
   <app-lang-switcher class="lang"></app-lang-switcher>
 </header>

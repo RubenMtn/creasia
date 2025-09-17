@@ -1,4 +1,4 @@
-﻿@use "tokens" as *;
+@use "tokens" as *;
 @use "breakpoints" as *;
 
 // Cabecera principal.
@@ -27,8 +27,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
+  width: 26px;
+  height: 26px;
   padding: 0;
   border: none;
   background: transparent;
