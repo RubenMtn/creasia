@@ -1,4 +1,9 @@
 {
+  "header": {
+    "brand": "Creasia",
+    "partners": "Members",
+    "home": "Go to home"
+  },
   "links": {
     "section1": "Activities",
     "section2": "Members",
@@ -10,5 +15,27 @@
   "home": {
     "title": "A living bridge between Spain and China",
     "caption": "We are an association created by people who have lived in China and know the thrill of starting from scratch. Here, what matters is you: your curiosity, your desire to learn and connect. We are united by building a cultural and professional bridge, regardless of age, origin, identity, or orientation."
+  },
+  "socios": {
+    "title": "Benefits with Creasia and much more",
+    "caption": "Sign up with your email and the password you choose (at least 8 characters and include a number) to unlock all the benefits our association provides: exclusive information, discounts, event invitations, and so much more...",
+    "loginCaption": "If you are already a Creasia member, sign in with your username and password and enjoy all the benefits and updates we have for you.",
+    "actions": {
+      "register": "Register",
+      "login": "Sign in"
+    },
+    "registerForm": {
+      "email": "Email",
+      "password": "Password",
+      "optIn": "Receive periodic updates",
+      "submit": "Register",
+      "alreadyRegistered": "I am already registered"
+    },
+    "loginForm": {
+      "email": "Email",
+      "password": "Password",
+      "submit": "Sign in",
+      "notRegistered": "I am not registered"
+    }
   }
 }

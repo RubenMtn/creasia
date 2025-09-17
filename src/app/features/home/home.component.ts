@@ -1,7 +1,11 @@
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
+  OnInit,
   AfterViewInit,
   Component,
+  DestroyRef,
   ElementRef,
+  inject,
   NgZone,
   OnDestroy,
   QueryList,
@@ -9,7 +13,7 @@ import {
   ViewChildren,
   HostListener
 } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { TPipe } from '../../shared/i18n/t.pipe';
 
 type LinkAnchor = 'top' | 'right' | 'bottom' | 'left';
@@ -116,10 +120,11 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
 
   scaledPoints: ScaledFacePoint[] = [];
   connectors: Connector[] = [];
+  private readonly destroyRef = inject(DestroyRef);
 
   private readonly links: LinkItem[] = [
     { key: 'links.section1', route: '/seccion-1', cls: 'l-top-left', pointId: 'eye-left', anchor: 'bottom' },
-    { key: 'links.section2', route: '/seccion-2', cls: 'l-mid-left', pointId: 'nose-left', anchor: 'right' },
+    { key: 'links.section2', route: '/socios', cls: 'l-mid-left', pointId: 'nose-left', anchor: 'right' },
     { key: 'links.section3', route: '/seccion-3', cls: 'l-bot-left', pointId: 'mouth-left', anchor: 'top' },
     { key: 'links.section4', route: '/seccion-4', cls: 'l-top-right', pointId: 'eye-right', anchor: 'bottom' },
     { key: 'links.section5', route: '/seccion-5', cls: 'l-mid-right', pointId: 'nose-right', anchor: 'left' },
@@ -127,7 +132,11 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
   ];
 
   // eslint-disable-next-line @angular-eslint/prefer-inject
-  constructor(private readonly zone: NgZone) {
+  constructor(
+    private readonly zone: NgZone,
+    private readonly route: ActivatedRoute,
+    private readonly router: Router
+  ) {
     this.updatePoints();
   }
 

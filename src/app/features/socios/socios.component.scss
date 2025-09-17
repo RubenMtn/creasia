@@ -1,0 +1,174 @@
+@use "tokens" as *;
+@use "breakpoints" as *;
+
+.content {
+  padding-top: $space-3 * 1.5;
+  padding-bottom: $space-3 * 2;
+  display: grid;
+  gap: $space-3 * 1.5;
+}
+
+.intro {
+  text-align: center;
+  display: grid;
+  gap: $space-1;
+}
+
+.register-block {
+  display: grid;
+  gap: $space-1;
+  justify-items: center;
+  margin-top: -$space-1;
+}
+
+.login-block {
+  display: grid;
+  gap: $space-2;
+  justify-items: center;
+  margin-top: $space-3;
+}
+
+.login-block--active {
+  margin-top: 0;
+}
+
+.form {
+  width: min(100%, 520px);
+  display: grid;
+  gap: $space-2;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid $border-dk;
+  border-radius: $radius-2xl;
+  padding: $space-3 * 1.2;
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.25);
+}
+
+.form--login {
+  width: min(100%, 420px);
+}
+
+.field {
+  display: grid;
+  gap: 0.5rem;
+
+  &__label {
+    display: block;
+  }
+
+  &__control {
+    font: inherit;
+    background: rgba(255, 255, 255, 0.06);
+    color: $text-light;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 0.6rem;
+    padding: 0.75rem 1rem;
+    transition: border-color 160ms ease, box-shadow 160ms ease;
+
+    &:focus-visible {
+      outline: none;
+      border-color: $gold-soft;
+      box-shadow: 0 0 0 3px rgba(200, 169, 107, 0.35);
+    }
+  }
+}
+
+.opt-in {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+
+  input[type='checkbox'] {
+    width: 1.2rem;
+    height: 1.2rem;
+    accent-color: $gold-soft;
+  }
+
+  &__label {
+    color: $text-light;
+  }
+}
+
+.cta {
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  background: transparent;
+  color: $text-light;
+  padding: 0.85rem 2.6rem;
+  border-radius: 999px;
+  letter-spacing: 0.1em;
+  transition: background 160ms ease, transform 160ms ease;
+  cursor: pointer;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.12);
+  }
+
+  &:active {
+    transform: translateY(1px);
+  }
+}
+
+.cta.secondary {
+  padding-inline: 2rem;
+}
+
+.submit {
+  justify-self: center;
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  background: transparent;
+  color: $text-light;
+  padding: 0.85rem 2.6rem;
+  border-radius: 999px;
+  letter-spacing: 0.1em;
+  transition: background 160ms ease, transform 160ms ease;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.12);
+  }
+
+  &:active {
+    transform: translateY(1px);
+  }
+}
+
+.register-caption {
+  text-align: center;
+  max-width: 520px;
+  margin-bottom: $space-2;
+}
+
+.login-caption-secondary {
+  text-align: center;
+  max-width: 520px;
+  margin-top: $space-1;
+}
+
+.login-caption {
+  text-align: center;
+  max-width: 520px;
+}
+
+.text-link {
+  background: transparent;
+  border: none;
+  color: $text-light;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+  transition: color 160ms ease;
+
+  &:hover,
+  &:focus-visible {
+    color: $gold-soft;
+  }
+
+  &:focus-visible {
+    outline: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cta,
+  .submit,
+  .field__control {
+    transition: none;
+  }
+}

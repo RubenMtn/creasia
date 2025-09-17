@@ -1,4 +1,4 @@
-@use "tokens" as *;
+﻿@use "tokens" as *;
 @use "breakpoints" as *;
 
 // Cabecera principal.
@@ -17,6 +17,32 @@
   .hdr {
     padding: $space-2; // tablet y escritorio
   }
+}
+
+.home {
+  position: absolute;
+  inset-inline-start: var(--lang-gutter, 10vw);
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+
+  img {
+    width: 100%;
+    height: auto;
+  }
+}
+
+.home:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.6);
+  outline-offset: 4px;
 }
 
 // Selector de idioma anclado a la derecha.

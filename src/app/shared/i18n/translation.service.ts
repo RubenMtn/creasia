@@ -10,18 +10,45 @@ export interface Dict {
 }
 
 const ES_FALLBACK: Dict = {
+  header: {
+    brand: 'Creasia',
+    partners: 'Socios',
+    home: 'Ir al inicio'
+  },
   links: {
     section1: 'Actividades',
     section2: 'Socios',
     section3: 'Cultura',
     section4: 'Idiomas',
     section5: 'Viajes',
-    section6: 'Puntos gourmet',
+    section6: 'Puntos gourmet'
   },
   home: {
     title: 'Un puente vivo entre España y China',
     caption: 'Somos una asociación creada por personas que han vivido en China y saben el vértigo de empezar de cero. Aquí lo que importa eres tú: tu curiosidad, tus ganas de aprender y conectar. Nos une construir un puente cultural y profesional, sin importar edad, origen, identidad u orientación'
   },
+  socios: {
+    title: 'Ventajas con Creasia y mucho más',
+    caption: 'Regístrate con tu email y la contraseña que elijas (mínimo 8 caracteres y algún número) para obtener todos los beneficios que proporciona nuestra asociación: información exclusiva, descuentos, invitación a eventos y mucho más...',
+    loginCaption: 'Si ya eres socio de Creasia, accede con tu usuario y contraseña y disfruta de todas las ventajas y novedades que tenemos para ti',
+    actions: {
+      register: 'Registro',
+      login: 'Accede'
+    },
+    registerForm: {
+      email: 'Email',
+      password: 'Contraseña',
+      optIn: 'Recibir informaciones periódicas',
+      submit: 'Registro',
+      alreadyRegistered: 'Ya estoy registrado'
+    },
+    loginForm: {
+      email: 'Email',
+      password: 'Contraseña',
+      submit: 'Acceder',
+      notRegistered: 'No estoy registrado'
+    }
+  }
 };
 
 @Injectable({ providedIn: 'root' })

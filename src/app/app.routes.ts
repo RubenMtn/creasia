@@ -6,7 +6,8 @@ export const routes: Routes = [
     path: '',
     component: ShellComponent,
     children: [
-      { path: '', loadComponent: () => import('./features/home/home.component').then(m => m.HomeComponent) }
+      { path: '', loadComponent: () => import('./features/home/home.component').then(m => m.HomeComponent), data: { headerKey: 'header.brand' } },
+      { path: 'socios', loadComponent: () => import('./features/socios/socios.component').then(m => m.SociosComponent), data: { headerKey: 'header.partners' } }
     ]
   },
   { path: '**', redirectTo: '' }

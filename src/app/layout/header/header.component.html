@@ -1,7 +1,7 @@
-<header class="hdr">
-  <!-- Titulo centrado (animado por CSS) -->
-  <h1 class="brand">Creasia</h1>
-
-  <!-- Selector de idioma anclado a la derecha -->
+﻿<header class="hdr">
+  <button type="button" class="home" (click)="goHome($event)">
+    <img src="assets/icons/home.png" [alt]="'header.home' | t" />
+  </button>
+  <h1 class="brand">{{ headerKey() | t }}</h1>
   <app-lang-switcher class="lang"></app-lang-switcher>
 </header>
