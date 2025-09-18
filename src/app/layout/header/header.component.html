@@ -6,6 +6,7 @@
     (click)="toggleMenu()"
     [attr.aria-label]="'menu.toggle' | t"
     [attr.aria-expanded]="menuOpen()"
+    title="Menu"
   >
     <span></span>
     <span></span>
@@ -28,8 +29,8 @@
         @for (item of menuItems; track item.labelKey) {
           <li>
             <button type="button" class="menu-link" (click)="onMenuItemSelect(item)">
-              @if (item.action === 'home') {
-                <img src="assets/icons/home.png" alt="" aria-hidden="true" class="menu-link__icon" />
+              @if (item.icon) {
+                <img class="menu-link__icon" [src]="item.icon" alt="" aria-hidden="true" />
               }
               <span class="menu-link__label">{{ item.labelKey | t }}</span>
             </button>
@@ -39,5 +40,7 @@
     </nav>
   </div>
 }
+
+
 
 

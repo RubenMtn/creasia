@@ -9,6 +9,7 @@ interface MenuItem {
   labelKey: string;
   route?: string;
   action?: 'reload' | 'home';
+  icon?: string;
 }
 
 interface SavedFieldState {
@@ -33,15 +34,15 @@ export class HeaderComponent {
   readonly menuOffsets = signal({ top: 0, bottom: 0 });
 
   readonly menuItems: MenuItem[] = [
-    { labelKey: 'menu.home', action: 'home' },
-    { labelKey: 'menu.animation', action: 'reload' },
-    { labelKey: 'links.section1', route: '/seccion-1' },
-    { labelKey: 'links.section2', route: '/socios' },
-    { labelKey: 'links.section3', route: '/seccion-3' },
-    { labelKey: 'links.section4', route: '/seccion-4' },
-    { labelKey: 'links.section5', route: '/seccion-5' },
-    { labelKey: 'links.section6', route: '/seccion-6' },
-    { labelKey: 'menu.legal', route: '/legal' }
+    { labelKey: 'menu.home', action: 'home', icon: 'assets/icons/home.png' },
+    { labelKey: 'menu.animation', action: 'reload', icon: 'assets/icons/animationw.png' },
+    { labelKey: 'links.section1', route: '/seccion-1', icon: 'assets/icons/rutina-diaria.png' },
+    { labelKey: 'links.section2', route: '/socios', icon: 'assets/icons/media.png' },
+    { labelKey: 'links.section3', route: '/seccion-3', icon: 'assets/icons/amor.png' },
+    { labelKey: 'links.section4', route: '/seccion-4', icon: 'assets/icons/arroz.png' },
+    { labelKey: 'links.section5', route: '/seccion-5', icon: 'assets/icons/plane.png' },
+    { labelKey: 'links.section6', route: '/seccion-6', icon: 'assets/icons/contacto.png' },
+    { labelKey: 'menu.legal', route: '/legal', icon: 'assets/icons/legal.png' }
   ];
 
   private readonly router = inject(Router);
@@ -313,6 +314,10 @@ export class HeaderComponent {
     }
   }
 }
+
+
+
+
 
 
 

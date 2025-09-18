@@ -6,12 +6,24 @@
   min-height: 100dvh;
 }
 
-main,
+.app-main {
+  flex: 1;
+  display: flex;
+  width: 100%;
+  background-color: $bg-dark;
+  background-image: url("../../../assets/images/puentebwok.webp");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+.app-main main,
 app-body {
   flex: 1;
   display: block;
 }
 
-main {
+.app-main main {
   display: flow-root;
 }
+
