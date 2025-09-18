@@ -28,7 +28,10 @@
         @for (item of menuItems; track item.labelKey) {
           <li>
             <button type="button" class="menu-link" (click)="onMenuItemSelect(item)">
-              {{ item.labelKey | t }}
+              @if (item.action === 'home') {
+                <img src="assets/icons/home.png" alt="" aria-hidden="true" class="menu-link__icon" />
+              }
+              <span class="menu-link__label">{{ item.labelKey | t }}</span>
             </button>
           </li>
         }
@@ -36,4 +39,5 @@
     </nav>
   </div>
 }
+
 

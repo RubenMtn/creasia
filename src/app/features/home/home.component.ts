@@ -154,7 +154,10 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
       fromEvent(window, 'homeSkipToEnd')
         .pipe(takeUntilDestroyed(this.destroyRef))
         .subscribe(() => {
-          this.zone.run(() => this.finalizeAnimation(true));
+          this.zone.run(() => {
+            this.returnUrl = null;
+            this.finalizeAnimation(true);
+          });
         });
     }
   }
@@ -688,6 +691,8 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
     return null;
   }
 }
+
+
 
 
 

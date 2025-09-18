@@ -209,6 +209,14 @@ export class HeaderComponent {
     const fields = this.captureFormState();
     const payload = { url: originUrl, fields };
 
+    if (originUrl.startsWith('/socios')) {
+      try {
+        window.sessionStorage.setItem('creasia:sociosRestore', '1');
+      } catch {
+        // ignore storage errors
+      }
+    }
+
     try {
       window.sessionStorage.setItem(HeaderComponent.RETURN_STATE_KEY, JSON.stringify(payload));
     } catch {
@@ -305,5 +313,9 @@ export class HeaderComponent {
     }
   }
 }
+
+
+
+
 
 
