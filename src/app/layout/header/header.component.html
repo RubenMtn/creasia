@@ -1,9 +1,39 @@
 <header class="hdr">
-  @if (!isHome()) {
-    <button type="button" class="home" (click)="goHome($event)">
-      <img src="assets/icons/home.png" [alt]="'header.home' | t" />
-    </button>
-  }
+  <button
+    type="button"
+    class="hamburger"
+    [class.open]="menuOpen()"
+    (click)="toggleMenu()"
+    [attr.aria-label]="'menu.toggle' | t"
+    [attr.aria-expanded]="menuOpen()"
+  >
+    <span></span>
+    <span></span>
+    <span></span>
+  </button>
   <h1 class="brand">{{ headerKey() | t }}</h1>
   <app-lang-switcher class="lang"></app-lang-switcher>
 </header>
+@if (menuOpen()) {
+  <div
+    class="menu-overlay"
+    role="dialog"
+    aria-modal="true"
+    (click)="closeMenu()"
+    [style.top.px]="menuOffsets().top"
+    [style.bottom.px]="menuOffsets().bottom"
+  >
+    <nav class="menu-panel" role="navigation" (click)="$event.stopPropagation()" [attr.aria-label]="'menu.title' | t">
+      <ul class="menu-list">
+        @for (item of menuItems; track item.labelKey) {
+          <li>
+            <button type="button" class="menu-link" (click)="onMenuItemSelect(item)">
+              {{ item.labelKey | t }}
+            </button>
+          </li>
+        }
+      </ul>
+    </nav>
+  </div>
+}
+

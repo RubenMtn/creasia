@@ -4,13 +4,20 @@
     "partners": "Members",
     "home": "Go to home"
   },
+  "menu": {
+    "toggle": "Toggle menu",
+    "title": "Main menu",
+    "home": "Home",
+    "animation": "Play animation",
+    "legal": "Legal"
+  },
   "links": {
     "section1": "Activities",
     "section2": "Members",
     "section3": "Culture",
-    "section4": "Languages",
-    "section5": "Travel",
-    "section6": "Gourmet Spots"
+    "section4": "Gourmet Passport",
+    "section5": "Trips",
+    "section6": "Languages"
   },
   "home": {
     "title": "A living bridge between Spain and China",

@@ -14,6 +14,7 @@ import {
   HostListener
 } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { fromEvent } from 'rxjs';
 import { TPipe } from '../../shared/i18n/t.pipe';
 
 type LinkAnchor = 'top' | 'right' | 'bottom' | 'left';
@@ -121,6 +122,8 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
   scaledPoints: ScaledFacePoint[] = [];
   connectors: Connector[] = [];
   private readonly destroyRef = inject(DestroyRef);
+  private returnUrl: string | null = null;
+  private returnNavigationTriggered = false;
 
   private readonly links: LinkItem[] = [
     { key: 'links.section1', route: '/seccion-1', cls: 'l-top-left', pointId: 'eye-left', anchor: 'bottom' },
@@ -138,6 +141,22 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
     private readonly router: Router
   ) {
     this.updatePoints();
+
+    const encodedReturn = this.route.snapshot.queryParamMap.get('returnUrl');
+    if (encodedReturn) {
+      const decoded = this.decodeReturnUrl(encodedReturn);
+      if (decoded && decoded !== '/') {
+        this.returnUrl = decoded;
+      }
+    }
+
+    if (typeof window !== 'undefined') {
+      fromEvent(window, 'homeSkipToEnd')
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe(() => {
+          this.zone.run(() => this.finalizeAnimation(true));
+        });
+    }
   }
 
   ngAfterViewInit(): void {
@@ -488,6 +507,30 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
     } else {
       this.updateConnectors();
     }
+
+    this.handleReturnNavigation();
+  }
+
+  private handleReturnNavigation(): void {
+    if (!this.returnUrl || this.returnNavigationTriggered || !this.hasDOM) {
+      return;
+    }
+
+    this.returnNavigationTriggered = true;
+    const target = this.returnUrl;
+    this.returnUrl = null;
+
+    this.zone.run(() => {
+      void this.router.navigateByUrl(target, { replaceUrl: true });
+    });
+  }
+
+  private decodeReturnUrl(value: string): string {
+    try {
+      return decodeURIComponent(value);
+    } catch {
+      return value;
+    }
   }
 
   private updatePoints(): void {
@@ -645,5 +688,12 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
     return null;
   }
 }
+
+
+
+
+
+
+
 
 

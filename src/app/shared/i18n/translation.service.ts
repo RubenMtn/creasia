@@ -15,13 +15,20 @@ const ES_FALLBACK: Dict = {
     partners: 'Socios',
     home: 'Ir al inicio'
   },
+  menu: {
+    toggle: 'Abrir menú',
+    title: 'Menú principal',
+    home: 'Inicio',
+    animation: 'Ver animación',
+    legal: 'Legal'
+  },
   links: {
     section1: 'Actividades',
     section2: 'Socios',
     section3: 'Cultura',
-    section4: 'Idiomas',
+    section4: 'Pasaporte gourmet',
     section5: 'Viajes',
-    section6: 'Puntos gourmet'
+    section6: 'Idiomas'
   },
   home: {
     title: 'Un puente vivo entre España y China',
@@ -128,3 +135,4 @@ export class TranslationService {
     return typeof current === 'string' ? current : undefined;
   }
 }
+
