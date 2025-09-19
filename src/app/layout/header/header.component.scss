@@ -1,4 +1,4 @@
-@use "tokens" as *;
+﻿@use "tokens" as *;
 @use "breakpoints" as *;
 
 // Cabecera principal.
@@ -274,6 +274,22 @@
   font-size: clamp(2.25rem, 8vw, 2.8rem); // movil
 }
 
+// Para lo tÃ­tulos de cabecera mÃ¡s grandes quepan bien en la versiÃ³n mÃ³vil:
+@include for-mobile {
+  .brand--networking {
+    font-size: clamp(1.5rem, 5vw, 2rem);
+  }
+
+  .brand--activities {
+    font-size: clamp(1.3rem, 5vw, 2rem);
+  }
+  
+  .brand--gourmet {
+    font-size: clamp(0.9rem, 5vw, 2rem);
+  }
+
+}
+
 @include from-tablet {
   .brand {
     font-size: clamp(2.6rem, 5vw, 3.2rem); // tablet
@@ -357,3 +373,7 @@
 
 
 
+:host-context(html[lang="zh"]) .brand {
+  text-transform: none;
+  letter-spacing: 0;
+}

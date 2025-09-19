@@ -1,118 +1,134 @@
 ﻿{
-  "header": {
-    "brand": "Creasia",
-    "partners": "Socios",
-    "home": "Ir al inicio",
-    "activities": "ACTIVIDADES",
-    "trips": "VIAJES",
-    "legal": "LEGAL",
-    "languages": "IDIOMAS",
-    "networking": "NETWORKING",
-    "gourmet": "GOURMET PASS",
-    "culture": "CULTURA"
-  },
-  "menu": {
-    "toggle": "Abrir menÃº",
-    "title": "MenÃº principal",
-    "home": "Inicio",
-    "animation": "Ver animaciÃ³n",
-    "activities": "ACTIVIDADES",
-    "trips": "VIAJES",
-    "legal": "LEGAL",
-    "languages": "IDIOMAS",
-    "networking": "NETWORKING",
-    "gourmet": "GOURMET PASS",
-    "culture": "CULTURA"
-  },
-  "links": {
-    "section1": "Actividades",
-    "section2": "Socios",
-    "section3": "Cultura",
-    "section4": "Gourmet Pass",
-    "section5": "Viajes",
-    "section6": "Idiomas",
-    "section7": "Networking"
-  },
-  "home": {
-    "title": "Un puente vivo entre EspaÃ±a y China",
-    "caption": "Somos una asociaciÃ³n creada por personas que han vivido en China y saben el vÃ©rtigo de empezar de cero. AquÃ­ lo que importa eres tÃº: tu curiosidad, tus ganas de aprender y conectar. Nos une construir un puente cultural y profesional, sin importar edad, origen, identidad u orientaciÃ³n."
-  },
-  "socios": {
-    "title": "Ventajas con Creasia y mucho mÃ¡s",
-    "caption": "RegÃ­strate con tu email y una contraseÃ±a para obtener todos los beneficios que proporciona nuestra asociaciÃ³n: informaciÃ³n exclusiva, descuentos, invitaciones a eventos y mucho mÃ¡s...",
-    "loginCaption": "Si ya eres socio de Creasia, accede con tu usuario y contraseÃ±a y disfruta de todas las ventajas y novedades que tenemos para ti.",
-    "actions": {
-      "register": "Registro",
-      "login": "Accede"
-    },
-    "registerForm": {
-      "email": "Email",
-      "password": "ContraseÃ±a",
-      "optIn": "Recibir informaciones periÃ³dicas",
-      "submit": "Registro",
-      "alreadyRegistered": "Ya estoy registrado"
-    },
-    "loginForm": {
-      "email": "Email",
-      "password": "ContraseÃ±a",
-      "submit": "Acceder",
-      "notRegistered": "No estoy registrado"
-    }
-  },
-  "actividades": {
-    "title": "Actividades"
-  },
-  "viajes": {
-    "title": "Viajes"
-  },
-  "idiomas": {
-    "title": "Idiomas"
-  },
-  "networking": {
-    "title": "Networking"
-  },
-  "legal": {
-    "title": "Aviso legal",
-    "section1": {
-      "title": "1. InformaciÃ³n General",
-      "body": "Creasia es una entidad dedicada a la organizaciÃ³n de actividades culturales, viajes, formaciÃ³n y consultorÃ­a entre EspaÃ±a y China. El acceso y uso de este sitio web implica la aceptaciÃ³n de las presentes condiciones legales."
-    },
-    "section2": {
-      "title": "2. ProtecciÃ³n de Datos Personales",
-      "body1": "Los datos personales facilitados a travÃ©s de los formularios de Creasia serÃ¡n tratados de acuerdo con la normativa vigente en materia de protecciÃ³n de datos (Reglamento UE 2016/679 y Ley OrgÃ¡nica 3/2018).",
-      "body2": "La finalidad del tratamiento es la gestiÃ³n de la relaciÃ³n con los usuarios, el envÃ­o de informaciÃ³n sobre actividades, novedades y servicios de Creasia, asÃ­ como la atenciÃ³n de consultas. Los datos no serÃ¡n cedidos a terceros salvo obligaciÃ³n legal.",
-      "body3Before": "El usuario puede ejercer sus derechos de acceso, rectificaciÃ³n, supresiÃ³n, limitaciÃ³n, oposiciÃ³n y portabilidad mediante la secciÃ³n ",
-      "contactLink": "ContÃ¡ctanos",
-      "body3After": ".",
-      "body4": "Si desea darse de baja de nuestras comunicaciones, tambiÃ©n puede solicitarlo a travÃ©s de la misma pÃ¡gina de contacto."
-    },
-    "section3": {
-      "title": "3. ExenciÃ³n de Responsabilidad sobre Viajes y Actividades",
-      "body1": "Creasia actÃºa como intermediario en la organizaciÃ³n de viajes y actividades culturales, colaborando con proveedores externos. No se responsabiliza de posibles incidencias, retrasos, cancelaciones, cambios de itinerario, accidentes, pÃ©rdidas o daÃ±os que puedan producirse durante la realizaciÃ³n de los viajes o actividades.",
-      "body2": "Los participantes son responsables de cumplir con los requisitos legales y sanitarios necesarios para viajar, asÃ­ como de contratar los seguros pertinentes."
-    },
-    "section4": {
-      "title": "4. Contenidos y Propiedad Intelectual",
-      "body1": "Todos los contenidos de este sitio web, incluyendo textos, imÃ¡genes, logotipos y diseÃ±os, son propiedad de Creasia o de sus respectivos titulares y estÃ¡n protegidos por la legislaciÃ³n de propiedad intelectual.",
-      "body2": "Queda prohibida la reproducciÃ³n, distribuciÃ³n o comunicaciÃ³n pÃºblica de los contenidos sin autorizaciÃ³n expresa."
-    },
-    "section5": {
-      "title": "5. Enlaces Externos",
-      "body1": "Este sitio web puede contener enlaces a pÃ¡ginas externas. Creasia no se responsabiliza del contenido, exactitud o funcionamiento de dichas pÃ¡ginas, ni de los posibles daÃ±os que puedan derivarse del acceso a las mismas."
-    },
-    "section6": {
-      "title": "6. ActualizaciÃ³n y ModificaciÃ³n",
-      "body1": "Creasia se reserva el derecho de modificar, actualizar o eliminar cualquier informaciÃ³n contenida en este sitio web, asÃ­ como la presente polÃ­tica legal, en cualquier momento y sin previo aviso."
-    },
-    "section7": {
-      "title": "7. LegislaciÃ³n Aplicable y JurisdicciÃ³n",
-      "body1": "Las presentes condiciones legales se rigen por la legislaciÃ³n espaÃ±ola. Para cualquier controversia derivada del acceso o uso de este sitio web, las partes se someten a los Juzgados y Tribunales de Madrid, salvo que la ley disponga lo contrario."
-    }
-  },
-  "gourmet": {
-    "title": "Gourmet Pass"
-  },
-  "cultura": {
-    "title": "Cultura"
-  }
+    "header":  {
+                   "brand":  "Creasia",
+                   "partners":  "Socios",
+                   "home":  "Ir al inicio",
+                   "activities":  "ACTIVIDADES",
+                   "trips":  "VIAJES",
+                   "legal":  "LEGAL",
+                   "languages":  "IDIOMAS",
+                   "networking":  "NETWORKING",
+                   "gourmet":  "GOURMET PASS",
+                   "culture":  "CULTURA"
+               },
+    "menu":  {
+                 "toggle":  "Abrir menÃº",
+                 "title":  "MenÃº principal",
+                 "home":  "Inicio",
+                 "animation":  "Ver animaciÃ³n",
+                 "activities":  "ACTIVIDADES",
+                 "trips":  "VIAJES",
+                 "legal":  "LEGAL",
+                 "languages":  "IDIOMAS",
+                 "networking":  "NETWORKING",
+                 "gourmet":  "GOURMET PASS",
+                 "culture":  "CULTURA"
+             },
+    "links":  {
+                  "section1":  "Actividades",
+                  "section2":  "Socios",
+                  "section3":  "Cultura",
+                  "section4":  "Gourmet Pass",
+                  "section5":  "Viajes",
+                  "section6":  "Idiomas",
+                  "section7":  "Networking"
+              },
+    "home":  {
+                 "title":  "Un puente vivo entre EspaÃ±a y China",
+                 "caption":  "Somos una asociaciÃ³n creada por personas que han vivido en China y saben el vÃ©rtigo de empezar de cero. AquÃ­ lo que importa eres tÃº: tu curiosidad, tus ganas de aprender y conectar. Nos une construir un puente cultural y profesional, sin importar edad, origen, identidad u orientaciÃ³n."
+             },
+    "socios":  {
+                   "title":  "Ventajas con Creasia y mucho mÃ¡s",
+                   "caption":  "RegÃ­strate con tu email y una contraseÃ±a para obtener todos los beneficios que proporciona nuestra asociaciÃ³n: informaciÃ³n exclusiva, descuentos, invitaciones a eventos y mucho mÃ¡s...",
+                   "loginCaption":  "Si ya eres socio de Creasia, accede con tu usuario y contraseÃ±a y disfruta de todas las ventajas y novedades que tenemos para ti.",
+                   "actions":  {
+                                   "register":  "Registro",
+                                   "login":  "Accede"
+                               },
+                   "registerForm":  {
+                                        "email":  "Email",
+                                        "password":  "ContraseÃ±a",
+                                        "optIn":  "Recibir informaciones periÃ³dicas",
+                                        "submit":  "Registro",
+                                        "alreadyRegistered":  "Ya estoy registrado"
+                                    },
+                   "loginForm":  {
+                                     "email":  "Email",
+                                     "password":  "ContraseÃ±a",
+                                     "submit":  "Acceder",
+                                     "notRegistered":  "No estoy registrado"
+                                 }
+               },
+    "actividades":  {
+                        "title":  "Actividades"
+                    },
+    "viajes":  {
+                   "title":  "Viajes"
+               },
+    "idiomas":  {
+                    "title":  "Idiomas"
+                },
+    "networking":  {
+                       "title":  "Networking"
+                   },
+    "legal":  {
+                  "title":  "Aviso legal",
+                  "section1":  {
+                                   "title":  "1. InformaciÃ³n General",
+                                   "body":  "Creasia es una entidad dedicada a la organizaciÃ³n de actividades culturales, viajes, formaciÃ³n y consultorÃ­a entre EspaÃ±a y China. El acceso y uso de este sitio web implica la aceptaciÃ³n de las presentes condiciones legales."
+                               },
+                  "section2":  {
+                                   "title":  "2. ProtecciÃ³n de Datos Personales",
+                                   "body1":  "Los datos personales facilitados a travÃ©s de los formularios de Creasia serÃ¡n tratados de acuerdo con la normativa vigente en materia de protecciÃ³n de datos (Reglamento UE 2016/679 y Ley OrgÃ¡nica 3/2018).",
+                                   "body2":  "La finalidad del tratamiento es la gestiÃ³n de la relaciÃ³n con los usuarios, el envÃ­o de informaciÃ³n sobre actividades, novedades y servicios de Creasia, asÃ­ como la atenciÃ³n de consultas. Los datos no serÃ¡n cedidos a terceros salvo obligaciÃ³n legal.",
+                                   "body3Before":  "El usuario puede ejercer sus derechos de acceso, rectificaciÃ³n, supresiÃ³n, limitaciÃ³n, oposiciÃ³n y portabilidad mediante la secciÃ³n ",
+                                   "contactLink":  "ContÃ¡ctanos",
+                                   "body3After":  ".",
+                                   "body4":  "Si desea darse de baja de nuestras comunicaciones, tambiÃ©n puede solicitarlo a travÃ©s de la misma pÃ¡gina de contacto."
+                               },
+                  "section3":  {
+                                   "title":  "3. ExenciÃ³n de Responsabilidad sobre Viajes y Actividades",
+                                   "body1":  "Creasia actÃºa como intermediario en la organizaciÃ³n de viajes y actividades culturales, colaborando con proveedores externos. No se responsabiliza de posibles incidencias, retrasos, cancelaciones, cambios de itinerario, accidentes, pÃ©rdidas o daÃ±os que puedan producirse durante la realizaciÃ³n de los viajes o actividades.",
+                                   "body2":  "Los participantes son responsables de cumplir con los requisitos legales y sanitarios necesarios para viajar, asÃ­ como de contratar los seguros pertinentes."
+                               },
+                  "section4":  {
+                                   "title":  "4. Contenidos y Propiedad Intelectual",
+                                   "body1":  "Todos los contenidos de este sitio web, incluyendo textos, imÃ¡genes, logotipos y diseÃ±os, son propiedad de Creasia o de sus respectivos titulares y estÃ¡n protegidos por la legislaciÃ³n de propiedad intelectual.",
+                                   "body2":  "Queda prohibida la reproducciÃ³n, distribuciÃ³n o comunicaciÃ³n pÃºblica de los contenidos sin autorizaciÃ³n expresa."
+                               },
+                  "section5":  {
+                                   "title":  "5. Enlaces Externos",
+                                   "body1":  "Este sitio web puede contener enlaces a pÃ¡ginas externas. Creasia no se responsabiliza del contenido, exactitud o funcionamiento de dichas pÃ¡ginas, ni de los posibles daÃ±os que puedan derivarse del acceso a las mismas."
+                               },
+                  "section6":  {
+                                   "title":  "6. ActualizaciÃ³n y ModificaciÃ³n",
+                                   "body1":  "Creasia se reserva el derecho de modificar, actualizar o eliminar cualquier informaciÃ³n contenida en este sitio web, asÃ­ como la presente polÃ­tica legal, en cualquier momento y sin previo aviso."
+                               },
+                  "section7":  {
+                                   "title":  "7. LegislaciÃ³n Aplicable y JurisdicciÃ³n",
+                                   "body1":  "Las presentes condiciones legales se rigen por la legislaciÃ³n espaÃ±ola. Para cualquier controversia derivada del acceso o uso de este sitio web, las partes se someten a los Juzgados y Tribunales de Madrid, salvo que la ley disponga lo contrario."
+                               }
+              },
+    "gourmet":  {
+                    "title":  "Gourmet Pass",
+                    "leadHighlight":  "Gourmet Pass Creasia",
+                    "leadBody":  "te invita a descubrir la auténtica esencia de la gastronomía china en Madrid con nuestro Pasaporte Gourmet.",
+                    "secondParagraph":  "Con él podrás disfrutar de descuentos exclusivos, menús especiales y hasta platos gratuitos en una selección de restaurantes chinos cuidadosamente elegidos por la asociación Creasia.",
+                    "benefitsIntro":  "El Pasaporte Gourmet es mucho más que una tarjeta de ventajas:",
+                    "benefit1":  "Te invita a viajar por la diversidad de sabores de la cocina regional china sin salir de Madrid.",
+                    "benefit2":  "Te anima a conocer nuevos rincones gastronómicos de la ciudad.",
+                    "benefit3":  "Y te convierte en parte de una comunidad que celebra la cultura oriental en todas sus formas.",
+                    "howTitle":  "¿Cómo funciona?",
+                    "step1":  "Consigue tu Gourmet Pass Creasia al hacerte socio: se te enviará en formato electrónico a tu mail.",
+                    "step2":  "Presenta tu pasaporte en los restaurantes adheridos.",
+                    "step3":  "Disfruta de experiencias únicas con beneficios exclusivos.",
+                    "closing1":  "Porque la mejor manera de acercarse a una cultura es saborearla.",
+                    "closing2":  "Con el Pasaporte Gourmet, cada plato será un nuevo capítulo en tu viaje por la tradición y la innovación de la cocina china.",
+                    "altPassport":  "Pasaporte Gourmet Creasia",
+                    "altDining":  "Persona disfrutando del Pasaporte Gourmet",
+                    "altKids":  "Niños compartiendo helado"
+                },
+    "cultura":  {
+                    "title":  "Cultura"
+                }
 }

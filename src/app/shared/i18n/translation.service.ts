@@ -86,7 +86,23 @@ const ES_FALLBACK: Dict = {
     title: 'Networking'
   },
   gourmet: {
-    title: 'Gourmet Pass'
+    title: 'Gourmet Pass',
+    leadHighlight: 'Gourmet Pass Creasia',
+    leadBody: 'te invita a descubrir la auténtica esencia de la gastronomía china en Madrid con nuestro Pasaporte Gourmet.',
+    secondParagraph: 'Con él podrás disfrutar de descuentos exclusivos, menús especiales y hasta platos gratuitos en una selección de restaurantes chinos cuidadosamente elegidos por la asociación Creasia.',
+    benefitsIntro: 'El Pasaporte Gourmet es mucho más que una tarjeta de ventajas:',
+    benefit1: 'Te invita a viajar por la diversidad de sabores de la cocina regional china sin salir de Madrid.',
+    benefit2: 'Te anima a conocer nuevos rincones gastronómicos de la ciudad.',
+    benefit3: 'Y te convierte en parte de una comunidad que celebra la cultura oriental en todas sus formas.',
+    howTitle: '¿Cómo funciona?',
+    step1: 'Consigue tu Gourmet Pass Creasia al hacerte socio: se te enviará en formato electrónico a tu mail.',
+    step2: 'Presenta tu pasaporte en los restaurantes adheridos.',
+    step3: 'Disfruta de experiencias únicas con beneficios exclusivos.',
+    closing1: 'Porque la mejor manera de acercarse a una cultura es saborearla.',
+    closing2: 'Con el Pasaporte Gourmet, cada plato será un nuevo capítulo en tu viaje por la tradición y la innovación de la cocina china.',
+    altPassport: 'Pasaporte Gourmet Creasia',
+    altDining: 'Persona disfrutando del Pasaporte Gourmet',
+    altKids: 'Niños compartiendo helado'
   },
   legal: {
     title: 'Aviso legal',
@@ -139,6 +155,7 @@ export class TranslationService {
   constructor() {
     if (isPlatformBrowser(this.platformId)) {
       void this.ensureLoaded('es');
+      this.updateDocumentLang('es');
     }
   }
 
@@ -153,6 +170,7 @@ export class TranslationService {
   async setLang(lang: Lang): Promise<void> {
     await this.ensureLoaded(lang);
     this.currentLang$.next(lang);
+    this.updateDocumentLang(lang);
     this.bump();
   }
 
@@ -166,6 +184,12 @@ export class TranslationService {
 
     const fallbackValue = fallback ? this.resolve(fallback, key) : undefined;
     return fallbackValue ?? key;
+  }
+
+  private updateDocumentLang(lang: Lang): void {
+    if (isPlatformBrowser(this.platformId) && typeof document !== 'undefined') {
+      document.documentElement.lang = lang;
+    }
   }
 
   private bump(): void {
@@ -205,6 +229,8 @@ export class TranslationService {
     return typeof current === 'string' ? current : undefined;
   }
 }
+
+
 
 
 

@@ -1,4 +1,5 @@
-﻿<header class="hdr">
+<!-- eslint-disable @angular-eslint/template/click-events-have-key-events -->
+<header class="hdr">
   <button
     type="button"
     class="hamburger"
@@ -12,7 +13,14 @@
     <span></span>
     <span></span>
   </button>
-  <h1 class="brand" [class.brand--activities]="headerKey() === 'header.activities'">{{ headerKey() | t }}</h1>
+  <h1
+    class="brand"
+    [class.brand--activities]="headerKey() === 'header.activities'"
+    [class.brand--networking]="headerKey() === 'header.networking'"
+    [class.brand--gourmet]="headerKey() === 'header.gourmet'"
+  >
+    {{ headerKey() | t }}
+  </h1>
   <app-lang-switcher class="lang"></app-lang-switcher>
 </header>
 @if (menuOpen()) {
@@ -20,7 +28,10 @@
     class="menu-overlay"
     role="dialog"
     aria-modal="true"
+    tabindex="-1"
     (click)="closeMenu()"
+    (keydown.enter)="closeMenu()"
+    (keydown.space)="closeMenu()"
     [style.top.px]="menuOffsets().top"
     [style.bottom.px]="menuOffsets().bottom"
   >
@@ -40,6 +51,7 @@
     </nav>
   </div>
 }
+
 
 
 
