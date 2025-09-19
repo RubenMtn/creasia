@@ -104,7 +104,9 @@
   align-items: center;
   justify-content: center;
   text-align: center;
-  padding: 0.30rem 0.50rem;
+  padding: 0.2rem 0.4rem;
+  font-size: 0.58rem;
+  font-weight: 380;
   inline-size: fit-content;
   min-inline-size: 7ch;
   max-inline-size: 25ch;
@@ -155,6 +157,7 @@
   .link {
     padding: 0.55rem 0.9rem;
     min-inline-size: 9ch;
+    font-size: 0.8rem;
   }
 
   .media-wrap {
@@ -193,11 +196,13 @@
 }
 
 
+
 @include from-desktop {
   // Escritorio (>= 1280px)
   .link {
     padding: 0.6rem 1rem;
     min-inline-size: 10ch;
+    font-size: 0.9rem;
   }
 
   .media-wrap {
@@ -234,6 +239,7 @@
     --ty: 16vh;
   }
 }
+
 
 @keyframes popInMove {
   0% {
@@ -292,6 +298,12 @@
   stroke-width: 0.35;
   stroke-linecap: round;
 }
+
+
+
+
+
+
 
 
 
