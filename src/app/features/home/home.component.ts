@@ -1,4 +1,4 @@
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+﻿import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
   OnInit,
   AfterViewInit,
@@ -126,12 +126,12 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
   private returnNavigationTriggered = false;
 
   private readonly links: LinkItem[] = [
-    { key: 'links.section1', route: '/seccion-1', cls: 'l-top-left', pointId: 'eye-left', anchor: 'bottom' },
+    { key: 'links.section1', route: '/actividades', cls: 'l-top-left', pointId: 'eye-left', anchor: 'bottom' },
     { key: 'links.section2', route: '/socios', cls: 'l-mid-left', pointId: 'nose-left', anchor: 'right' },
-    { key: 'links.section3', route: '/seccion-3', cls: 'l-bot-left', pointId: 'mouth-left', anchor: 'top' },
-    { key: 'links.section4', route: '/seccion-4', cls: 'l-top-right', pointId: 'eye-right', anchor: 'bottom' },
-    { key: 'links.section5', route: '/seccion-5', cls: 'l-mid-right', pointId: 'nose-right', anchor: 'left' },
-    { key: 'links.section6', route: '/seccion-6', cls: 'l-bot-right', pointId: 'mouth-right', anchor: 'top' }
+    { key: 'links.section7', route: '/networking', cls: 'l-bot-left', pointId: 'mouth-left', anchor: 'top' },
+    { key: 'links.section4', route: '/gourmet', cls: 'l-top-right', pointId: 'eye-right', anchor: 'bottom' },
+    { key: 'links.section5', route: '/viajes', cls: 'l-mid-right', pointId: 'nose-right', anchor: 'left' },
+    { key: 'links.section6', route: '/idiomas', cls: 'l-bot-right', pointId: 'mouth-right', anchor: 'top' }
   ];
 
   // eslint-disable-next-line @angular-eslint/prefer-inject
@@ -691,6 +691,8 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
     return null;
   }
 }
+
+
 
 
 

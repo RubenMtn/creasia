@@ -1,4 +1,4 @@
-<header class="hdr">
+﻿<header class="hdr">
   <button
     type="button"
     class="hamburger"
@@ -12,7 +12,7 @@
     <span></span>
     <span></span>
   </button>
-  <h1 class="brand">{{ headerKey() | t }}</h1>
+  <h1 class="brand" [class.brand--activities]="headerKey() === 'header.activities'">{{ headerKey() | t }}</h1>
   <app-lang-switcher class="lang"></app-lang-switcher>
 </header>
 @if (menuOpen()) {
@@ -40,6 +40,7 @@
     </nav>
   </div>
 }
+
 
 
 

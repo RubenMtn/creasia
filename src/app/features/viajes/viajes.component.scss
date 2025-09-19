@@ -1,0 +1,16 @@
+﻿@use "tokens" as *;
+
+.content {
+  padding-top: $space-2;
+  padding-bottom: $space-2;
+  display: grid;
+  gap: $space-2;
+}
+
+.intro {
+  text-align: center;
+}
+
+.viajes-body {
+  min-height: clamp(240px, 45vh, 520px);
+}

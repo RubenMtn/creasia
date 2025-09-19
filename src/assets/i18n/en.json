@@ -3,22 +3,35 @@
     "brand": "Creasia",
     "partners": "Members",
     "home": "Go to home",
-    "legal": "Legal Notice"
+    "activities": "ACTIVITIES",
+    "trips": "TRIPS",
+    "legal": "LEGAL",
+    "languages": "LANGUAGES",
+    "networking": "NETWORKING",
+    "gourmet": "GOURMET PASS",
+    "culture": "CULTURE"
   },
   "menu": {
     "toggle": "Toggle menu",
     "title": "Main menu",
     "home": "Home",
     "animation": "Play animation",
-    "legal": "Legal Notice"
+    "activities": "ACTIVITIES",
+    "trips": "TRIPS",
+    "legal": "LEGAL",
+    "languages": "LANGUAGES",
+    "networking": "NETWORKING",
+    "gourmet": "GOURMET PASS",
+    "culture": "CULTURE"
   },
   "links": {
     "section1": "Activities",
     "section2": "Members",
     "section3": "Culture",
-    "section4": "Gourmet Passport",
+    "section4": "Gourmet Pass",
     "section5": "Trips",
-    "section6": "Languages"
+    "section6": "Languages",
+    "section7": "Networking"
   },
   "home": {
     "title": "A living bridge between Spain and China",
@@ -45,6 +58,18 @@
       "submit": "Sign in",
       "notRegistered": "I am not registered"
     }
+  },
+  "actividades": {
+    "title": "Activities"
+  },
+  "viajes": {
+    "title": "Trips"
+  },
+  "idiomas": {
+    "title": "Languages"
+  },
+  "networking": {
+    "title": "Networking"
   },
   "legal": {
     "title": "Legal Notice",
@@ -83,5 +108,11 @@
       "title": "7. Applicable Law and Jurisdiction",
       "body1": "These legal conditions are governed by Spanish law. For any dispute arising from access to or use of this website, the parties submit to the Courts of Madrid, unless otherwise provided by law."
     }
+  },
+  "gourmet": {
+    "title": "Gourmet Pass"
+  },
+  "cultura": {
+    "title": "Culture"
   }
 }

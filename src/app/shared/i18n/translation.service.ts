@@ -14,22 +14,35 @@ const ES_FALLBACK: Dict = {
     brand: 'Creasia',
     partners: 'Socios',
     home: 'Ir al inicio',
-    legal: 'Aviso legal'
+    activities: 'ACTIVIDADES',
+    culture: 'CULTURA',
+    trips: 'VIAJES',
+    gourmet: 'GOURMET PASS',
+    legal: 'LEGAL',
+    languages: 'IDIOMAS',
+    networking: 'NETWORKING'
   },
   menu: {
     toggle: 'Abrir menú',
     title: 'Menú principal',
     home: 'Inicio',
     animation: 'Ver animación',
-    legal: 'Legal'
+    activities: 'ACTIVIDADES',
+    culture: 'CULTURA',
+    trips: 'VIAJES',
+    gourmet: 'GOURMET PASS',
+    legal: 'LEGAL',
+    languages: 'IDIOMAS',
+    networking: 'NETWORKING'
   },
   links: {
     section1: 'Actividades',
     section2: 'Socios',
     section3: 'Cultura',
-    section4: 'Pasaporte gourmet',
+    section4: 'Gourmet Pass',
     section5: 'Viajes',
-    section6: 'Idiomas'
+    section6: 'Idiomas',
+    section7: 'Networking'
   },
   home: {
     title: 'Un puente vivo entre España y China',
@@ -56,6 +69,24 @@ const ES_FALLBACK: Dict = {
       submit: 'Acceder',
       notRegistered: 'No estoy registrado'
     }
+  },
+  actividades: {
+    title: 'Actividades'
+  },
+  cultura: {
+    title: 'Cultura'
+  },
+  viajes: {
+    title: 'Viajes'
+  },
+  idiomas: {
+    title: 'Idiomas'
+  },
+  networking: {
+    title: 'Networking'
+  },
+  gourmet: {
+    title: 'Gourmet Pass'
   },
   legal: {
     title: 'Aviso legal',
@@ -174,6 +205,22 @@ export class TranslationService {
     return typeof current === 'string' ? current : undefined;
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

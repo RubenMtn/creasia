@@ -3,87 +3,116 @@
     "brand": "Creasia",
     "partners": "Socios",
     "home": "Ir al inicio",
-    "legal": "Aviso legal"
+    "activities": "ACTIVIDADES",
+    "trips": "VIAJES",
+    "legal": "LEGAL",
+    "languages": "IDIOMAS",
+    "networking": "NETWORKING",
+    "gourmet": "GOURMET PASS",
+    "culture": "CULTURA"
   },
   "menu": {
-    "toggle": "Abrir menú",
-    "title": "Menú principal",
+    "toggle": "Abrir menÃº",
+    "title": "MenÃº principal",
     "home": "Inicio",
-    "animation": "Ver animación",
-    "legal": "Legal"
+    "animation": "Ver animaciÃ³n",
+    "activities": "ACTIVIDADES",
+    "trips": "VIAJES",
+    "legal": "LEGAL",
+    "languages": "IDIOMAS",
+    "networking": "NETWORKING",
+    "gourmet": "GOURMET PASS",
+    "culture": "CULTURA"
   },
   "links": {
     "section1": "Actividades",
     "section2": "Socios",
     "section3": "Cultura",
-    "section4": "Pasaporte gourmet",
+    "section4": "Gourmet Pass",
     "section5": "Viajes",
-    "section6": "Idiomas"
+    "section6": "Idiomas",
+    "section7": "Networking"
   },
   "home": {
-    "title": "Un puente vivo entre España y China",
-    "caption": "Somos una asociación creada por personas que han vivido en China y saben el vértigo de empezar de cero. Aquí lo que importa eres tú: tu curiosidad, tus ganas de aprender y conectar. Nos une construir un puente cultural y profesional, sin importar edad, origen, identidad u orientación."
+    "title": "Un puente vivo entre EspaÃ±a y China",
+    "caption": "Somos una asociaciÃ³n creada por personas que han vivido en China y saben el vÃ©rtigo de empezar de cero. AquÃ­ lo que importa eres tÃº: tu curiosidad, tus ganas de aprender y conectar. Nos une construir un puente cultural y profesional, sin importar edad, origen, identidad u orientaciÃ³n."
   },
   "socios": {
-    "title": "Ventajas con Creasia y mucho más",
-    "caption": "Regístrate con tu email y una contraseña para obtener todos los beneficios que proporciona nuestra asociación: información exclusiva, descuentos, invitaciones a eventos y mucho más...",
-    "loginCaption": "Si ya eres socio de Creasia, accede con tu usuario y contraseña y disfruta de todas las ventajas y novedades que tenemos para ti.",
+    "title": "Ventajas con Creasia y mucho mÃ¡s",
+    "caption": "RegÃ­strate con tu email y una contraseÃ±a para obtener todos los beneficios que proporciona nuestra asociaciÃ³n: informaciÃ³n exclusiva, descuentos, invitaciones a eventos y mucho mÃ¡s...",
+    "loginCaption": "Si ya eres socio de Creasia, accede con tu usuario y contraseÃ±a y disfruta de todas las ventajas y novedades que tenemos para ti.",
     "actions": {
       "register": "Registro",
       "login": "Accede"
     },
     "registerForm": {
       "email": "Email",
-      "password": "Contraseña",
-      "optIn": "Recibir informaciones periódicas",
+      "password": "ContraseÃ±a",
+      "optIn": "Recibir informaciones periÃ³dicas",
       "submit": "Registro",
       "alreadyRegistered": "Ya estoy registrado"
     },
     "loginForm": {
       "email": "Email",
-      "password": "Contraseña",
+      "password": "ContraseÃ±a",
       "submit": "Acceder",
       "notRegistered": "No estoy registrado"
     }
   },
+  "actividades": {
+    "title": "Actividades"
+  },
+  "viajes": {
+    "title": "Viajes"
+  },
+  "idiomas": {
+    "title": "Idiomas"
+  },
+  "networking": {
+    "title": "Networking"
+  },
   "legal": {
     "title": "Aviso legal",
     "section1": {
-      "title": "1. Información General",
-      "body": "Creasia es una entidad dedicada a la organización de actividades culturales, viajes, formación y consultoría entre España y China. El acceso y uso de este sitio web implica la aceptación de las presentes condiciones legales."
+      "title": "1. InformaciÃ³n General",
+      "body": "Creasia es una entidad dedicada a la organizaciÃ³n de actividades culturales, viajes, formaciÃ³n y consultorÃ­a entre EspaÃ±a y China. El acceso y uso de este sitio web implica la aceptaciÃ³n de las presentes condiciones legales."
     },
     "section2": {
-      "title": "2. Protección de Datos Personales",
-      "body1": "Los datos personales facilitados a través de los formularios de Creasia serán tratados de acuerdo con la normativa vigente en materia de protección de datos (Reglamento UE 2016/679 y Ley Orgánica 3/2018).",
-      "body2": "La finalidad del tratamiento es la gestión de la relación con los usuarios, el envío de información sobre actividades, novedades y servicios de Creasia, así como la atención de consultas. Los datos no serán cedidos a terceros salvo obligación legal.",
-      "body3Before": "El usuario puede ejercer sus derechos de acceso, rectificación, supresión, limitación, oposición y portabilidad mediante la sección ",
-      "contactLink": "Contáctanos",
+      "title": "2. ProtecciÃ³n de Datos Personales",
+      "body1": "Los datos personales facilitados a travÃ©s de los formularios de Creasia serÃ¡n tratados de acuerdo con la normativa vigente en materia de protecciÃ³n de datos (Reglamento UE 2016/679 y Ley OrgÃ¡nica 3/2018).",
+      "body2": "La finalidad del tratamiento es la gestiÃ³n de la relaciÃ³n con los usuarios, el envÃ­o de informaciÃ³n sobre actividades, novedades y servicios de Creasia, asÃ­ como la atenciÃ³n de consultas. Los datos no serÃ¡n cedidos a terceros salvo obligaciÃ³n legal.",
+      "body3Before": "El usuario puede ejercer sus derechos de acceso, rectificaciÃ³n, supresiÃ³n, limitaciÃ³n, oposiciÃ³n y portabilidad mediante la secciÃ³n ",
+      "contactLink": "ContÃ¡ctanos",
       "body3After": ".",
-      "body4": "Si desea darse de baja de nuestras comunicaciones, también puede solicitarlo a través de la misma página de contacto."
+      "body4": "Si desea darse de baja de nuestras comunicaciones, tambiÃ©n puede solicitarlo a travÃ©s de la misma pÃ¡gina de contacto."
     },
     "section3": {
-      "title": "3. Exención de Responsabilidad sobre Viajes y Actividades",
-      "body1": "Creasia actúa como intermediario en la organización de viajes y actividades culturales, colaborando con proveedores externos. No se responsabiliza de posibles incidencias, retrasos, cancelaciones, cambios de itinerario, accidentes, pérdidas o daños que puedan producirse durante la realización de los viajes o actividades.",
-      "body2": "Los participantes son responsables de cumplir con los requisitos legales y sanitarios necesarios para viajar, así como de contratar los seguros pertinentes."
+      "title": "3. ExenciÃ³n de Responsabilidad sobre Viajes y Actividades",
+      "body1": "Creasia actÃºa como intermediario en la organizaciÃ³n de viajes y actividades culturales, colaborando con proveedores externos. No se responsabiliza de posibles incidencias, retrasos, cancelaciones, cambios de itinerario, accidentes, pÃ©rdidas o daÃ±os que puedan producirse durante la realizaciÃ³n de los viajes o actividades.",
+      "body2": "Los participantes son responsables de cumplir con los requisitos legales y sanitarios necesarios para viajar, asÃ­ como de contratar los seguros pertinentes."
     },
     "section4": {
       "title": "4. Contenidos y Propiedad Intelectual",
-      "body1": "Todos los contenidos de este sitio web, incluyendo textos, imágenes, logotipos y diseños, son propiedad de Creasia o de sus respectivos titulares y están protegidos por la legislación de propiedad intelectual.
-",
-      "body2": "Queda prohibida la reproducción, distribución o comunicación pública de los contenidos sin autorización expresa."
+      "body1": "Todos los contenidos de este sitio web, incluyendo textos, imÃ¡genes, logotipos y diseÃ±os, son propiedad de Creasia o de sus respectivos titulares y estÃ¡n protegidos por la legislaciÃ³n de propiedad intelectual.",
+      "body2": "Queda prohibida la reproducciÃ³n, distribuciÃ³n o comunicaciÃ³n pÃºblica de los contenidos sin autorizaciÃ³n expresa."
     },
     "section5": {
       "title": "5. Enlaces Externos",
-      "body1": "Este sitio web puede contener enlaces a páginas externas. Creasia no se responsabiliza del contenido, exactitud o funcionamiento de dichas páginas, ni de los posibles daños que puedan derivarse del acceso a las mismas."
+      "body1": "Este sitio web puede contener enlaces a pÃ¡ginas externas. Creasia no se responsabiliza del contenido, exactitud o funcionamiento de dichas pÃ¡ginas, ni de los posibles daÃ±os que puedan derivarse del acceso a las mismas."
     },
     "section6": {
-      "title": "6. Actualización y Modificación",
-      "body1": "Creasia se reserva el derecho de modificar, actualizar o eliminar cualquier información contenida en este sitio web, así como la presente política legal, en cualquier momento y sin previo aviso."
+      "title": "6. ActualizaciÃ³n y ModificaciÃ³n",
+      "body1": "Creasia se reserva el derecho de modificar, actualizar o eliminar cualquier informaciÃ³n contenida en este sitio web, asÃ­ como la presente polÃ­tica legal, en cualquier momento y sin previo aviso."
     },
     "section7": {
-      "title": "7. Legislación Aplicable y Jurisdicción",
-      "body1": "Las presentes condiciones legales se rigen por la legislación española. Para cualquier controversia derivada del acceso o uso de este sitio web, las partes se someten a los Juzgados y Tribunales de Madrid, salvo que la ley disponga lo contrario."
+      "title": "7. LegislaciÃ³n Aplicable y JurisdicciÃ³n",
+      "body1": "Las presentes condiciones legales se rigen por la legislaciÃ³n espaÃ±ola. Para cualquier controversia derivada del acceso o uso de este sitio web, las partes se someten a los Juzgados y Tribunales de Madrid, salvo que la ley disponga lo contrario."
     }
+  },
+  "gourmet": {
+    "title": "Gourmet Pass"
+  },
+  "cultura": {
+    "title": "Cultura"
   }
 }
-

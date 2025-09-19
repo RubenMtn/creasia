@@ -1,4 +1,4 @@
-import { Component, ElementRef, HostListener, inject, signal } from '@angular/core';
+﻿import { Component, ElementRef, HostListener, inject, signal } from '@angular/core';
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -36,12 +36,13 @@ export class HeaderComponent {
   readonly menuItems: MenuItem[] = [
     { labelKey: 'menu.home', action: 'home', icon: 'assets/icons/home.png' },
     { labelKey: 'menu.animation', action: 'reload', icon: 'assets/icons/animationw.png' },
-    { labelKey: 'links.section1', route: '/seccion-1', icon: 'assets/icons/rutina-diaria.png' },
+    { labelKey: 'links.section1', route: '/actividades', icon: 'assets/icons/rutina-diaria.png' },
     { labelKey: 'links.section2', route: '/socios', icon: 'assets/icons/media.png' },
-    { labelKey: 'links.section3', route: '/seccion-3', icon: 'assets/icons/amor.png' },
-    { labelKey: 'links.section4', route: '/seccion-4', icon: 'assets/icons/arroz.png' },
-    { labelKey: 'links.section5', route: '/seccion-5', icon: 'assets/icons/plane.png' },
-    { labelKey: 'links.section6', route: '/seccion-6', icon: 'assets/icons/contacto.png' },
+    { labelKey: 'links.section3', route: '/cultura', icon: 'assets/icons/amor.png' },
+    { labelKey: 'links.section4', route: '/gourmet', icon: 'assets/icons/arroz.png' },
+    { labelKey: 'links.section5', route: '/viajes', icon: 'assets/icons/plane.png' },
+    { labelKey: 'links.section6', route: '/idiomas', icon: 'assets/icons/contacto.png' },
+    { labelKey: 'links.section7', route: '/networking', icon: 'assets/icons/shake.png' },
     { labelKey: 'menu.legal', route: '/legal', icon: 'assets/icons/legal.png' }
   ];
 
@@ -314,6 +315,8 @@ export class HeaderComponent {
     }
   }
 }
+
+
 
 
 
