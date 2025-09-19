@@ -1,4 +1,4 @@
-<!-- eslint-disable @angular-eslint/template/click-events-have-key-events -->
+﻿<!-- eslint-disable @angular-eslint/template/click-events-have-key-events -->
 <header class="hdr">
   <button
     type="button"
@@ -14,10 +14,12 @@
     <span></span>
   </button>
   <h1
-    class="brand"
+    #brandEl
+    class="brand brand--animate"
     [class.brand--activities]="headerKey() === 'header.activities'"
     [class.brand--networking]="headerKey() === 'header.networking'"
     [class.brand--gourmet]="headerKey() === 'header.gourmet'"
+    [class.brand--consulting]="headerKey() === 'header.consulting'"
   >
     {{ headerKey() | t }}
   </h1>
@@ -51,6 +53,7 @@
     </nav>
   </div>
 }
+
 
 
 

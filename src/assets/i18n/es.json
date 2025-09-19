@@ -9,7 +9,8 @@
                    "languages":  "IDIOMAS",
                    "networking":  "NETWORKING",
                    "gourmet":  "GOURMET PASS",
-                   "culture":  "CULTURA"
+                   "culture":  "CULTURA",
+                   "consulting":  "CONSULTORÍA"
                },
     "menu":  {
                  "toggle":  "Abrir menÃº",
@@ -22,7 +23,8 @@
                  "languages":  "IDIOMAS",
                  "networking":  "NETWORKING",
                  "gourmet":  "GOURMET PASS",
-                 "culture":  "CULTURA"
+                 "culture":  "CULTURA",
+                 "consulting":  "CONSULTORÍA"
              },
     "links":  {
                   "section1":  "Actividades",
@@ -31,7 +33,8 @@
                   "section4":  "Gourmet Pass",
                   "section5":  "Viajes",
                   "section6":  "Idiomas",
-                  "section7":  "Networking"
+                  "section7":  "Networking",
+                  "section8":  "Consultoría"
               },
     "home":  {
                  "title":  "Un puente vivo entre EspaÃ±a y China",
@@ -130,5 +133,15 @@
                 },
     "cultura":  {
                     "title":  "Cultura"
-                }
+                },
+    "consultoria":  {
+                        "title":  "Consultoría",
+                        "caption":  "Estrategias hechas a medida para conectar culturas, equipos y negocios entre España y China.",
+                        "body1":  "Analizamos tu proyecto y definimos la estrategia de aterrizaje para que tus objetivos en el mercado chino o español sean viables y sostenibles.",
+                        "body2":  "Trabajamos con una red de especialistas en cultura, comunicación y desarrollo de negocio para acompañarte en cada fase del proceso.",
+                        "service1":  "Diagnóstico y hoja de ruta intercultural.",
+                        "service2":  "Acompañamiento comercial y búsqueda de socios estratégicos.",
+                        "service3":  "Formación in-company para equipos en transición internacional.",
+                        "contact":  "Cuéntanos tu reto y diseñaremos una propuesta personalizada para tu organización."
+                    }
 }

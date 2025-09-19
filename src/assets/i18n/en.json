@@ -9,7 +9,8 @@
                    "languages":  "LANGUAGES",
                    "networking":  "NETWORKING",
                    "gourmet":  "GOURMET PASS",
-                   "culture":  "CULTURE"
+                   "culture":  "CULTURE",
+                   "consulting":  "CONSULTING"
                },
     "menu":  {
                  "toggle":  "Toggle menu",
@@ -22,7 +23,8 @@
                  "languages":  "LANGUAGES",
                  "networking":  "NETWORKING",
                  "gourmet":  "GOURMET PASS",
-                 "culture":  "CULTURE"
+                 "culture":  "CULTURE",
+                 "consulting":  "CONSULTING"
              },
     "links":  {
                   "section1":  "Activities",
@@ -31,7 +33,8 @@
                   "section4":  "Gourmet Pass",
                   "section5":  "Trips",
                   "section6":  "Languages",
-                  "section7":  "Networking"
+                  "section7":  "Networking",
+                  "section8":  "Consulting"
               },
     "home":  {
                  "title":  "A living bridge between Spain and China",
@@ -130,5 +133,15 @@
                 },
     "cultura":  {
                     "title":  "Culture"
-                }
+                },
+    "consultoria":  {
+                        "title":  "Consulting",
+                        "caption":  "Tailor-made strategies to connect cultures, teams, and businesses between Spain and China.",
+                        "body1":  "We analyse your project and outline the go-to-market strategy so your goals in the Chinese or Spanish market are viable and sustainable.",
+                        "body2":  "We collaborate with a network of experts in culture, communication, and business development to guide you through every phase.",
+                        "service1":  "Intercultural diagnosis and roadmap.",
+                        "service2":  "Business development support and strategic partner sourcing.",
+                        "service3":  "In-company training for teams going through international transitions.",
+                        "contact":  "Tell us about your challenge and we will design a tailored proposal for your organisation."
+                    }
 }

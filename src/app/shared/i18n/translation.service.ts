@@ -20,7 +20,8 @@ const ES_FALLBACK: Dict = {
     gourmet: 'GOURMET PASS',
     legal: 'LEGAL',
     languages: 'IDIOMAS',
-    networking: 'NETWORKING'
+    networking: 'NETWORKING',
+    consulting: 'CONSULTORÍA'
   },
   menu: {
     toggle: 'Abrir menú',
@@ -33,7 +34,8 @@ const ES_FALLBACK: Dict = {
     gourmet: 'GOURMET PASS',
     legal: 'LEGAL',
     languages: 'IDIOMAS',
-    networking: 'NETWORKING'
+    networking: 'NETWORKING',
+    consulting: 'CONSULTORÍA'
   },
   links: {
     section1: 'Actividades',
@@ -42,7 +44,8 @@ const ES_FALLBACK: Dict = {
     section4: 'Gourmet Pass',
     section5: 'Viajes',
     section6: 'Idiomas',
-    section7: 'Networking'
+    section7: 'Networking',
+    section8: 'Consultoría'
   },
   home: {
     title: 'Un puente vivo entre España y China',
@@ -69,6 +72,16 @@ const ES_FALLBACK: Dict = {
       submit: 'Acceder',
       notRegistered: 'No estoy registrado'
     }
+  },
+  consultoria: {
+    title: 'Consultoría',
+    caption: 'Estrategias hechas a medida para conectar culturas, equipos y negocios entre España y China.',
+    body1: 'Analizamos tu proyecto y definimos la estrategia de aterrizaje para que tus objetivos en el mercado chino o español sean viables y sostenibles.',
+    body2: 'Trabajamos con una red de especialistas en cultura, comunicación y desarrollo de negocio para acompañarte en cada fase del proceso.',
+    service1: 'Diagnóstico y hoja de ruta intercultural.',
+    service2: 'Acompañamiento comercial y búsqueda de socios estratégicos.',
+    service3: 'Formación in-company para equipos en transición internacional.',
+    contact: 'Cuéntanos tu reto y diseñaremos una propuesta personalizada para tu organización.'
   },
   actividades: {
     title: 'Actividades'
@@ -229,6 +242,11 @@ export class TranslationService {
     return typeof current === 'string' ? current : undefined;
   }
 }
+
+
+
+
+
 
 
 

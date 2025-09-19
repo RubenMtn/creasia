@@ -1,6 +1,6 @@
-﻿import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+﻿/* eslint-disable @angular-eslint/prefer-inject */
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
-  OnInit,
   AfterViewInit,
   Component,
   DestroyRef,
@@ -133,8 +133,7 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
     { key: 'links.section5', route: '/viajes', cls: 'l-mid-right', pointId: 'nose-right', anchor: 'left' },
     { key: 'links.section6', route: '/idiomas', cls: 'l-bot-right', pointId: 'mouth-right', anchor: 'top' }
   ];
-
-  // eslint-disable-next-line @angular-eslint/prefer-inject
+  
   constructor(
     private readonly zone: NgZone,
     private readonly route: ActivatedRoute,

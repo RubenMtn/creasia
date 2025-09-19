@@ -11,6 +11,7 @@ export const routes: Routes = [
       { path: 'cultura', loadComponent: () => import('./features/cultura/cultura.component').then(m => m.CulturaComponent), data: { headerKey: 'header.culture' } },
       { path: 'socios', loadComponent: () => import('./features/socios/socios.component').then(m => m.SociosComponent), data: { headerKey: 'header.partners' } },
       { path: 'viajes', loadComponent: () => import('./features/viajes/viajes.component').then(m => m.ViajesComponent), data: { headerKey: 'header.trips' } },
+      { path: 'consultoria', loadComponent: () => import('./features/consultoria/consultoria.component').then(m => m.ConsultoriaComponent), data: { headerKey: 'header.consulting' } },
       { path: 'gourmet', loadComponent: () => import('./features/gourmet/gourmet.component').then(m => m.GourmetComponent), data: { headerKey: 'header.gourmet' } },
 
       { path: 'networking', loadComponent: () => import('./features/networking/networking.component').then(m => m.NetworkingComponent), data: { headerKey: 'header.networking' } },
@@ -20,6 +21,8 @@ export const routes: Routes = [
   },
   { path: '**', redirectTo: '' }
 ];
+
+
 
 
 
