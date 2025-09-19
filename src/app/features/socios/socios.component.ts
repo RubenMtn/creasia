@@ -1,4 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+//import { Component, inject } from '@angular/core';
+import { SociosService } from '../../services/socios.service';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TPipe } from '../../shared/i18n/t.pipe';
 
@@ -15,6 +18,10 @@ export class SociosComponent implements OnInit {
 
   showRegisterForm = false;
   showLoginForm = false;
+  private socios = inject(SociosService);
+  loading: any;
+  error = '';
+  okMsg = '';
 
   ngOnInit(): void {
     if (!this.hasWindow) {
@@ -53,9 +60,43 @@ export class SociosComponent implements OnInit {
     this.persistViewState();
   }
 
+  // onRegisterSubmit(event: Event): void {
+  //   event.preventDefault();
+  //   // TODO: hook up to backend when ready
+  // }
+
   onRegisterSubmit(event: Event): void {
     event.preventDefault();
-    // TODO: hook up to backend when ready
+    this.error = '';
+    this.okMsg = '';
+
+    const form = event.target as HTMLFormElement;
+    const email = (form.elements.namedItem('registerEmail') as HTMLInputElement)?.value.trim();
+    const password = (form.elements.namedItem('registerPassword') as HTMLInputElement)?.value;
+
+    if (!email || !password || password.length < 8) {
+      this.error = 'Email o contraseña inválidos (mín. 8).';
+      return;
+    }
+
+    this.loading = true;
+    this.socios.register(email, password).subscribe({
+      next: (res) => {
+        if (res.ok) {
+          this.okMsg = 'Registro completado. Revisa tu correo si más adelante añadimos verificación.';
+          form.reset(); // limpia el formulario
+        } else {
+          this.error = res.error || 'Algo no ha ido bien.';
+        }
+      },
+      error: (e) => {
+        // Mapea errores comunes
+        if (e.status === 409) this.error = 'Ese email ya está registrado.';
+        else if (e.status === 422) this.error = 'Email o contraseña inválidos.';
+        else this.error = 'Error de servidor. Inténtalo más tarde.';
+      },
+      complete: () => this.loading = false
+    });
   }
 
   onLoginSubmit(event: Event): void {

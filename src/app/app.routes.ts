@@ -13,7 +13,6 @@ export const routes: Routes = [
       { path: 'viajes', loadComponent: () => import('./features/viajes/viajes.component').then(m => m.ViajesComponent), data: { headerKey: 'header.trips' } },
       { path: 'consultoria', loadComponent: () => import('./features/consultoria/consultoria.component').then(m => m.ConsultoriaComponent), data: { headerKey: 'header.consulting' } },
       { path: 'gourmet', loadComponent: () => import('./features/gourmet/gourmet.component').then(m => m.GourmetComponent), data: { headerKey: 'header.gourmet' } },
-
       { path: 'networking', loadComponent: () => import('./features/networking/networking.component').then(m => m.NetworkingComponent), data: { headerKey: 'header.networking' } },
       { path: 'idiomas', loadComponent: () => import('./features/idiomas/idiomas.component').then(m => m.IdiomasComponent), data: { headerKey: 'header.languages' } },
       { path: 'legal', loadComponent: () => import('./features/legal/legal.component').then(m => m.LegalComponent), data: { headerKey: 'header.legal' } }

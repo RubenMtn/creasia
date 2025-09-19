@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ElementRef, HostListener, ViewChild, inject, signal } from '@angular/core';
+﻿import { Component, ElementRef, HostListener, inject, signal } from '@angular/core';
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -25,7 +25,7 @@ interface SavedFieldState {
   templateUrl: './header.component.html',
   styleUrls: ['./header.component.scss']
 })
-export class HeaderComponent implements AfterViewInit {
+export class HeaderComponent {
   private static readonly RETURN_STATE_KEY = 'creasia:returnState';
 
   readonly headerKey = signal('header.brand');
@@ -42,12 +42,10 @@ export class HeaderComponent implements AfterViewInit {
     { labelKey: 'links.section4', route: '/gourmet', icon: 'assets/icons/arroz.png' },
     { labelKey: 'links.section5', route: '/viajes', icon: 'assets/icons/plane.png' },
     { labelKey: 'links.section6', route: '/idiomas', icon: 'assets/icons/contacto.png' },
-    { labelKey: 'links.section8', route: '/consultoria', icon: 'assets/icons/consejo.png' },
     { labelKey: 'links.section7', route: '/networking', icon: 'assets/icons/shake.png' },
+    { labelKey: 'links.section8', route: '/consultoria', icon: 'assets/icons/shake.png' },
     { labelKey: 'menu.legal', route: '/legal', icon: 'assets/icons/legal.png' }
   ];
-
-  @ViewChild('brandEl') private brandElement?: ElementRef<HTMLElement>;
 
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
@@ -62,10 +60,6 @@ export class HeaderComponent implements AfterViewInit {
         this.updateKey();
         this.restorePendingState(event.urlAfterRedirects);
       });
-  }
-
-  ngAfterViewInit(): void {
-    this.scheduleBrandAnimation();
   }
 
   @HostListener('document:keydown.escape')
@@ -169,7 +163,6 @@ export class HeaderComponent implements AfterViewInit {
 
     this.isHome.set(isHomeRoute);
     this.headerKey.set(typeof key === 'string' && key.length > 0 ? key : 'header.brand');
-    this.scheduleBrandAnimation();
   }
 
   private updateMenuOffsets(): void {
@@ -307,36 +300,6 @@ export class HeaderComponent implements AfterViewInit {
     });
   }
 
-  private scheduleBrandAnimation(): void {
-    if (typeof window === 'undefined') {
-      this.restartBrandAnimation();
-      return;
-    }
-
-    window.requestAnimationFrame(() => this.restartBrandAnimation());
-  }
-
-  private restartBrandAnimation(): void {
-    const element = this.brandElement?.nativeElement as {
-      classList?: DOMTokenList;
-      getBoundingClientRect?: () => DOMRect;
-    } | null;
-
-    if (
-      !element ||
-      !element.classList ||
-      typeof element.classList.remove !== 'function' ||
-      typeof element.classList.add !== 'function' ||
-      typeof element.getBoundingClientRect !== 'function'
-    ) {
-      return;
-    }
-
-    element.classList.remove('brand--animate');
-    void element.getBoundingClientRect();
-    element.classList.add('brand--animate');
-  }
-
   private toggleBodyScroll(disable: boolean): void {
     if (typeof document === 'undefined') {
       return;
@@ -353,23 +316,3 @@ export class HeaderComponent implements AfterViewInit {
     }
   }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

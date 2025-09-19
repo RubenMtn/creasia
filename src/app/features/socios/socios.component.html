@@ -30,8 +30,26 @@
             <span class="opt-in__label typography-body-text">{{ 'socios.registerForm.optIn' | t }}</span>
           </label>
 
-          <button class="submit typography-button-text" type="submit">{{ 'socios.registerForm.submit' | t }}</button>
-        </form>
+      <button class="submit typography-button-text" type="submit" [disabled]="loading">
+    {{ loading ? ('general.loading' | t) : ('socios.registerForm.submit' | t) }}
+  </button>
+
+  <p *ngIf="error" class="error">{{ error }}</p>
+  <p *ngIf="okMsg" class="ok">{{ okMsg }}</p>
+</form>
+
+
+<!--         
+  
+  <button class="submit typography-button-text" type="submit" [disabled]="loading">
+    {{ loading ? ('general.loading' | t) : ('socios.registerForm.submit' | t) }}
+  </button>
+
+  <p *ngIf="error" class="error">{{ error }}</p>
+  <p *ngIf="okMsg" class="ok">{{ okMsg }}</p>
+</form> -->
+
+
 
         <button class="text-link typography-body-text" type="button" (click)="openLogin()">
           {{ 'socios.registerForm.alreadyRegistered' | t }}
