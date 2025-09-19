@@ -27,9 +27,9 @@
 
 @mixin typography-body-text {
   font-family: $font-body;
-  font-weight: 400;
-  font-size: 0.95rem;
-  line-height: 1.35;
+  font-weight: 350;
+  font-size: 0.85rem;
+  line-height: 1.2;
 
   @include from-tablet {
     font-size: 1.1rem;

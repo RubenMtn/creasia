@@ -1,4 +1,4 @@
-@use "tokens" as *;
+﻿@use "tokens" as *;
 @use "breakpoints" as *;
 
 .hero {
@@ -104,10 +104,10 @@
   align-items: center;
   justify-content: center;
   text-align: center;
-  padding: 0.45rem 0.75rem;
+  padding: 0.30rem 0.50rem;
   inline-size: fit-content;
-  min-inline-size: 8ch;
-  max-inline-size: 28ch;
+  min-inline-size: 7ch;
+  max-inline-size: 25ch;
   will-change: transform, opacity;
   animation: popInMove 900ms cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
 
@@ -191,6 +191,7 @@
     --ty: 18vh;
   }
 }
+
 
 @include from-desktop {
   // Escritorio (>= 1280px)
@@ -291,4 +292,9 @@
   stroke-width: 0.35;
   stroke-linecap: round;
 }
+
+
+
+
+
 

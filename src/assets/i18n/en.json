@@ -1,15 +1,16 @@
-{
+﻿{
   "header": {
     "brand": "Creasia",
     "partners": "Members",
-    "home": "Go to home"
+    "home": "Go to home",
+    "legal": "Legal Notice"
   },
   "menu": {
     "toggle": "Toggle menu",
     "title": "Main menu",
     "home": "Home",
     "animation": "Play animation",
-    "legal": "Legal"
+    "legal": "Legal Notice"
   },
   "links": {
     "section1": "Activities",
@@ -25,7 +26,7 @@
   },
   "socios": {
     "title": "Benefits with Creasia and much more",
-    "caption": "Sign up with your email and the password you choose (at least 8 characters and include a number) to unlock all the benefits our association provides: exclusive information, discounts, event invitations, and so much more...",
+    "caption": "Sign up with your email and a password to unlock all the benefits our association provides: exclusive information, discounts, event invitations, and so much more...",
     "loginCaption": "If you are already a Creasia member, sign in with your username and password and enjoy all the benefits and updates we have for you.",
     "actions": {
       "register": "Register",
@@ -43,6 +44,44 @@
       "password": "Password",
       "submit": "Sign in",
       "notRegistered": "I am not registered"
+    }
+  },
+  "legal": {
+    "title": "Legal Notice",
+    "section1": {
+      "title": "1. General Information",
+      "body": "Creasia is an organisation dedicated to the organisation of cultural activities, trips, training and consulting between Spain and China. Access to and use of this website implies acceptance of these legal conditions."
+    },
+    "section2": {
+      "title": "2. Protection of Personal Data",
+      "body1": "The personal data provided through Creasia forms will be processed in accordance with current data protection regulations (EU Regulation 2016/679 and Spanish Organic Law 3/2018).",
+      "body2": "The purpose of the processing is to manage the relationship with users, to send information about Creasia activities, news and services, and to respond to enquiries. Data will not be shared with third parties unless required by law.",
+      "body3Before": "You can exercise your rights of access, rectification, erasure, restriction, objection and portability through the ",
+      "contactLink": "Contact us",
+      "body3After": " section.",
+      "body4": "If you wish to unsubscribe from our communications, you can request it through the same contact page."
+    },
+    "section3": {
+      "title": "3. Liability for Trips and Activities",
+      "body1": "Creasia acts as an intermediary in the organisation of trips and cultural activities, collaborating with external providers. It is not responsible for possible incidents, delays, cancellations, itinerary changes, accidents, losses or damages that may occur during the trips or activities.",
+      "body2": "Participants are responsible for complying with the legal and health requirements necessary for travel, as well as for taking out the relevant insurance."
+    },
+    "section4": {
+      "title": "4. Content and Intellectual Property",
+      "body1": "All content on this website, including texts, images, logos and designs, belongs to Creasia or to their respective owners and is protected by intellectual property law.",
+      "body2": "Reproduction, distribution or public communication of the content without express authorisation is prohibited."
+    },
+    "section5": {
+      "title": "5. External Links",
+      "body1": "This website may contain links to external pages. Creasia is not responsible for the content, accuracy or operation of these pages, nor for any damage that may arise from accessing them."
+    },
+    "section6": {
+      "title": "6. Updates and Modifications",
+      "body1": "Creasia reserves the right to modify, update or delete any information contained on this website, as well as this legal policy, at any time and without prior notice."
+    },
+    "section7": {
+      "title": "7. Applicable Law and Jurisdiction",
+      "body1": "These legal conditions are governed by Spanish law. For any dispute arising from access to or use of this website, the parties submit to the Courts of Madrid, unless otherwise provided by law."
     }
   }
 }

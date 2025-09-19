@@ -33,7 +33,10 @@
     "@angular/router": "^20.2.0",
     "@angular/ssr": "^20.2.2",
     "express": "^5.1.0",
+    "icojs": "^0.19.5",
+    "png-to-ico": "^3.0.1",
     "rxjs": "~7.8.0",
+    "sharp": "^0.34.4",
     "tslib": "^2.3.0",
     "zone.js": "~0.15.0"
   },

@@ -1,4 +1,5 @@
-@use "tokens" as *;
+﻿@use "tokens" as *;
+@use "breakpoints" as *;
 
 .ftr {
   padding: $space-2;
@@ -6,4 +7,69 @@
   background: $bg-near;
   color: #eee;
   border-top: 1px solid $border-dk;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: $space-2 * 1.2;
+}
+
+.ftr__social {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: $space-1 * 1.6;
+}
+
+.ftr__link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.75rem;
+  color: $gold-soft;
+  text-decoration: underline;
+  transition: color 160ms ease;
+
+  &:hover,
+  &:focus-visible {
+    color: $text-light;
+  }
+}
+
+.ftr__icon {
+  inline-size: 1rem;
+  block-size: 1rem;
+  object-fit: contain;
+}
+
+.ftr__copy {
+  margin: 0;
+  font-size: 0.7rem;
+}
+
+@include for-mobile {
+  .ftr__social {
+    gap: $space-1 * 1.8;
+  }
+
+  .ftr__link {
+    font-size: 0.7rem;
+    gap: 0.3rem;
+  }
+
+  .ftr__icon {
+    inline-size: 1rem;
+    block-size: 1rem;
+  }
+}
+
+@include for-tablet {
+  .ftr__social {
+    gap: $space-2 * 3;
+  }
+}
+
+@include from-desktop {
+  .ftr__social {
+    gap: $space-3 * 5;
+  }
 }
