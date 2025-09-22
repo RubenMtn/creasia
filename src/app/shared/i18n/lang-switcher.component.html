@@ -1,16 +1,17 @@
 <div class="switcher">
-  <!-- Botón (icono idioma) -->
+  <!-- Boton del idioma -->
   <button
     type="button"
     class="switch"
     aria-haspopup="menu"
     [attr.aria-expanded]="open"
     [attr.aria-label]="'Idioma: ' + currentAlt()"
+    title="Español / English / 中国人"
     (click)="toggle($event)">
     <img class="icon" src="assets/icons/idiomw.png" alt="Seleccionar idioma" />
   </button>
 
-  <!-- Menú: a la IZQUIERDA del botón, solo 2 banderas restantes -->
+  <!-- Menu con las dos banderas restantes -->
   <ul *ngIf="open" class="menu" role="menu">
     <li *ngFor="let l of otherLangs" role="none">
       <button
@@ -28,3 +29,5 @@
     </li>
   </ul>
 </div>
+
+

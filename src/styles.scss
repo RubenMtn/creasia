@@ -1,33 +1,71 @@
-/* You can add global styles to this file, and also import other style files */
-@use 'styles/tokens' as *; // o la ruta relativa: @use './styles/tokens' as *;
-@use 'styles/breakpoints' as *; // o ruta relativa
-@use 'breakpoints' as *;
+@use "styles/tokens" as *;
+@use "styles/breakpoints" as *;
+@use "styles/typography" as typography;
 
-:root { color-scheme: dark; }
-html, body { height: 100%; }
-body { margin: 0; background: $bg-dark; color: $text-light; font-family: $font-body; }
-.container { width:min(100%, 960px); margin:0 auto; padding:$space-2; }
-
-*{ box-sizing:border-box; }
-html, body{ height:100%; margin:0; }
-
-// @use 'breakpoints' as *;
-/* Margen lateral derecho común para UI (seguro respecto a los cuadros) */
-:root { --side-gutter: 10vw; }       /* móvil: más generoso */
-@include up($bp-md){ :root { --side-gutter: 12vw; } } /* tablet */
-@include up($bp-lg){ :root { --side-gutter: 12vw; } } /* desktop */
-
-/* Gutter por defecto para el botón de idiomas */
-:root{
-  --lang-gutter-mobile: 2vw;  /* móvil: un poco más a la derecha que antes */
-  --lang-gutter-tablet: 7vw;   /* tablet: más cerca del borde */
-  --lang-gutter-desktop: 5vw;  /* desktop: aún más cerca */
+* {
+  box-sizing: border-box;
 }
 
-/* Gutter fluido para el botón de idioma:
-   - 14px en 360px de ancho (móvil muy estrecho)
-   - crece progresivamente hasta ~53–56px cerca de 768px (pre-tablet)
-   - sin “saltos” visibles */
-:root{
+html,
+body {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background: $bg-dark;
+  color: $text-light;
+  font-family: $font-body;
+}
+
+// Variables globales que gobiernan los espacios laterales y el gutter del selector de idioma.
+:root {
+  color-scheme: dark;
+  --side-gutter: 10vw; // movil (base)
   --lang-gutter: clamp(14px, calc(14px + 0.09 * (100vw - 360px)), 56px);
 }
+
+@include for-tablet {
+  :root {
+    --side-gutter: 12vw; // tablet
+  }
+}
+
+@include for-desktop {
+  :root {
+    --side-gutter: 12vw; // escritorio
+  }
+}
+
+// Contenedor fluido reutilizado por las paginas.
+.container {
+  width: min(100%, 960px);
+  margin: 0 auto;
+  padding: $space-2;
+}
+
+@include for-tablet {
+  .container {
+    width: min(100%, 1120px); // tablet
+  }
+}
+
+@include for-desktop {
+  .container {
+    width: min(100%, 1240px); // escritorio
+  }
+}
+
+body,
+body *:not(input):not(textarea) {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+input,
+textarea {
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+

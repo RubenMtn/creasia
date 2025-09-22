@@ -1,0 +1,74 @@
+@use "tokens" as *;
+@use "breakpoints" as *;
+
+@mixin typography-page-title {
+  font-family: $font-title;
+  font-weight: 600;
+  font-size: clamp(2.2rem, 1.6rem + 2vw, 3.2rem);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+@mixin typography-section-title {
+  font-family: $font-title;
+  font-weight: 700;
+  font-size: 1.45rem;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+
+  @include from-tablet {
+    font-size: 1.8rem;
+  }
+
+  @include from-desktop {
+    font-size: 2rem;
+  }
+}
+
+@mixin typography-body-text {
+  font-family: $font-body;
+  font-weight: 350;
+  font-size: 0.85rem;
+  line-height: 1.2;
+
+  @include from-tablet {
+    font-size: 1.1rem;
+  }
+
+  @include from-desktop {
+    font-size: 1.25rem;
+  }
+}
+
+@mixin typography-button-text {
+  font-family: $font-body;
+  font-weight: 600;
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  line-height: 1;
+
+  @include from-tablet {
+    font-size: 0.95rem;
+  }
+
+  @include from-desktop {
+    font-size: 1rem;
+  }
+}
+
+.typography-page-title {
+  @include typography-page-title;
+}
+
+.typography-section-title {
+  @include typography-section-title;
+}
+
+.typography-body-text {
+  @include typography-body-text;
+}
+
+.typography-button-text {
+  @include typography-button-text;
+}

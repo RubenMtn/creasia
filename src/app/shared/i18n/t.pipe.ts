@@ -4,7 +4,7 @@ import { TranslationService } from './translation.service';
 @Pipe({
   name: 't',
   standalone: true,
-  pure: false // impuro: se reevaluará en ciclos de CD; útil si llega el JSON después
+  pure: false,
 })
 export class TPipe implements PipeTransform {
   private readonly i18n = inject(TranslationService);

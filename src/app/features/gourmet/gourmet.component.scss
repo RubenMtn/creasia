@@ -1,0 +1,154 @@
+﻿@use "tokens" as *;
+@use "breakpoints" as *;
+
+.content {
+  padding-top: $space-1 * 0.5;
+  padding-bottom: $space-2;
+  display: block;
+}
+
+.intro {
+  text-align: center;
+  display: grid;
+  gap: $space-1 * 0.5;
+}
+
+.gourmet-body {
+  min-height: clamp(240px, 45vh, 520px);
+  color: $text-light;
+
+  &::after {
+    content: "";
+    display: block;
+    clear: both;
+  }
+
+  > * {
+    margin: 0;
+  }
+
+  > * + * {
+    margin-top: $space-1;
+  }
+}
+
+.gourmet-figure {
+  width: min(130px, 38vw);
+  margin: 0 0 $space-1;
+}
+
+.gourmet-figure--large {
+  width: min(240px, 70vw);
+}
+
+.gourmet-figure--center {
+  width: 100%;
+  margin: $space-1 auto;
+  float: none;
+  clear: both;
+  display: flex;
+  justify-content: center;
+}
+
+.gourmet-figure--right {
+  float: right;
+  margin-inline-start: $space-1;
+}
+
+.gourmet-figure--left {
+  float: left;
+  margin-inline-end: $space-1;
+}
+
+.gourmet-image {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: $radius-2xl;
+  box-shadow: 0 18px 42px rgba($bg-dark, 0.35);
+}
+
+.gourmet-image--large {
+  width: min(220px, 70vw);
+}
+
+.gourmet-highlight {
+  color: $gold-soft;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.gourmet-list,
+.gourmet-steps {
+  margin: 0;
+  padding-inline-start: $space-2 * 1.25;
+}
+
+.gourmet-list li,
+.gourmet-steps li {
+  margin: 0;
+  line-height: 1.6;
+}
+
+.gourmet-steps {
+  list-style: decimal;
+}
+
+.gourmet-section__title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: $gold-soft;
+  margin: 0;
+  clear: both;
+}
+
+@include from-tablet {
+  .content {
+    padding-top: $space-2;
+  }
+
+  .gourmet-body > * + * {
+    margin-top: $space-2 * 0.75;
+  }
+
+  .gourmet-figure {
+    width: min(220px, 32vw);
+  }
+
+  .gourmet-figure--large {
+    width: min(320px, 45vw);
+  }
+
+  .gourmet-image--large {
+    width: min(320px, 48vw);
+  }
+
+  .gourmet-figure--right {
+    margin-inline-start: $space-2;
+  }
+
+  .gourmet-figure--left {
+    margin-inline-end: $space-2;
+  }
+}
+
+@include from-desktop {
+  .gourmet-figure {
+    width: min(280px, 28vw);
+  }
+
+  .gourmet-figure--large {
+    width: 400px;
+  }
+
+  .gourmet-image--large {
+    width: min(360px, 30vw);
+  }
+
+  .gourmet-body > * + * {
+    margin-top: $space-2;
+  }
+}

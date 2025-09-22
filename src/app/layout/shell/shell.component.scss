@@ -1,13 +1,29 @@
-@use 'tokens' as *; // o ruta relativa
+@use "tokens" as *;
 
-:host{
-  display:flex;
-  flex-direction:column;
-  min-height:100dvh;      /* mejor que 100vh */
+:host {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
 }
 
-/* el contenido rellena y evita empujar el footer */
-main, app-body { flex:1; display:block; }
+.app-main {
+  flex: 1;
+  display: flex;
+  width: 100%;
+  background-color: $bg-dark;
+  background-image: url("../../../assets/images/puentebwok.webp");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
 
-/* evita colapso de márgenes del primer/último hijo */
-main { display: flow-root; }
+.app-main main,
+app-body {
+  flex: 1;
+  display: block;
+}
+
+.app-main main {
+  display: flow-root;
+}
+

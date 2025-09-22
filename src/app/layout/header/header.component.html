@@ -1,7 +1,54 @@
+﻿<!-- eslint-disable @angular-eslint/template/click-events-have-key-events -->
 <header class="hdr">
-  <!-- Título centrado (animado por CSS) -->
-  <h1 class="brand">Creasia</h1>
-
-  <!-- Selector de idioma anclado a la derecha -->
+  <button
+    type="button"
+    class="hamburger"
+    [class.open]="menuOpen()"
+    (click)="toggleMenu()"
+    [attr.aria-label]="'menu.toggle' | t"
+    [attr.aria-expanded]="menuOpen()"
+    title="Menu"
+  >
+    <span></span>
+    <span></span>
+    <span></span>
+  </button>
+  <h1
+    class="brand"
+    [class.brand--activities]="headerKey() === 'header.activities'"
+    [class.brand--networking]="headerKey() === 'header.networking'"
+    [class.brand--gourmet]="headerKey() === 'header.gourmet'"
+    [class.brand--consulting]="headerKey() === 'header.consulting'"
+  >
+    {{ headerKey() | t }}
+  </h1>
   <app-lang-switcher class="lang"></app-lang-switcher>
 </header>
+@if (menuOpen()) {
+  <div
+    class="menu-overlay"
+    role="dialog"
+    aria-modal="true"
+    tabindex="-1"
+    (click)="closeMenu()"
+    (keydown.enter)="closeMenu()"
+    (keydown.space)="closeMenu()"
+    [style.top.px]="menuOffsets().top"
+    [style.bottom.px]="menuOffsets().bottom"
+  >
+    <nav class="menu-panel" role="navigation" (click)="$event.stopPropagation()" [attr.aria-label]="'menu.title' | t">
+      <ul class="menu-list">
+        @for (item of menuItems; track item.labelKey) {
+          <li>
+            <button type="button" class="menu-link" (click)="onMenuItemSelect(item)">
+              @if (item.icon) {
+                <img class="menu-link__icon" [src]="item.icon" alt="" aria-hidden="true" />
+              }
+              <span class="menu-link__label">{{ item.labelKey | t }}</span>
+            </button>
+          </li>
+        }
+      </ul>
+    </nav>
+  </div>
+}

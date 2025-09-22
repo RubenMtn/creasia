@@ -1,0 +1,44 @@
+@use "tokens" as *;
+@use "breakpoints" as *;
+
+.consulting {
+  display: grid;
+  gap: $space-2;
+  padding-block: $space-2;
+}
+
+.consulting__intro {
+  text-align: center;
+  display: grid;
+  gap: $space-1;
+}
+
+.consulting__lead {
+  margin: 0;
+  color: $gold-soft;
+  letter-spacing: 0.04em;
+}
+
+.consulting__body {
+  display: grid;
+  gap: $space-1 * 1.5;
+  color: $text-light;
+}
+
+.consulting__services {
+  margin: 0;
+  padding-inline-start: $space-2 * 1.5;
+  display: grid;
+  gap: $space-1;
+}
+
+@include from-tablet {
+  .consulting {
+    padding-block: $space-3;
+    gap: $space-3;
+  }
+
+  .consulting__body {
+    gap: $space-2;
+  }
+}
