@@ -14,6 +14,7 @@
     } @else {
     <p class="register-caption typography-body-text">{{ 'socios.caption' | t }}</p>
 
+    @if (!okMsg) {
     <form class="form" (submit)="onRegisterSubmit($event)" novalidate>
 
       <label class="field">
@@ -47,12 +48,15 @@
       </button>
 
       <p *ngIf="error" class="error">{{ error }}</p>
-      <p *ngIf="okMsg" class="ok">{{ okMsg }}</p>
     </form>
 
     <button class="text-link typography-body-text" type="button" (click)="openLogin()">
       {{ 'socios.registerForm.alreadyRegistered' | t }}
     </button>
+    } @else {
+    <!-- Sólo mensaje de OK tras registro correcto -->
+    <p class="ok title typography-section-title" role="status" aria-live="polite">{{ okMsg }}</p>
+    }
     }
   </div>
 
@@ -71,6 +75,7 @@
   <div class="login-block login-block--active">
     <p class="login-caption typography-body-text">{{ 'socios.loginCaption' | t }}</p>
 
+    @if (!okMsg) {
     <form class="form form--login" (submit)="onLoginSubmit($event)" novalidate>
       <label class="field">
         <span class="field__label typography-body-text">{{ 'socios.loginForm.email' | t }}</span>
@@ -83,18 +88,22 @@
           autocomplete="current-password" />
       </label>
 
-      <button class="submit typography-button-text" type="submit">{{ 'socios.loginForm.submit' | t }}</button>
-
+      <button class="submit typography-button-text" type="submit">
+        {{ 'socios.loginForm.submit' | t }}
+      </button>
     </form>
 
-    @if (!okMsg) {
+    <!-- 👇 AVISO DE ERROR (mantiene formulario y link visibles) -->
+    <p *ngIf="error" class="error" role="alert" aria-live="assertive">{{ error }}</p>
+
     <button class="text-link typography-body-text" type="button" (click)="openRegister()">
       {{ 'socios.loginForm.notRegistered' | t }}
     </button>
     } @else {
-    <p class="ok">{{ okMsg }}</p>
+    <!-- Sólo el saludo al hacer login correcto -->
+    <p class="title typography-section-title" role="status" aria-live="polite">{{ okMsg }}</p>
     }
-
   </div>
   }
+
 </section>

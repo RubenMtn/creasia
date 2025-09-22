@@ -41,17 +41,22 @@ export class SociosComponent implements OnInit {
     this.persistViewState();
   }
 
-  openRegister(): void {
-    this.showRegisterForm = true;
-    this.showLoginForm = false;
-    this.persistViewState();
-  }
+openRegister(): void {
+  this.error = '';
+  this.okMsg = '';   // ← limpia para que vuelva a salir el formulario
+  this.showRegisterForm = true;
+  this.showLoginForm = false;
+  this.persistViewState();
+}
 
-  openLogin(): void {
-    this.showLoginForm = true;
-    this.showRegisterForm = false;
-    this.persistViewState();
-  }
+openLogin(): void {
+  this.error = '';
+  this.okMsg = '';   // ← idem
+  this.showLoginForm = true;
+  this.showRegisterForm = false;
+  this.persistViewState();
+}
+
 
   // ⬇️ Helper para partir apellidos con partículas extendidas y regla del guion
   private splitApellidos(input: string): { a1: string; a2: string | null } {
