@@ -60,6 +60,8 @@ const ES_FALLBACK: Dict = {
       login: 'Accede'
     },
     registerForm: {
+      name: 'Nombre',
+      surname: 'Apellido/s',
       email: 'Email',
       password: 'Contraseña',
       optIn: 'Recibir informaciones periódicas',

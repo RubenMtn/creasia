@@ -49,6 +49,8 @@
                                    "login":  "Accede"
                                },
                    "registerForm":  {
+                                        "name": "Nombre",
+                                        "surname": "Apellido/s",
                                         "email":  "Email",
                                         "password":  "ContraseÃ±a",
                                         "optIn":  "Recibir informaciones periÃ³dicas",

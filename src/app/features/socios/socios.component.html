@@ -4,91 +4,97 @@
   </div>
 
   @if (!showLoginForm) {
-    <div class="register-block">
-      @if (!showRegisterForm) {
-        <p class="register-caption typography-body-text">{{ 'socios.caption' | t }}</p>
+  <div class="register-block">
+    @if (!showRegisterForm) {
+    <p class="register-caption typography-body-text">{{ 'socios.caption' | t }}</p>
 
-        <button class="cta typography-button-text" type="button" (click)="openRegister()">
-          {{ 'socios.actions.register' | t }}
-        </button>
-      } @else {
-        <p class="register-caption typography-body-text">{{ 'socios.caption' | t }}</p>
+    <button class="cta typography-button-text" type="button" (click)="openRegister()">
+      {{ 'socios.actions.register' | t }}
+    </button>
+    } @else {
+    <p class="register-caption typography-body-text">{{ 'socios.caption' | t }}</p>
 
-        <form class="form" (submit)="onRegisterSubmit($event)" novalidate>
-          <label class="field">
-            <span class="field__label typography-body-text">{{ 'socios.registerForm.email' | t }}</span>
-            <input class="field__control" type="email" name="registerEmail" required autocomplete="email" />
-          </label>
+    <form class="form" (submit)="onRegisterSubmit($event)" novalidate>
 
-          <label class="field">
-            <span class="field__label typography-body-text">{{ 'socios.registerForm.password' | t }}</span>
-            <input class="field__control" type="password" name="registerPassword" required minlength="8" autocomplete="new-password" />
-          </label>
+      <label class="field">
+        <span class="field__label typography-body-text">{{ 'socios.registerForm.name' | t }}</span>
+        <input class="field__control" type="name" name="registerName" required autocomplete="name" />
+      </label>
 
-          <label class="opt-in">
-            <input type="checkbox" name="registerOptIn" />
-            <span class="opt-in__label typography-body-text">{{ 'socios.registerForm.optIn' | t }}</span>
-          </label>
+      <label class="field">
+        <span class="field__label typography-body-text">{{ 'socios.registerForm.surname' | t }}</span>
+        <input class="field__control" type="surname" name="registerSurname" autocomplete="surname" />
+      </label>
+
+      <label class="field">
+        <span class="field__label typography-body-text">{{ 'socios.registerForm.email' | t }}</span>
+        <input class="field__control" type="email" name="registerEmail" required autocomplete="email" />
+      </label>
+
+      <label class="field">
+        <span class="field__label typography-body-text">{{ 'socios.registerForm.password' | t }}</span>
+        <input class="field__control" type="password" name="registerPassword" required minlength="8"
+          autocomplete="new-password" />
+      </label>
+
+      <label class="opt-in">
+        <input type="checkbox" name="registerOptIn" />
+        <span class="opt-in__label typography-body-text">{{ 'socios.registerForm.optIn' | t }}</span>
+      </label>
 
       <button class="submit typography-button-text" type="submit" [disabled]="loading">
-    {{ loading ? ('general.loading' | t) : ('socios.registerForm.submit' | t) }}
-  </button>
+        {{ loading ? ('general.loading' | t) : ('socios.registerForm.submit' | t) }}
+      </button>
 
-  <p *ngIf="error" class="error">{{ error }}</p>
-  <p *ngIf="okMsg" class="ok">{{ okMsg }}</p>
-</form>
+      <p *ngIf="error" class="error">{{ error }}</p>
+      <p *ngIf="okMsg" class="ok">{{ okMsg }}</p>
+    </form>
 
-
-<!--         
-  
-  <button class="submit typography-button-text" type="submit" [disabled]="loading">
-    {{ loading ? ('general.loading' | t) : ('socios.registerForm.submit' | t) }}
-  </button>
-
-  <p *ngIf="error" class="error">{{ error }}</p>
-  <p *ngIf="okMsg" class="ok">{{ okMsg }}</p>
-</form> -->
-
-
-
-        <button class="text-link typography-body-text" type="button" (click)="openLogin()">
-          {{ 'socios.registerForm.alreadyRegistered' | t }}
-        </button>
-      }
-    </div>
-
-    @if (!showRegisterForm) {
-      <div class="login-block">
-        <p class="login-caption typography-body-text">{{ 'socios.loginCaption' | t }}</p>
-
-        <button class="cta secondary typography-button-text" type="button" (click)="openLogin()">
-          {{ 'socios.actions.login' | t }}
-        </button>
-      </div>
+    <button class="text-link typography-body-text" type="button" (click)="openLogin()">
+      {{ 'socios.registerForm.alreadyRegistered' | t }}
+    </button>
     }
+  </div>
+
+  @if (!showRegisterForm) {
+  <div class="login-block">
+    <p class="login-caption typography-body-text">{{ 'socios.loginCaption' | t }}</p>
+
+    <button class="cta secondary typography-button-text" type="button" (click)="openLogin()">
+      {{ 'socios.actions.login' | t }}
+    </button>
+  </div>
+  }
   }
 
   @if (showLoginForm) {
-    <div class="login-block login-block--active">
-      <p class="login-caption typography-body-text">{{ 'socios.loginCaption' | t }}</p>
+  <div class="login-block login-block--active">
+    <p class="login-caption typography-body-text">{{ 'socios.loginCaption' | t }}</p>
 
-      <form class="form form--login" (submit)="onLoginSubmit($event)" novalidate>
-        <label class="field">
-          <span class="field__label typography-body-text">{{ 'socios.loginForm.email' | t }}</span>
-          <input class="field__control" type="email" name="loginEmail" required autocomplete="email" />
-        </label>
+    <form class="form form--login" (submit)="onLoginSubmit($event)" novalidate>
+      <label class="field">
+        <span class="field__label typography-body-text">{{ 'socios.loginForm.email' | t }}</span>
+        <input class="field__control" type="email" name="loginEmail" required autocomplete="email" />
+      </label>
 
-        <label class="field">
-          <span class="field__label typography-body-text">{{ 'socios.loginForm.password' | t }}</span>
-          <input class="field__control" type="password" name="loginPassword" required minlength="8" autocomplete="current-password" />
-        </label>
+      <label class="field">
+        <span class="field__label typography-body-text">{{ 'socios.loginForm.password' | t }}</span>
+        <input class="field__control" type="password" name="loginPassword" required minlength="8"
+          autocomplete="current-password" />
+      </label>
 
-        <button class="submit typography-button-text" type="submit">{{ 'socios.loginForm.submit' | t }}</button>
-      </form>
+      <button class="submit typography-button-text" type="submit">{{ 'socios.loginForm.submit' | t }}</button>
 
-      <button class="text-link typography-body-text" type="button" (click)="openRegister()">
-        {{ 'socios.loginForm.notRegistered' | t }}
-      </button>
-    </div>
+    </form>
+
+    @if (!okMsg) {
+    <button class="text-link typography-body-text" type="button" (click)="openRegister()">
+      {{ 'socios.loginForm.notRegistered' | t }}
+    </button>
+    } @else {
+    <p class="ok">{{ okMsg }}</p>
+    }
+
+  </div>
   }
 </section>

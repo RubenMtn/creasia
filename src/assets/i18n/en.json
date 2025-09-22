@@ -49,6 +49,8 @@
                                    "login":  "Sign in"
                                },
                    "registerForm":  {
+                                        "name": "Name",
+                                        "surname": "Surname",
                                         "email":  "Email",
                                         "password":  "Password",
                                         "optIn":  "Receive periodic updates",
