@@ -47,15 +47,20 @@
         {{ loading ? ('general.loading' | t) : ('socios.registerForm.submit' | t) }}
       </button>
 
-      <p *ngIf="error" class="intro title typography-section-title">{{ error }}</p>
+      <!-- ERROR traducido -->
+      <p *ngIf="error" class="intro title typography-section-title" role="alert" aria-live="assertive">
+        {{ error | t }}
+      </p>
     </form>
 
     <button class="text-link typography-body-text" type="button" (click)="openLogin()">
       {{ 'socios.registerForm.alreadyRegistered' | t }}
     </button>
     } @else {
-    <!-- Sólo mensaje de OK tras registro correcto -->
-    <p class="intro title typography-section-title" role="status" aria-live="polite">{{ okMsg }}</p>
+    <!-- OK traducido tras registro correcto -->
+    <p class="intro title typography-section-title" role="status" aria-live="polite">
+      {{ okMsg | t }}
+    </p>
     }
     }
   </div>
@@ -93,17 +98,22 @@
       </button>
     </form>
 
-    <!-- 👇 AVISO DE ERROR (mantiene formulario y link visibles) -->
-    <p *ngIf="error" class="intro title typography-section-title" role="alert" aria-live="assertive">{{ error }}</p>
+    <!-- ERROR traducido -->
+    <p *ngIf="error" class="intro title typography-section-title" role="alert" aria-live="assertive">
+      {{ error | t }}
+    </p>
 
     <button class="text-link typography-body-text" type="button" (click)="openRegister()">
       {{ 'socios.loginForm.notRegistered' | t }}
     </button>
     } @else {
-    <!-- Sólo el saludo al hacer login correcto -->
-    <p class="intro title typography-section-title" role="status" aria-live="polite">{{ okMsg }}</p>
+    <!-- OK traducido + nombre -->
+    <p class="intro title typography-section-title" role="status" aria-live="polite">
+      {{ okMsg | t }}<ng-container *ngIf="greetName"> {{ greetName }}</ng-container>
+    </p>
     }
   </div>
   }
-
+  &#8203;<br>
+  &#8203;<br>
 </section>

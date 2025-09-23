@@ -36,14 +36,14 @@ export class HeaderComponent {
   readonly menuItems: MenuItem[] = [
     { labelKey: 'menu.home', action: 'home', icon: 'assets/icons/home.png' },
     { labelKey: 'menu.animation', action: 'reload', icon: 'assets/icons/animationw.png' },
-    { labelKey: 'links.section1', route: '/actividades', icon: 'assets/icons/rutina-diaria.png' },
-    { labelKey: 'links.section2', route: '/socios', icon: 'assets/icons/media.png' },
-    { labelKey: 'links.section3', route: '/cultura', icon: 'assets/icons/amor.png' },
-    { labelKey: 'links.section4', route: '/gourmet', icon: 'assets/icons/arroz.png' },
-    { labelKey: 'links.section5', route: '/viajes', icon: 'assets/icons/plane.png' },
-    { labelKey: 'links.section6', route: '/idiomas', icon: 'assets/icons/contacto.png' },
-    { labelKey: 'links.section7', route: '/networking', icon: 'assets/icons/shake.png' },
-    { labelKey: 'links.section8', route: '/consultoria', icon: 'assets/icons/shake.png' },
+    { labelKey: 'menu.activities', route: '/actividades', icon: 'assets/icons/rutina-diaria.png' },
+    { labelKey: 'menu.partners', route: '/socios', icon: 'assets/icons/media.png' },
+    { labelKey: 'menu.culture', route: '/cultura', icon: 'assets/icons/amor.png' },
+    { labelKey: 'menu.gourmet', route: '/gourmet', icon: 'assets/icons/arroz.png' },
+    { labelKey: 'menu.trips', route: '/viajes', icon: 'assets/icons/plane.png' },
+    { labelKey: 'menu.languages', route: '/idiomas', icon: 'assets/icons/contacto.png' },
+    { labelKey: 'menu.networking', route: '/networking', icon: 'assets/icons/shake.png' },
+    { labelKey: 'menu.consulting', route: '/consultoria', icon: 'assets/icons/shake.png' },
     { labelKey: 'menu.legal', route: '/legal', icon: 'assets/icons/legal.png' }
   ];
 

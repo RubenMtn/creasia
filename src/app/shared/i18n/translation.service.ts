@@ -11,17 +11,17 @@ export interface Dict {
 
 const ES_FALLBACK: Dict = {
   header: {
-    brand: 'Creasia',
-    partners: 'Socios',
+    brand: 'CREASIA',
     home: 'Ir al inicio',
     activities: 'ACTIVIDADES',
+    partners: 'SOCIOS',
     culture: 'CULTURA',
-    trips: 'VIAJES',
     gourmet: 'GOURMET PASS',
-    legal: 'LEGAL',
+    trips: 'VIAJES',
     languages: 'IDIOMAS',
     networking: 'NETWORKING',
-    consulting: 'CONSULTORÍA'
+    consulting: 'CONSULTORÍA',
+    legal: 'LEGAL',
   },
   menu: {
     toggle: 'Abrir menú',
@@ -29,24 +29,16 @@ const ES_FALLBACK: Dict = {
     home: 'Inicio',
     animation: 'Ver animación',
     activities: 'ACTIVIDADES',
+    partners: 'SOCIOS',
     culture: 'CULTURA',
-    trips: 'VIAJES',
     gourmet: 'GOURMET PASS',
-    legal: 'LEGAL',
+    trips: 'VIAJES',
     languages: 'IDIOMAS',
     networking: 'NETWORKING',
-    consulting: 'CONSULTORÍA'
+    consulting: 'CONSULTORÍA',
+    legal: 'LEGAL',
   },
-  links: {
-    section1: 'Actividades',
-    section2: 'Socios',
-    section3: 'Cultura',
-    section4: 'Gourmet Pass',
-    section5: 'Viajes',
-    section6: 'Idiomas',
-    section7: 'Networking',
-    section8: 'Consultoría'
-  },
+
   home: {
     title: 'Un puente vivo entre España y China',
     caption: 'Somos una asociación creada por personas que han vivido en China y saben el vértigo de empezar de cero. Aquí lo que importa eres tú: tu curiosidad, tus ganas de aprender y conectar. Nos une construir un puente cultural y profesional, sin importar edad, origen, identidad u orientación.'
@@ -73,8 +65,38 @@ const ES_FALLBACK: Dict = {
       password: 'Contraseña',
       submit: 'Acceder',
       notRegistered: 'No estoy registrado'
+    },
+    register: {
+      successCheckEmail: 'Registro completado. Revisa tu correo para activar tu usuario.'
+    },
+    activation: {
+      ok: 'Tu cuenta ha sido activada. Ya puedes iniciar sesión',
+      expired: 'El enlace ha caducado. Solicita uno nuevo',
+      used: 'Ese enlace ya fue utilizado',
+      invalid: 'Enlace de activación inválido',
+      error: 'Ha ocurrido un error al activar la cuenta'
+    },
+    login: {
+      greeting: '¡Hola {{name}}!'
+    },
+    errors: {
+      invalidEmailOrPasswordMin8: 'Email o contraseña inválidos (mín. 8)',
+      invalidEmailOrPassword: 'Email o contraseña inválidos',
+      emailAlreadyRegistered: 'Ese email ya está registrado',
+      emailAndPasswordRequired: 'Email y contraseña son obligatorios',
+      emailOrPasswordRequired: 'Email/contraseña requeridos',
+      invalidCredentials: 'Credenciales inválidas',
+      mustActivate: 'Debe activar su usuario desde el enlace que enviamos a su correo',
+      server: 'Error de servidor. Inténtalo más tarde',
+      generic: 'Algo no ha ido bien'
+    },
+    general: {
+      loading: 'Cargando…'
     }
   },
+  general: {
+      loading: 'Cargando…'
+    },
   consultoria: {
     title: 'Consultoría',
     caption: 'Estrategias hechas a medida para conectar culturas, equipos y negocios entre España y China.',
