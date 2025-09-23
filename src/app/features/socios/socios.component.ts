@@ -33,30 +33,34 @@ export class SociosComponent implements OnInit {
 
     window.sessionStorage.removeItem('creasia:sociosRestore');
 
-    if (restored) { this.persistViewState(); return; }
+    if (restored) {
+      this.persistViewState();
+    } else {
+      this.showRegisterForm = false;
+      this.showLoginForm = false;
+      window.sessionStorage.removeItem(SociosComponent.VIEW_STATE_KEY);
+      this.persistViewState();
+    }
 
-    this.showRegisterForm = false;
+    // === Mensajes por ?activation=... (ok | expired | used | invalid | error) SIN usar Router ===
+    this.applyActivationMessageFromURL();
+  }
+
+  openRegister(): void {
+    this.error = '';
+    this.okMsg = '';   // ← limpia para que vuelva a salir el formulario
+    this.showRegisterForm = true;
     this.showLoginForm = false;
-    window.sessionStorage.removeItem(SociosComponent.VIEW_STATE_KEY);
     this.persistViewState();
   }
 
-openRegister(): void {
-  this.error = '';
-  this.okMsg = '';   // ← limpia para que vuelva a salir el formulario
-  this.showRegisterForm = true;
-  this.showLoginForm = false;
-  this.persistViewState();
-}
-
-openLogin(): void {
-  this.error = '';
-  this.okMsg = '';   // ← idem
-  this.showLoginForm = true;
-  this.showRegisterForm = false;
-  this.persistViewState();
-}
-
+  openLogin(): void {
+    this.error = '';
+    this.okMsg = '';   // ← idem
+    this.showLoginForm = true;
+    this.showRegisterForm = false;
+    this.persistViewState();
+  }
 
   // ⬇️ Helper para partir apellidos con partículas extendidas y regla del guion
   private splitApellidos(input: string): { a1: string; a2: string | null } {
@@ -140,7 +144,7 @@ openLogin(): void {
     const optIn = (form.elements.namedItem('registerOptIn') as HTMLInputElement)?.checked ?? false;
 
     if (!email || !password || password.length < 8) {
-      this.error = 'Email o contraseña inválidos (mín. 8).';
+      this.error = 'Email o contraseña inválidos';
       return;
     }
 
@@ -150,16 +154,16 @@ openLogin(): void {
     this.socios.register(email, password, nombre, apellido1, apellido2, !!optIn).subscribe({
       next: (res) => {
         if (res.ok) {
-          this.okMsg = 'Registro completado. Revisa tu correo si más adelante añadimos verificación.';
+          this.okMsg = 'Registro completado. Revisa tu correo para activar tu usuario.';
           form.reset();
         } else {
           this.error = res.error || 'Algo no ha ido bien.';
         }
       },
       error: (e) => {
-        if (e.status === 409) this.error = 'Ese email ya está registrado.';
-        else if (e.status === 422) this.error = 'Email o contraseña inválidos.';
-        else this.error = 'Error de servidor. Inténtalo más tarde.';
+        if (e.status === 409) this.error = 'Email ya registrado';
+        else if (e.status === 422) this.error = 'Email o contraseña inválidos';
+        else this.error = 'Error de servidor, inténtalo más tarde';
       },
       complete: () => (this.loading = false)
     });
@@ -175,7 +179,7 @@ openLogin(): void {
     const password = (form.elements.namedItem('loginPassword') as HTMLInputElement)?.value;
 
     if (!email || !password) {
-      this.error = 'Email y contraseña son obligatorios.';
+      this.error = 'Email y contraseña son obligatorios';
       return;
     }
 
@@ -194,7 +198,8 @@ openLogin(): void {
       error: (e) => {
         this.error = e.status === 401 ? 'Credenciales inválidas'
           : e.status === 422 ? 'Email/contraseña requeridos'
-            : 'Error de servidor. Inténtalo más tarde';
+            : e.status === 403 ? 'Debe activar su usuario desde el enlace que enviamos a su correo'
+              : 'Error de servidor, inténtalo más tarde';
       },
       complete: () => (this.loading = false),
     });
@@ -212,5 +217,47 @@ openLogin(): void {
     if (this.showRegisterForm) state = 'register';
     else if (this.showLoginForm) state = 'login';
     window.sessionStorage.setItem(SociosComponent.VIEW_STATE_KEY, state);
+  }
+
+  // === NUEVO: lee ?activation=... desde la URL sin usar Router, muestra mensaje y limpia el query param
+  private applyActivationMessageFromURL(): void {
+    if (!this.hasWindow) return;
+    const search = window.location.search || '';
+    if (!search.includes('activation=')) return;
+
+    const url = new URL(window.location.href);
+    const status = url.searchParams.get('activation');
+
+    if (!status) return;
+
+    const okMap: Record<string, string> = {
+      ok: 'Tu cuenta ha sido activada. Ya puedes iniciar sesión.'
+    };
+    const errMap: Record<string, string> = {
+      expired: 'El enlace ha caducado: solicita uno nuevo',
+      used: 'Ese enlace ya fue utilizado',
+      invalid: 'Enlace de activación inválido',
+      error: 'Ha ocurrido un error al activar la cuenta'
+    };
+
+    if (okMap[status]) {
+      this.okMsg = okMap[status];
+      this.error = '';
+    } else if (errMap[status]) {
+      this.error = errMap[status];
+      this.okMsg = '';
+    } else {
+      this.error = 'Enlace de activación inválido';
+      this.okMsg = '';
+    }
+
+    // Forzar vista login (para que el usuario acceda tras activar)
+    this.showLoginForm = true;
+    this.showRegisterForm = false;
+    this.persistViewState();
+
+    // Quitar el parámetro de la URL sin recargar ni navegar
+    url.searchParams.delete('activation');
+    window.history.replaceState({}, '', url.toString());
   }
 }

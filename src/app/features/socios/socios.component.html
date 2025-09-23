@@ -47,7 +47,7 @@
         {{ loading ? ('general.loading' | t) : ('socios.registerForm.submit' | t) }}
       </button>
 
-      <p *ngIf="error" class="error">{{ error }}</p>
+      <p *ngIf="error" class="intro title typography-section-title">{{ error }}</p>
     </form>
 
     <button class="text-link typography-body-text" type="button" (click)="openLogin()">
@@ -55,7 +55,7 @@
     </button>
     } @else {
     <!-- Sólo mensaje de OK tras registro correcto -->
-    <p class="ok title typography-section-title" role="status" aria-live="polite">{{ okMsg }}</p>
+    <p class="intro title typography-section-title" role="status" aria-live="polite">{{ okMsg }}</p>
     }
     }
   </div>
@@ -94,14 +94,14 @@
     </form>
 
     <!-- 👇 AVISO DE ERROR (mantiene formulario y link visibles) -->
-    <p *ngIf="error" class="error" role="alert" aria-live="assertive">{{ error }}</p>
+    <p *ngIf="error" class="intro title typography-section-title" role="alert" aria-live="assertive">{{ error }}</p>
 
     <button class="text-link typography-body-text" type="button" (click)="openRegister()">
       {{ 'socios.loginForm.notRegistered' | t }}
     </button>
     } @else {
     <!-- Sólo el saludo al hacer login correcto -->
-    <p class="title typography-section-title" role="status" aria-live="polite">{{ okMsg }}</p>
+    <p class="intro title typography-section-title" role="status" aria-live="polite">{{ okMsg }}</p>
     }
   </div>
   }
