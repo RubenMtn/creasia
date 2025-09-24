@@ -1,11 +1,17 @@
 <section class="content container">
-  <div class="intro">
+
+  <!-- <div class="intro">
     <h2 class="title typography-section-title">{{ 'socios.title' | t }}</h2>
-  </div>
+  </div> -->
 
   @if (!showLoginForm) {
   <div class="register-block">
     @if (!showRegisterForm) {
+
+    <div class="intro">
+      <h2 class="title typography-section-title">{{ 'socios.title' | t }}</h2>
+    </div>
+
     <p class="register-caption typography-body-text">{{ 'socios.caption' | t }}</p>
 
     <button class="cta typography-button-text" type="button" (click)="openRegister()">
@@ -43,7 +49,8 @@
         <span class="opt-in__label typography-body-text">{{ 'socios.registerForm.optIn' | t }}</span>
       </label>
 
-      <button class="submit typography-button-text" type="submit" [disabled]="loading">
+      <button class="submit typography-button-text" type="submit" [disabled]="loading"
+        [attr.aria-busy]="loading ? 'true' : null" [attr.aria-disabled]="loading ? 'true' : null">
         {{ loading ? ('general.loading' | t) : ('socios.registerForm.submit' | t) }}
       </button>
 
@@ -57,10 +64,11 @@
       {{ 'socios.registerForm.alreadyRegistered' | t }}
     </button>
     } @else {
-    <!-- OK traducido tras registro correcto -->
-    <p class="intro title typography-section-title" role="status" aria-live="polite">
+    <!-- Mensaje OK tras registro correcto (SIN enlace a login hasta activar) -->
+    <p class="intro title typography-section-title" role="status" aria-live="polite" style="white-space: pre-line">
       {{ okMsg | t }}
     </p>
+    <!-- (No mostramos el enlace "Ya estoy registrado" aquí) -->
     }
     }
   </div>
@@ -80,8 +88,15 @@
   <div class="login-block login-block--active">
     <p class="login-caption typography-body-text">{{ 'socios.loginCaption' | t }}</p>
 
-    @if (!okMsg) {
-    <form class="form form--login" (submit)="onLoginSubmit($event)" novalidate>
+    <!-- Si el OK es de activación, mostramos el mensaje y mantenemos el formulario -->
+    <p *ngIf="okMsg === 'socios.activation.ok'" class="intro title typography-section-title" role="status"
+      aria-live="polite" style="white-space: pre-line">
+      {{ okMsg | t }}
+    </p>
+
+    <!-- Formulario visible si no hay okMsg o si el okMsg es de activación -->
+    <form class="form form--login" (submit)="onLoginSubmit($event)" novalidate
+      *ngIf="!okMsg || okMsg === 'socios.activation.ok'">
       <label class="field">
         <span class="field__label typography-body-text">{{ 'socios.loginForm.email' | t }}</span>
         <input class="field__control" type="email" name="loginEmail" required autocomplete="email" />
@@ -93,12 +108,13 @@
           autocomplete="current-password" />
       </label>
 
-      <button class="submit typography-button-text" type="submit">
-        {{ 'socios.loginForm.submit' | t }}
+      <button class="submit typography-button-text" type="submit" [disabled]="loading"
+        [attr.aria-busy]="loading ? 'true' : null" [attr.aria-disabled]="loading ? 'true' : null">
+        {{ loading ? ('general.loading' | t) : ('socios.loginForm.submit' | t) }}
       </button>
     </form>
 
-    <!-- ERROR traducido -->
+    <!-- Error debajo del form -->
     <p *ngIf="error" class="intro title typography-section-title" role="alert" aria-live="assertive">
       {{ error | t }}
     </p>
@@ -106,14 +122,13 @@
     <button class="text-link typography-body-text" type="button" (click)="openRegister()">
       {{ 'socios.loginForm.notRegistered' | t }}
     </button>
-    } @else {
-    <!-- OK traducido + nombre -->
-    <p class="intro title typography-section-title" role="status" aria-live="polite">
+
+    <!-- Si el OK NO es de activación (p. ej., saludo tras login), mostramos solo el mensaje -->
+    <p *ngIf="okMsg && okMsg !== 'socios.activation.ok'" class="intro title typography-section-title" role="status"
+      aria-live="polite" style="white-space: pre-line">
       {{ okMsg | t }}<ng-container *ngIf="greetName"> {{ greetName }}</ng-container>
     </p>
-    }
   </div>
   }
-  &#8203;<br>
-  &#8203;<br>
+
 </section>

@@ -54,28 +54,31 @@
       "notRegistered": "No estoy registrado"
     },
     "register": {
-      "successCheckEmail": "Registro completado. Revisa tu correo para activar tu usuario."
+      "successCheckEmail": "Registro solicitado. Revisa tu correo para activar tu usuario"
     },
     "activation": {
-      "ok": "Tu cuenta ha sido activada. Ya puedes iniciar sesión.",
-      "expired": "El enlace ha caducado. Solicita uno nuevo.",
-      "used": "Ese enlace ya fue utilizado.",
-      "invalid": "Enlace de activación inválido.",
-      "error": "Ha ocurrido un error al activar la cuenta."
+      "ok": "Tu cuenta ha sido activada. Ya puedes iniciar sesión",
+      "expired": "El enlace ha caducado. Solicita uno nuevo",
+      "used": "Ese enlace ya fue utilizado",
+      "invalid": "Enlace de activación inválido",
+      "error": "Ha ocurrido un error al activar la cuenta"
     },
     "login": {
       "greeting": "¡Hola {{name}}!"
     },
     "errors": {
-      "invalidEmailOrPasswordMin8": "Email o contraseña inválidos (mín. 8).",
-      "invalidEmailOrPassword": "Email o contraseña inválidos.",
-      "emailAlreadyRegistered": "Ese email ya está registrado.",
-      "emailAndPasswordRequired": "Email y contraseña son obligatorios.",
-      "emailOrPasswordRequired": "Email/contraseña requeridos.",
-      "invalidCredentials": "Credenciales inválidas.",
-      "mustActivate": "Debe activar su usuario desde el enlace que enviamos a su correo.",
-      "server": "Error de servidor. Inténtalo más tarde.",
-      "generic": "Algo no ha ido bien."
+      "invalidEmailOrPasswordMin8": "Email o contraseña inválidos (mín. 8)",
+      "invalidEmailOrPassword": "Email o contraseña inválidos",
+      "emailAlreadyRegistered": "Ese email ya está registrado",
+      "emailAndPasswordRequired": "Email y contraseña son obligatorios",
+      "emailOrPasswordRequired": "Email/contraseña requeridos",
+      "invalidCredentials": "Credenciales inválidas",
+      "mustActivate": "Debe activar su usuario desde el enlace que enviamos a su correo",
+      "server": "Error de servidor. Inténtalo más tarde",
+      "generic": "Algo no ha ido bien",
+      "fillFields": "Rellene los campos",
+      "missingRequired": "Complete los campos obligatorios",
+      "invalidEmail": "El email no es válido"
     },
     "general": {
       "loading": "Cargando…"

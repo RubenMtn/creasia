@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { SociosService } from '../../services/socios.service';
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TPipe } from '../../shared/i18n/t.pipe';
 
@@ -11,9 +11,22 @@ import { TPipe } from '../../shared/i18n/t.pipe';
   templateUrl: './socios.component.html',
   styleUrl: './socios.component.scss'
 })
-export class SociosComponent implements OnInit {
+export class SociosComponent implements OnInit, OnDestroy {
   private static readonly VIEW_STATE_KEY = 'creasia:sociosView';
+  private static readonly ACTIVATION_KEY = 'creasia:activation';
+  private static readonly PENDING_UID_KEY = 'creasia:pendingUid';
   private readonly hasWindow = typeof window !== 'undefined';
+
+  // ✅ NUEVO: base para llamadas del polling (evita ir a localhost:4200 en dev)
+  private readonly apiBase = (() => {
+    try {
+      const host = window.location.hostname;
+      if (host === 'localhost' || host === '127.0.0.1') return 'https://creasia.es';
+      return ''; // en prod usamos ruta relativa /api/...
+    } catch {
+      return '';
+    }
+  })();
 
   showRegisterForm = false;
   showLoginForm = false;
@@ -25,6 +38,22 @@ export class SociosComponent implements OnInit {
   okMsg = '';
   // Nombre opcional para saludar tras login
   greetName: string | null = null;
+
+  // --- Polling activación (para activación desde otro dispositivo) ---
+  private activationTimer: any = null;
+  private activationDeadline = 0;
+  private pendingUid: number | null = null;
+  private readonly pollEveryMs = 5000;          // cada 5s
+  private readonly pollMaxMs   = 2 * 60 * 1000; // máx 2 minutos
+
+  // Listeners como propiedades flecha para poder quitarlos en ngOnDestroy
+  private onStorage = (e: StorageEvent) => {
+    if (!e.key || e.key !== SociosComponent.ACTIVATION_KEY) return;
+    this.applyActivationMessageFromStorage();
+  };
+  private onFocus = () => {
+    this.applyActivationMessageFromStorage();
+  };
 
   ngOnInit(): void {
     if (!this.hasWindow) return;
@@ -46,8 +75,34 @@ export class SociosComponent implements OnInit {
       this.persistViewState();
     }
 
-    // Mensajes por ?activation=... sin Router
+    // 1) Mensajes por ?activation=... (si venimos redirigidos)
     this.applyActivationMessageFromURL();
+
+    // 2) Suscripción a cambios en localStorage (si se activó en otra pestaña del MISMO navegador)
+    window.addEventListener('storage', this.onStorage);
+    window.addEventListener('focus', this.onFocus);
+
+    // 3) Reanudar polling si había un UID pendiente en esta sesión
+    const pending = window.sessionStorage.getItem(SociosComponent.PENDING_UID_KEY);
+    if (pending) {
+      const uid = parseInt(pending, 10);
+      if (!Number.isNaN(uid) && uid > 0) {
+        this.pendingUid = uid;
+        this.startActivationPolling();
+      } else {
+        window.sessionStorage.removeItem(SociosComponent.PENDING_UID_KEY);
+      }
+    }
+
+    // 4) Por si ya existe la marca (activado hace un momento en otra pestaña)
+    this.applyActivationMessageFromStorage();
+  }
+
+  ngOnDestroy(): void {
+    if (!this.hasWindow) return;
+    window.removeEventListener('storage', this.onStorage);
+    window.removeEventListener('focus', this.onFocus);
+    this.stopActivationPolling();
   }
 
   openRegister(): void {
@@ -118,18 +173,44 @@ export class SociosComponent implements OnInit {
     return { a1, a2 };
   }
 
+  private isValidEmail(email: string): boolean {
+    if (!email) return false;
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i;
+    return re.test(email);
+  }
+
   onRegisterSubmit(event: Event): void {
     event.preventDefault();
     this.clearMessages();
+    this.stopActivationPolling(); // por si hubiera uno pendiente de un intento anterior
 
     const form = event.target as HTMLFormElement;
     const nombre = (form.elements.namedItem('registerName') as HTMLInputElement)?.value.trim() || '';
     const apesRaw = (form.elements.namedItem('registerSurname') as HTMLInputElement)?.value || '';
-    const email = (form.elements.namedItem('registerEmail') as HTMLInputElement)?.value.trim();
-    const password = (form.elements.namedItem('registerPassword') as HTMLInputElement)?.value;
+    const email = (form.elements.namedItem('registerEmail') as HTMLInputElement)?.value.trim() || '';
+    const password = (form.elements.namedItem('registerPassword') as HTMLInputElement)?.value || '';
     const optIn = (form.elements.namedItem('registerOptIn') as HTMLInputElement)?.checked ?? false;
 
-    if (!email || !password || password.length < 8) {
+    // 1) Nada relleno
+    if (!nombre && !email && !password) {
+      this.error = 'socios.errors.fillFields';
+      return;
+    }
+
+    // 2) Falta algún obligatorio (apellido es opcional)
+    if (!nombre || !email || !password) {
+      this.error = 'socios.errors.missingRequired';
+      return;
+    }
+
+    // 3) Email no válido
+    if (!this.isValidEmail(email)) {
+      this.error = 'socios.errors.invalidEmail';
+      return;
+    }
+
+    // 4) Password corta
+    if (password.length < 8) {
       this.error = 'socios.errors.invalidEmailOrPasswordMin8';
       return;
     }
@@ -138,11 +219,20 @@ export class SociosComponent implements OnInit {
 
     this.loading = true;
     this.socios.register(email, password, nombre, apellido1, apellido2, !!optIn).subscribe({
-      next: (res) => {
+      next: (res: any) => {
         if (res.ok) {
           this.okMsg = 'socios.register.successCheckEmail';
           this.greetName = null;
-          form.reset();
+
+          // Guardar UID y empezar polling si el backend lo devuelve
+          const uidVal = res?.uid;
+          if (typeof uidVal === 'number' && uidVal > 0) {
+            this.pendingUid = uidVal;
+            window.sessionStorage.setItem(SociosComponent.PENDING_UID_KEY, String(uidVal));
+            this.startActivationPolling();
+          }
+
+          (form as HTMLFormElement).reset();
         } else {
           this.error = res.error || 'socios.errors.generic';
         }
@@ -151,6 +241,7 @@ export class SociosComponent implements OnInit {
         if (e.status === 409) this.error = 'socios.errors.emailAlreadyRegistered';
         else if (e.status === 422) this.error = 'socios.errors.invalidEmailOrPassword';
         else this.error = 'socios.errors.server';
+        this.loading = false; // reactivar botón tras error
       },
       complete: () => (this.loading = false)
     });
@@ -171,7 +262,7 @@ export class SociosComponent implements OnInit {
 
     this.loading = true;
     this.socios.login(email, password).subscribe({
-      next: (res) => {
+      next: (res: any) => {
         if (res.ok && res.socio) {
           const nombre = (res.socio.nombre || '').trim();
           this.okMsg = 'socios.login.greeting';
@@ -187,6 +278,7 @@ export class SociosComponent implements OnInit {
           : e.status === 422 ? 'socios.errors.emailOrPasswordRequired'
           : e.status === 403 ? 'socios.errors.mustActivate'
           : 'socios.errors.server';
+        this.loading = false;
       },
       complete: () => (this.loading = false),
     });
@@ -219,9 +311,7 @@ export class SociosComponent implements OnInit {
     const status = url.searchParams.get('activation');
     if (!status) return;
 
-    const okMap: Record<string, string> = {
-      ok: 'socios.activation.ok'
-    };
+    const okMap: Record<string, string> = { ok: 'socios.activation.ok' };
     const errMap: Record<string, string> = {
       expired: 'socios.activation.expired',
       used: 'socios.activation.used',
@@ -233,17 +323,20 @@ export class SociosComponent implements OnInit {
       this.okMsg = okMap[status];
       this.error = '';
       this.greetName = null;
+      this.stopActivationPolling(); // ya está activado
     } else if (errMap[status]) {
       this.error = errMap[status];
       this.okMsg = '';
       this.greetName = null;
+      this.stopActivationPolling();
     } else {
       this.error = 'socios.activation.invalid';
       this.okMsg = '';
       this.greetName = null;
+      this.stopActivationPolling();
     }
 
-    // Forzar vista login (tras activar)
+    // Forzar vista login (tras activar o intentar activar)
     this.showLoginForm = true;
     this.showRegisterForm = false;
     this.persistViewState();
@@ -251,5 +344,84 @@ export class SociosComponent implements OnInit {
     // Quitar el parámetro sin recargar
     url.searchParams.delete('activation');
     window.history.replaceState({}, '', url.toString());
+  }
+
+  // Detecta activación si se hizo en otra pestaña (misma origin) mediante localStorage
+  private applyActivationMessageFromStorage(): void {
+    if (!this.hasWindow) return;
+    const status = window.localStorage.getItem(SociosComponent.ACTIVATION_KEY);
+    if (!status) return;
+
+    if (status === 'ok') {
+      this.okMsg = 'socios.activation.ok';
+      this.error = '';
+      this.greetName = null;
+      this.showLoginForm = true;
+      this.showRegisterForm = false;
+      this.persistViewState();
+      this.stopActivationPolling();
+    } else if (['expired','used','invalid','error'].includes(status)) {
+      this.error = `socios.activation.${status}`;
+      this.okMsg = '';
+      this.greetName = null;
+      this.showLoginForm = true;
+      this.showRegisterForm = false;
+      this.persistViewState();
+      this.stopActivationPolling();
+    }
+
+    // Consumir la marca para no repetir
+    window.localStorage.removeItem(SociosComponent.ACTIVATION_KEY);
+  }
+
+  // === Polling al backend para detectar activación aunque sea desde OTRO dispositivo ===
+  private startActivationPolling(): void {
+    if (!this.hasWindow) return;
+    if (!this.pendingUid || this.activationTimer) return;
+
+    this.activationDeadline = Date.now() + this.pollMaxMs;
+
+    const poll = () => {
+      if (!this.pendingUid || Date.now() > this.activationDeadline) {
+        this.stopActivationPolling();
+        return;
+      }
+
+      // ✅ Aquí forzamos el host correcto en dev (localhost -> creasia.es)
+      const url = `${this.apiBase}/api/socios_activation_status.php?uid=${this.pendingUid}`;
+
+      fetch(url, {
+        method: 'GET',
+        credentials: 'omit',
+        headers: { 'Accept': 'application/json' }
+      })
+      .then(r => r.ok ? r.json() : null)
+      .then((j: any) => {
+        if (j && j.ok && j.activated === true) {
+          this.okMsg = 'socios.activation.ok';
+          this.error = '';
+          this.greetName = null;
+          this.showLoginForm = true;
+          this.showRegisterForm = false;
+          this.persistViewState();
+          this.stopActivationPolling();
+        }
+      })
+      .catch(() => { /* silencioso */ });
+    };
+
+    poll(); // primer intento inmediato
+    this.activationTimer = window.setInterval(poll, this.pollEveryMs);
+  }
+
+  private stopActivationPolling(): void {
+    if (this.activationTimer) {
+      window.clearInterval(this.activationTimer);
+      this.activationTimer = null;
+    }
+    this.pendingUid = null;
+    if (this.hasWindow) {
+      window.sessionStorage.removeItem(SociosComponent.PENDING_UID_KEY);
+    }
   }
 }

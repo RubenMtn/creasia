@@ -55,28 +55,31 @@
       "notRegistered": "I’m not registered"
     },
     "register": {
-      "successCheckEmail": "Registration complete. Check your email to activate your account."
+      "successCheckEmail": "Registration requested.\n\nCheck your email to activate your account."
     },
     "activation": {
-      "ok": "Your account has been activated. You can now sign in.",
-      "expired": "The link has expired. Please request a new one.",
-      "used": "That link has already been used.",
-      "invalid": "Invalid activation link.",
-      "error": "An error occurred while activating the account."
+      "ok": "Your account has been activated. You can now sign in",
+      "expired": "The link has expired. Please request a new one",
+      "used": "That link has already been used",
+      "invalid": "Invalid activation link",
+      "error": "An error occurred while activating the account"
     },
     "login": {
       "greeting": "Hello {{name}}!"
     },
     "errors": {
-      "invalidEmailOrPasswordMin8": "Invalid email or password (min. 8).",
-      "invalidEmailOrPassword": "Invalid email or password.",
-      "emailAlreadyRegistered": "That email is already registered.",
-      "emailAndPasswordRequired": "Email and password are required.",
-      "emailOrPasswordRequired": "Email/password required.",
-      "invalidCredentials": "Invalid credentials.",
-      "mustActivate": "You must activate your account using the link we sent to your email.",
-      "server": "Server error. Please try again later.",
-      "generic": "Something went wrong."
+      "invalidEmailOrPasswordMin8": "Invalid email or password (min. 8)",
+      "invalidEmailOrPassword": "Invalid email or password",
+      "emailAlreadyRegistered": "That email is already registered",
+      "emailAndPasswordRequired": "Email and password are required",
+      "emailOrPasswordRequired": "Email/password required",
+      "invalidCredentials": "Invalid credentials",
+      "mustActivate": "You must activate your account using the link we sent to your email",
+      "server": "Server error. Please try again later",
+      "generic": "Something went wrong",
+      "fillFields": "Please fill in the fields",
+      "missingRequired": "Please complete all required fields",
+      "invalidEmail": "Email is not valid"
     },
     "general": {
       "loading": "Loading…"

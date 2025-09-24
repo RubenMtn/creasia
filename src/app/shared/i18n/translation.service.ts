@@ -67,7 +67,7 @@ const ES_FALLBACK: Dict = {
       notRegistered: 'No estoy registrado'
     },
     register: {
-      successCheckEmail: 'Registro completado. Revisa tu correo para activar tu usuario.'
+      successCheckEmail: 'Registro solicitado.\n\nRevisa tu correo para activar tu usuario.'
     },
     activation: {
       ok: 'Tu cuenta ha sido activada. Ya puedes iniciar sesión',
@@ -88,7 +88,10 @@ const ES_FALLBACK: Dict = {
       invalidCredentials: 'Credenciales inválidas',
       mustActivate: 'Debe activar su usuario desde el enlace que enviamos a su correo',
       server: 'Error de servidor. Inténtalo más tarde',
-      generic: 'Algo no ha ido bien'
+      generic: 'Algo no ha ido bien',
+      fillFields: 'Rellene los campos',
+      missingRequired: 'Complete los campos obligatorios',
+      invalidEmail: 'El email no es válido'
     },
     general: {
       loading: 'Cargando…'

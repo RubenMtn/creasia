@@ -55,28 +55,31 @@
       "notRegistered": "我尚未注册"
     },
     "register": {
-      "successCheckEmail": "注册完成。请前往邮箱激活账户。"
+      "successCheckEmail": "注册已提交。\n\n请查收邮件以激活账户"
     },
     "activation": {
-      "ok": "你的账户已激活，现在可以登录。",
-      "expired": "链接已过期。请重新申请。",
-      "used": "该链接已被使用。",
-      "invalid": "无效的激活链接。",
-      "error": "激活账户时发生错误。"
+      "ok": "你的账户已激活，现在可以登录",
+      "expired": "链接已过期。请重新申请",
+      "used": "该链接已被使用",
+      "invalid": "无效的激活链接",
+      "error": "激活账户时发生错误"
     },
     "login": {
       "greeting": "您好，{{name}}！"
     },
     "errors": {
-      "invalidEmailOrPasswordMin8": "邮箱或密码无效（至少 8 位）。",
-      "invalidEmailOrPassword": "邮箱或密码无效。",
-      "emailAlreadyRegistered": "该邮箱已被注册。",
-      "emailAndPasswordRequired": "邮箱和密码为必填项。",
-      "emailOrPasswordRequired": "需要邮箱/密码。",
-      "invalidCredentials": "凭据无效。",
-      "mustActivate": "请通过我们发送到你邮箱的链接激活账户。",
-      "server": "服务器错误。请稍后再试。",
-      "generic": "发生了一些错误。"
+      "invalidEmailOrPasswordMin8": "邮箱或密码无效（至少 8 位）",
+      "invalidEmailOrPassword": "邮箱或密码无效",
+      "emailAlreadyRegistered": "该邮箱已被注册",
+      "emailAndPasswordRequired": "邮箱和密码为必填项",
+      "emailOrPasswordRequired": "需要邮箱/密码",
+      "invalidCredentials": "凭据无效",
+      "mustActivate": "请通过我们发送到你邮箱的链接激活账户",
+      "server": "服务器错误。请稍后再试",
+      "generic": "发生了一些错误",
+      "fillFields": "请填写各项内容",
+      "missingRequired": "请完成所有必填项",
+      "invalidEmail": "邮箱格式无效"
     },
     "general": {
       "loading": "加载中…"
