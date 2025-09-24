@@ -3,6 +3,8 @@ import { SociosService } from '../../services/socios.service';
 import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TPipe } from '../../shared/i18n/t.pipe';
+import { Router } from '@angular/router';
+
 
 @Component({
   selector: 'app-socios',
@@ -16,6 +18,9 @@ export class SociosComponent implements OnInit, OnDestroy {
   private static readonly ACTIVATION_KEY = 'creasia:activation';
   private static readonly PENDING_UID_KEY = 'creasia:pendingUid';
   private readonly hasWindow = typeof window !== 'undefined';
+  private router = inject(Router);
+  private redirectTimer: any = null;
+
 
   // ✅ NUEVO: base para llamadas del polling (evita ir a localhost:4200 en dev)
   private readonly apiBase = (() => {
@@ -44,7 +49,7 @@ export class SociosComponent implements OnInit, OnDestroy {
   private activationDeadline = 0;
   private pendingUid: number | null = null;
   private readonly pollEveryMs = 5000;          // cada 5s
-  private readonly pollMaxMs   = 2 * 60 * 1000; // máx 2 minutos
+  private readonly pollMaxMs = 2 * 60 * 1000; // máx 2 minutos
 
   // Listeners como propiedades flecha para poder quitarlos en ngOnDestroy
   private onStorage = (e: StorageEvent) => {
@@ -103,6 +108,11 @@ export class SociosComponent implements OnInit, OnDestroy {
     window.removeEventListener('storage', this.onStorage);
     window.removeEventListener('focus', this.onFocus);
     this.stopActivationPolling();
+
+    if (this.redirectTimer) {
+      clearTimeout(this.redirectTimer);
+      this.redirectTimer = null;
+    }
   }
 
   openRegister(): void {
@@ -130,9 +140,9 @@ export class SociosComponent implements OnInit, OnDestroy {
     const tokens = text.split(' ');
     const low = (s: string) => s.toLowerCase();
     const CONNECTORS = new Set(['de', 'del', 'van', 'von', 'da', 'do', 'dos', 'das', 'di', 'du']);
-    const ARTICLES   = new Set(['la', 'las', 'los', 'lo', 'el', 'le', 'der', 'den', 'de', 'del', 'da', 'do', 'dos', 'das']);
+    const ARTICLES = new Set(['la', 'las', 'los', 'lo', 'el', 'le', 'der', 'den', 'de', 'del', 'da', 'do', 'dos', 'das']);
     const isConn = (t?: string) => !!t && CONNECTORS.has(low(t));
-    const isArt  = (t?: string) => !!t && ARTICLES.has(low(t));
+    const isArt = (t?: string) => !!t && ARTICLES.has(low(t));
 
     const h = tokens.findIndex(t => t.includes('-'));
     if (h !== -1 && tokens.length > 1) {
@@ -267,17 +277,33 @@ export class SociosComponent implements OnInit, OnDestroy {
           const nombre = (res.socio.nombre || '').trim();
           this.okMsg = 'socios.login.greeting';
           this.greetName = nombre || res.socio.email; // fallback
+
+          // 🔁 por si el usuario hace doble login muy rápido
+          if (this.redirectTimer) {
+            clearTimeout(this.redirectTimer);
+            this.redirectTimer = null;
+          }
+
+          // ⏳ Redirige al home a los 2s
+          this.redirectTimer = setTimeout(() => {
+            // Con Router (recomendado):
+            this.router.navigateByUrl('/');
+
+            // Si por algún motivo no hay routing configurado:
+            // window.location.href = '/';
+          }, 2000);
         } else {
           this.error = res.error || 'socios.errors.invalidCredentials';
           this.greetName = null;
         }
+
       },
       error: (e) => {
         this.error =
           e.status === 401 ? 'socios.errors.invalidCredentials'
-          : e.status === 422 ? 'socios.errors.emailOrPasswordRequired'
-          : e.status === 403 ? 'socios.errors.mustActivate'
-          : 'socios.errors.server';
+            : e.status === 422 ? 'socios.errors.emailOrPasswordRequired'
+              : e.status === 403 ? 'socios.errors.mustActivate'
+                : 'socios.errors.server';
         this.loading = false;
       },
       complete: () => (this.loading = false),
@@ -360,7 +386,7 @@ export class SociosComponent implements OnInit, OnDestroy {
       this.showRegisterForm = false;
       this.persistViewState();
       this.stopActivationPolling();
-    } else if (['expired','used','invalid','error'].includes(status)) {
+    } else if (['expired', 'used', 'invalid', 'error'].includes(status)) {
       this.error = `socios.activation.${status}`;
       this.okMsg = '';
       this.greetName = null;
@@ -395,19 +421,19 @@ export class SociosComponent implements OnInit, OnDestroy {
         credentials: 'omit',
         headers: { 'Accept': 'application/json' }
       })
-      .then(r => r.ok ? r.json() : null)
-      .then((j: any) => {
-        if (j && j.ok && j.activated === true) {
-          this.okMsg = 'socios.activation.ok';
-          this.error = '';
-          this.greetName = null;
-          this.showLoginForm = true;
-          this.showRegisterForm = false;
-          this.persistViewState();
-          this.stopActivationPolling();
-        }
-      })
-      .catch(() => { /* silencioso */ });
+        .then(r => r.ok ? r.json() : null)
+        .then((j: any) => {
+          if (j && j.ok && j.activated === true) {
+            this.okMsg = 'socios.activation.ok';
+            this.error = '';
+            this.greetName = null;
+            this.showLoginForm = true;
+            this.showRegisterForm = false;
+            this.persistViewState();
+            this.stopActivationPolling();
+          }
+        })
+        .catch(() => { /* silencioso */ });
     };
 
     poll(); // primer intento inmediato

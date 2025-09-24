@@ -65,7 +65,7 @@
       "error": "激活账户时发生错误"
     },
     "login": {
-      "greeting": "您好，{{name}}！"
+      "greeting": "您好，"
     },
     "errors": {
       "invalidEmailOrPasswordMin8": "邮箱或密码无效（至少 8 位）",

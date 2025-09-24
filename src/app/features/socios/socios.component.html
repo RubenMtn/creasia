@@ -115,9 +115,10 @@
       {{ error | t }}
     </p>
 
-    <button class="text-link typography-body-text" type="button" (click)="openRegister()">
+    <button class="text-link typography-body-text" type="button" (click)="openRegister()" *ngIf="!okMsg && !loading">
       {{ 'socios.loginForm.notRegistered' | t }}
     </button>
+
 
     <!-- Si el OK NO es de activación (p. ej., saludo tras login), mostramos solo el mensaje -->
     <p *ngIf="okMsg && okMsg !== 'socios.activation.ok'" class="intro title typography-section-title" role="status"

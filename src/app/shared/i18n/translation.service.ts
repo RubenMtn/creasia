@@ -77,7 +77,7 @@ const ES_FALLBACK: Dict = {
       error: 'Ha ocurrido un error al activar la cuenta'
     },
     login: {
-      greeting: '¡Hola {{name}}!'
+      greeting: 'Hola '
     },
     errors: {
       invalidEmailOrPasswordMin8: 'Email o contraseña inválidos (mín. 8)',
