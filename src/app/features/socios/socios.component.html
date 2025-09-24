@@ -1,9 +1,5 @@
 <section class="content container">
 
-  <!-- <div class="intro">
-    <h2 class="title typography-section-title">{{ 'socios.title' | t }}</h2>
-  </div> -->
-
   @if (!showLoginForm) {
   <div class="register-block">
     @if (!showRegisterForm) {
@@ -18,7 +14,7 @@
       {{ 'socios.actions.register' | t }}
     </button>
     } @else {
-    <p class="register-caption typography-body-text">{{ 'socios.caption' | t }}</p>
+    <!-- <p class="register-caption typography-body-text">{{ 'socios.caption' | t }}</p> -->
 
     @if (!okMsg) {
     <form class="form" (submit)="onRegisterSubmit($event)" novalidate>
@@ -86,7 +82,7 @@
 
   @if (showLoginForm) {
   <div class="login-block login-block--active">
-    <p class="login-caption typography-body-text">{{ 'socios.loginCaption' | t }}</p>
+    <!-- <p class="login-caption typography-body-text">{{ 'socios.loginCaption' | t }}</p> -->
 
     <!-- Si el OK es de activación, mostramos el mensaje y mantenemos el formulario -->
     <p *ngIf="okMsg === 'socios.activation.ok'" class="intro title typography-section-title" role="status"
