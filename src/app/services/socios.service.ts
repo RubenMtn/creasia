@@ -12,17 +12,19 @@ export interface LoginResponse {
 export class SociosService {
   private http = inject(HttpClient);
   private API = 'https://creasia.es/api';
+  //private base = '/api'; // ajusta si usas dominio absoluto en dev
 
   // ⬇️ Ahora acepta nombre/apellidos/opt-in, pero sigue siendo compatible
   register(
     email: string,
     password: string,
-    nombre = '',
-    apellido1 = '',
+    nombre : string,
+    apellido1 : string, 
     apellido2: string | null = null,
-    quiere_mailing = false
+    quiere_mailing: boolean,
+    lang: 'es' | 'en' | 'zh' 
   ) {
-    const body = { email, password, nombre, apellido1, apellido2, quiere_mailing };
+    const body = { email, password, nombre, apellido1, apellido2, quiere_mailing, lang };
     console.log("email: " + email, "pass: " + password, "pass: " + nombre, "ap1: " + apellido1, "ap2: " + apellido2, "quieremail: " + quiere_mailing);
     return this.http.post<RegisterResponse>(`${this.API}/socios_register.php`, body);
   }

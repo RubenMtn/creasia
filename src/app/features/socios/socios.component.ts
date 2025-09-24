@@ -1,4 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint no-empty: ["error", { "allowEmptyCatch": true }] */
+import { TranslationService } from '../../shared/i18n/translation.service'
 import { SociosService } from '../../services/socios.service';
 import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -18,6 +20,7 @@ export class SociosComponent implements OnInit, OnDestroy {
   private static readonly ACTIVATION_KEY = 'creasia:activation';
   private static readonly PENDING_UID_KEY = 'creasia:pendingUid';
   private readonly hasWindow = typeof window !== 'undefined';
+  private readonly i18n = inject(TranslationService);
   private router = inject(Router);
   private redirectTimer: any = null;
 
@@ -200,6 +203,7 @@ export class SociosComponent implements OnInit, OnDestroy {
     const email = (form.elements.namedItem('registerEmail') as HTMLInputElement)?.value.trim() || '';
     const password = (form.elements.namedItem('registerPassword') as HTMLInputElement)?.value || '';
     const optIn = (form.elements.namedItem('registerOptIn') as HTMLInputElement)?.checked ?? false;
+    const lang = (localStorage.getItem('creasia:lang') ?? 'es').slice(0, 2) as 'es' | 'en' | 'zh';
 
     // 1) Nada relleno
     if (!nombre && !email && !password) {
@@ -228,7 +232,7 @@ export class SociosComponent implements OnInit, OnDestroy {
     const { a1: apellido1, a2: apellido2 } = this.splitApellidos(apesRaw);
 
     this.loading = true;
-    this.socios.register(email, password, nombre, apellido1, apellido2, !!optIn).subscribe({
+    this.socios.register(email, password, nombre, apellido1, apellido2, !!optIn, lang).subscribe({
       next: (res: any) => {
         if (res.ok) {
           this.okMsg = 'socios.register.successCheckEmail';
@@ -284,14 +288,14 @@ export class SociosComponent implements OnInit, OnDestroy {
             this.redirectTimer = null;
           }
 
-          // ⏳ Redirige al home a los 2s
+          // ⏳ Redirige al home a los 2.5s
           this.redirectTimer = setTimeout(() => {
             // Con Router (recomendado):
             this.router.navigateByUrl('/');
 
             // Si por algún motivo no hay routing configurado:
             // window.location.href = '/';
-          }, 2000);
+          }, 2500);
         } else {
           this.error = res.error || 'socios.errors.invalidCredentials';
           this.greetName = null;
@@ -330,47 +334,69 @@ export class SociosComponent implements OnInit, OnDestroy {
     this.greetName = null;
   }
 
-  // Lee ?activation=... desde la URL sin Router, pone claves i18n y limpia el query param
-  private applyActivationMessageFromURL(): void {
-    if (!this.hasWindow) return;
-    const url = new URL(window.location.href);
-    const status = url.searchParams.get('activation');
-    if (!status) return;
+ // Lee ?lang=... SIEMPRE, y opcionalmente ?activation=...
+private applyActivationMessageFromURL(): void {
+  if (!this.hasWindow) return;
+  const url = new URL(window.location.href);
 
-    const okMap: Record<string, string> = { ok: 'socios.activation.ok' };
-    const errMap: Record<string, string> = {
-      expired: 'socios.activation.expired',
-      used: 'socios.activation.used',
-      invalid: 'socios.activation.invalid',
-      error: 'socios.activation.error'
-    };
-
-    if (okMap[status]) {
-      this.okMsg = okMap[status];
-      this.error = '';
-      this.greetName = null;
-      this.stopActivationPolling(); // ya está activado
-    } else if (errMap[status]) {
-      this.error = errMap[status];
-      this.okMsg = '';
-      this.greetName = null;
-      this.stopActivationPolling();
-    } else {
-      this.error = 'socios.activation.invalid';
-      this.okMsg = '';
-      this.greetName = null;
-      this.stopActivationPolling();
-    }
-
-    // Forzar vista login (tras activar o intentar activar)
-    this.showLoginForm = true;
-    this.showRegisterForm = false;
-    this.persistViewState();
-
-    // Quitar el parámetro sin recargar
-    url.searchParams.delete('activation');
-    window.history.replaceState({}, '', url.toString());
+  // 1) Aplicar idioma si viene por query (independiente de activation)
+  const langParam = url.searchParams.get('lang');
+  if (langParam) {
+    const lang2 = (langParam.slice(0, 2).toLowerCase() as 'es' | 'en' | 'zh');
+    // setLang es async; no bloqueamos la UI
+    try { localStorage.setItem('creasia:lang', lang2); } catch {}
+    // si tienes TranslationService inyectado:
+    //   private readonly i18n = inject(TranslationService);
+    void this.i18n.setLang(lang2);
   }
+
+  // 2) Si no hay activation, solo limpia el parámetro lang y sal
+  const status = url.searchParams.get('activation');
+  if (!status) {
+    if (langParam) {
+      url.searchParams.delete('lang');
+      window.history.replaceState({}, '', url.toString());
+    }
+    return;
+  }
+
+  // 3) Procesar activation como ya hacías
+  const okMap: Record<string, string> = { ok: 'socios.activation.ok' };
+  const errMap: Record<string, string> = {
+    expired: 'socios.activation.expired',
+    used: 'socios.activation.used',
+    invalid: 'socios.activation.invalid',
+    error: 'socios.activation.error'
+  };
+
+  if (okMap[status]) {
+    this.okMsg = okMap[status];
+    this.error = '';
+    this.greetName = null;
+    this.stopActivationPolling();
+  } else if (errMap[status]) {
+    this.error = errMap[status];
+    this.okMsg = '';
+    this.greetName = null;
+    this.stopActivationPolling();
+  } else {
+    this.error = 'socios.activation.invalid';
+    this.okMsg = '';
+    this.greetName = null;
+    this.stopActivationPolling();
+  }
+
+  // Forzar vista login (como ya hacías)
+  this.showLoginForm = true;
+  this.showRegisterForm = false;
+  this.persistViewState();
+
+  // 4) Limpia ambos params de la URL
+  url.searchParams.delete('activation');
+  if (langParam) url.searchParams.delete('lang');
+  window.history.replaceState({}, '', url.toString());
+}
+
 
   // Detecta activación si se hizo en otra pestaña (misma origin) mediante localStorage
   private applyActivationMessageFromStorage(): void {

@@ -1,6 +1,7 @@
-import { Component, ElementRef, HostListener, inject } from '@angular/core';
+import { Component, ElementRef, HostListener, OnDestroy, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Lang, TranslationService } from './translation.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-lang-switcher',
@@ -9,20 +10,33 @@ import { Lang, TranslationService } from './translation.service';
   templateUrl: './lang-switcher.component.html',
   styleUrls: ['./lang-switcher.component.scss']
 })
-export class LangSwitcherComponent {
+export class LangSwitcherComponent implements OnInit, OnDestroy {
   private readonly i18n = inject(TranslationService);
   private readonly host = inject(ElementRef<HTMLElement>);
+  private sub?: Subscription;
 
   private autoCloseTimer?: ReturnType<typeof setTimeout>;
 
   readonly langs: readonly { code: Lang; label: string }[] = [
-    { code: 'es', label: 'Espanol' },
+    { code: 'es', label: 'Español' },  // opcional: acento
     { code: 'en', label: 'English' },
-    { code: 'zh', label: 'Mandarin' },
+    { code: 'zh', label: '中文' }       // opcional: mostrar en chino
   ] as const;
 
   current: Lang = this.i18n.lang;
   open = false;
+
+  ngOnInit(): void {
+    // 🔹 Mantener sync cuando el idioma cambia desde fuera
+    this.sub = this.i18n.langChanges.subscribe((l) => {
+      this.current = l;
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.sub?.unsubscribe();
+    this.clearAutoClose();
+  }
 
   get otherLangs(): readonly { code: Lang; label: string }[] {
     return this.langs.filter((lang) => lang.code !== this.current) as readonly {
@@ -34,16 +48,13 @@ export class LangSwitcherComponent {
   toggle(event?: Event): void {
     event?.stopPropagation();
     this.open = !this.open;
-    if (this.open) {
-      this.startAutoClose();
-    } else {
-      this.clearAutoClose();
-    }
+    if (this.open) this.startAutoClose();
+    else this.clearAutoClose();
   }
 
   async onChoose(code: Lang, event: Event): Promise<void> {
     event.stopPropagation();
-    this.current = code;
+    // Ya no seteamos current aquí, lo hará la suscripción
     await this.i18n.setLang(code);
     this.open = false;
     this.clearAutoClose();
@@ -55,10 +66,7 @@ export class LangSwitcherComponent {
 
   onFlagError(event: Event, code: Lang): void {
     const img = event.target as HTMLImageElement | null;
-    if (!img) {
-      return;
-    }
-
+    if (!img) return;
     const currentSrc = img.getAttribute('src') ?? '';
     if (currentSrc.endsWith('.svg')) {
       img.src = `assets/images/flags/${code}.png`;
@@ -76,9 +84,7 @@ export class LangSwitcherComponent {
   private startAutoClose(delayMs = 7000): void {
     this.clearAutoClose();
     this.autoCloseTimer = setTimeout(() => {
-      if (this.open) {
-        this.open = false;
-      }
+      if (this.open) this.open = false;
       this.clearAutoClose();
     }, delayMs);
   }

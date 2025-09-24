@@ -1,4 +1,5 @@
-﻿import { Injectable, PLATFORM_ID, inject } from '@angular/core';
+﻿/* eslint no-empty: ["error", { "allowEmptyCatch": true }] */
+import { Injectable, PLATFORM_ID, inject } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, firstValueFrom } from 'rxjs';
@@ -9,6 +10,9 @@ export interface Dict {
   [key: string]: string | Dict;
 }
 
+/* -------------------- FALLBACK EN ESPAÑOL -------------------- */
+/* Si no existe assets/i18n/es.json o mientras carga, usamos esto.
+   Puedes moverlo a un fichero separado si prefieres. */
 const ES_FALLBACK: Dict = {
   header: {
     brand: 'CREASIA',
@@ -43,6 +47,7 @@ const ES_FALLBACK: Dict = {
     title: 'Un puente vivo entre España y China',
     caption: 'Somos una asociación creada por personas que han vivido en China y saben el vértigo de empezar de cero. Aquí lo que importa eres tú: tu curiosidad, tus ganas de aprender y conectar. Nos une construir un puente cultural y profesional, sin importar edad, origen, identidad u orientación.'
   },
+
   socios: {
     title: 'Ventajas con Creasia y mucho más',
     caption: 'Regístrate con tu email y una contraseña para obtener todos los beneficios que proporciona nuestra asociación: información exclusiva, descuentos, invitaciones a eventos y mucho más...',
@@ -97,9 +102,11 @@ const ES_FALLBACK: Dict = {
       loading: 'Cargando…'
     }
   },
+
   general: {
-      loading: 'Cargando…'
-    },
+    loading: 'Cargando…'
+  },
+
   consultoria: {
     title: 'Consultoría',
     caption: 'Estrategias hechas a medida para conectar culturas, equipos y negocios entre España y China.',
@@ -110,21 +117,13 @@ const ES_FALLBACK: Dict = {
     service3: 'Formación in-company para equipos en transición internacional.',
     contact: 'Cuéntanos tu reto y diseñaremos una propuesta personalizada para tu organización.'
   },
-  actividades: {
-    title: 'Actividades'
-  },
-  cultura: {
-    title: 'Cultura'
-  },
-  viajes: {
-    title: 'Viajes'
-  },
-  idiomas: {
-    title: 'Idiomas'
-  },
-  networking: {
-    title: 'Networking'
-  },
+
+  actividades: { title: 'Actividades' },
+  cultura:     { title: 'Cultura' },
+  viajes:      { title: 'Viajes' },
+  idiomas:     { title: 'Idiomas' },
+  networking:  { title: 'Networking' },
+
   gourmet: {
     title: 'Gourmet Pass',
     leadHighlight: 'Gourmet Pass Creasia',
@@ -144,6 +143,7 @@ const ES_FALLBACK: Dict = {
     altDining: 'Persona disfrutando del Pasaporte Gourmet',
     altKids: 'Niños compartiendo helado'
   },
+
   legal: {
     title: 'Aviso legal',
     section1: {
@@ -183,6 +183,7 @@ const ES_FALLBACK: Dict = {
     }
   }
 };
+/* ------------------ FIN FALLBACK EN ESPAÑOL ------------------ */
 
 @Injectable({ providedIn: 'root' })
 export class TranslationService {
@@ -190,12 +191,34 @@ export class TranslationService {
   private readonly platformId = inject(PLATFORM_ID);
 
   private readonly currentLang$ = new BehaviorSubject<Lang>('es');
+  // Registramos el fallback español para que siempre exista.
   private readonly dicts = new Map<Lang, Dict>([['es', ES_FALLBACK]]);
 
   constructor() {
+    // 🔹 PRIORIDAD: idioma en la URL (?lang=en|zh) si estamos en navegador
+    const urlLang = this.detectLangFromURL();
+
+    // Idioma inicial: URL -> localStorage/navegador -> 'es'
+    const initial = urlLang ?? this.detectInitialLang();
+
+    this.currentLang$.next(initial);
+
     if (isPlatformBrowser(this.platformId)) {
-      void this.ensureLoaded('es');
-      this.updateDocumentLang('es');
+      // Guardar si vino desde URL, para que persista entre rutas y recargas
+      if (urlLang) {
+        try { localStorage.setItem('creasia:lang', urlLang); } catch {}
+      }
+      void this.ensureLoaded(initial);
+      this.updateDocumentLang(initial);
+
+      // (Opcional) limpiar el parámetro lang de la URL sin recargar
+      if (urlLang) {
+        try {
+          const u = new URL(window.location.href);
+          u.searchParams.delete('lang');
+          window.history.replaceState({}, '', u.toString());
+        } catch {}
+      }
     }
   }
 
@@ -208,22 +231,67 @@ export class TranslationService {
   }
 
   async setLang(lang: Lang): Promise<void> {
+    lang = this.normalize(lang);
     await this.ensureLoaded(lang);
     this.currentLang$.next(lang);
     this.updateDocumentLang(lang);
+
+    // Persistimos selección (en navegador)
+    if (isPlatformBrowser(this.platformId)) {
+      try { localStorage.setItem('creasia:lang', lang); } catch {}
+    }
+
     this.bump();
   }
 
   t(key: string): string {
     const active = this.dicts.get(this.lang);
-    const fallback = this.dicts.get('es');
+    const fallback = this.dicts.get('es'); // español como respaldo
     const activeValue = active ? this.resolve(active, key) : undefined;
-    if (activeValue !== undefined) {
-      return activeValue;
-    }
-
+    if (activeValue !== undefined) return activeValue;
     const fallbackValue = fallback ? this.resolve(fallback, key) : undefined;
     return fallbackValue ?? key;
+  }
+
+  /* ───────── helpers ───────── */
+
+  // 👇 NUEVO: prioriza ?lang= de la URL si existe y es válido
+  private detectLangFromURL(): Lang | null {
+    if (!isPlatformBrowser(this.platformId)) return null;
+    try {
+      const url = new URL(window.location.href);
+      const q = url.searchParams.get('lang');
+      const cand = (q || '').slice(0, 2).toLowerCase();
+      return this.isSupported(cand) ? (cand as Lang) : null;
+    } catch {
+      return null;
+    }
+  }
+
+  private detectInitialLang(): Lang {
+    if (!isPlatformBrowser(this.platformId)) return 'es';
+
+    try {
+      const saved = localStorage.getItem('creasia:lang');
+      if (saved && this.isSupported(saved)) return saved as Lang;
+    } catch {}
+
+    // Idioma del navegador
+    const nav = (navigator?.language || navigator?.languages?.[0] || 'es')
+      .slice(0, 2)
+      .toLowerCase();
+    if (this.isSupported(nav)) return nav as Lang;
+
+    return 'es';
+  }
+
+  private isSupported(v: string | null | undefined): boolean {
+    return !!v && ['es', 'en', 'zh'].includes(v.slice(0, 2).toLowerCase());
+    }
+
+  private normalize(v: string): Lang {
+    const c = (v || 'es').slice(0, 2).toLowerCase();
+    return (this.isSupported(c) ? c : 'es') as Lang;
   }
 
   private updateDocumentLang(lang: Lang): void {
@@ -237,22 +305,16 @@ export class TranslationService {
   }
 
   private async ensureLoaded(lang: Lang): Promise<void> {
-    if (this.dicts.has(lang)) {
-      return;
-    }
+    if (this.dicts.has(lang)) return;
 
     try {
       const data = await firstValueFrom(this.http.get<Dict>(`assets/i18n/${lang}.json`));
       this.dicts.set(lang, data);
     } catch (err) {
       console.warn('[i18n] No se pudo cargar', lang, err);
-      if (!this.dicts.has(lang)) {
-        this.dicts.set(lang, {});
-      }
+      if (!this.dicts.has(lang)) this.dicts.set(lang, {}); // diccionario vacío para no romper
     } finally {
-      if (lang === this.lang) {
-        this.bump();
-      }
+      if (lang === this.lang) this.bump();
     }
   }
 
@@ -265,34 +327,6 @@ export class TranslationService {
         return undefined;
       }
     }
-
     return typeof current === 'string' ? current : undefined;
   }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
