@@ -111,6 +111,7 @@
   padding-inline: 2rem;
 }
 
+// botón ACCEDER del login:
 .submit {
   justify-self: center;
   border: 1px solid rgba(255, 255, 255, 0.45);
@@ -120,6 +121,7 @@
   border-radius: 999px;
   letter-spacing: 0.1em;
   transition: background 160ms ease, transform 160ms ease;
+  margin-top: $space-2;
 
   &:hover {
     background: rgba(255, 255, 255, 0.12);

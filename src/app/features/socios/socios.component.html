@@ -5,16 +5,25 @@
   </div>
 
   @if (showLoginForm) {
+  <!-- ===== LOGIN ===== -->
   <div class="login-block login-block--active">
-    <!-- Si el OK es de activación, mostramos el mensaje y mantenemos el formulario -->
-    <p *ngIf="okMsg === 'socios.activation.ok'" class="intro title typography-section-title" role="status"
-      aria-live="polite" style="white-space: pre-line">
+
+    <!-- Cabecera de login (solo si no estamos mostrando el saludo final de login) -->
+    <p class="login-caption typography-body-text"
+       *ngIf="!okMsg || okMsg === 'socios.activation.ok'">
+      {{ 'socios.loginCaption' | t }}
+    </p>
+
+    <!-- Mensaje OK de activación (mantiene el formulario visible) -->
+    <p *ngIf="okMsg === 'socios.activation.ok'"
+       class="intro title typography-section-title"
+       role="status" aria-live="polite" style="white-space: pre-line">
       {{ okMsg | t }}
     </p>
 
-    <!-- Formulario visible si no hay okMsg o si el okMsg es de activación -->
+    <!-- Formulario de login (visible salvo que haya un okMsg distinto al de activación) -->
     <form class="form form--login" (submit)="onLoginSubmit($event)" novalidate
-      *ngIf="!okMsg || okMsg === 'socios.activation.ok'">
+          *ngIf="!okMsg || okMsg === 'socios.activation.ok'">
       <label class="field">
         <span class="field__label typography-body-text">{{ 'socios.loginForm.email' | t }}</span>
         <input class="field__control" type="email" name="loginEmail" required autocomplete="email" />
@@ -23,11 +32,12 @@
       <label class="field">
         <span class="field__label typography-body-text">{{ 'socios.loginForm.password' | t }}</span>
         <input class="field__control" type="password" name="loginPassword" required minlength="8"
-          autocomplete="current-password" />
+               autocomplete="current-password" />
       </label>
 
       <button class="submit typography-button-text" type="submit" [disabled]="loading"
-        [attr.aria-busy]="loading ? 'true' : null" [attr.aria-disabled]="loading ? 'true' : null">
+              [attr.aria-busy]="loading ? 'true' : null"
+              [attr.aria-disabled]="loading ? 'true' : null">
         {{ loading ? ('general.loading' | t) : ('socios.loginForm.submit' | t) }}
       </button>
     </form>
@@ -37,44 +47,30 @@
       {{ error | t }}
     </p>
 
-    <button class="text-link typography-body-text" type="button" (click)="openRegister()" *ngIf="!okMsg && !loading">
+    <!-- Enlace a registro (solo si no hay saludo ni loading) -->
+    <button class="text-link typography-body-text" type="button"
+            (click)="openRegister()" *ngIf="!okMsg && !loading">
       {{ 'socios.loginForm.notRegistered' | t }}
     </button>
 
-    <!-- Si el OK NO es de activación (p. ej., saludo tras login), mostramos solo el mensaje -->
-    <p *ngIf="okMsg && okMsg !== 'socios.activation.ok'" class="intro title typography-section-title" role="status"
-      aria-live="polite" style="white-space: pre-line">
-      {{ okMsg | t }}<ng-container *ngIf="greetName"> {{ greetName }}</ng-container>
-    </p>
+    <!-- Saludo tras login correcto (oculta la cabecera y el formulario) -->
+    <ng-container *ngIf="okMsg && okMsg !== 'socios.activation.ok'">
+      <p class="intro title typography-section-title" role="status"
+         aria-live="polite" style="white-space: pre-line">
+        {{ okMsg | t }}<ng-container *ngIf="greetName"> {{ greetName }}</ng-container>
+      </p>
+      <p class="typography-body-text" aria-live="polite">
+        {{ 'socios.loginRedirect' | t }}
+      </p>
+    </ng-container>
   </div>
+
   } @else {
-
-  <!-- Cuando no está abierto el login, ofrecemos CTA de login primero -->
-  @if (!showRegisterForm) {
-  <div class="login-block">
-    <p class="login-caption typography-body-text">{{ 'socios.loginCaption' | t }}</p>
-
-    <button class="cta secondary typography-button-text" type="button" (click)="openLogin()">
-      {{ 'socios.actions.login' | t }}
-    </button>
-  </div>
-  }
-
-  <!-- Bloque de registro después del login -->
+  <!-- ===== REGISTRO ===== -->
   <div class="register-block">
-    @if (!showRegisterForm) {
 
-    <!-- <div class="intro">
-      <h2 class="title typography-section-title">{{ 'socios.title' | t }}</h2>
-    </div> -->
-
+    <!-- Cabecera de registro -->
     <p class="register-caption typography-body-text">{{ 'socios.registerCaption' | t }}</p>
-
-    <button class="cta typography-button-text" type="button" (click)="openRegister()">
-      {{ 'socios.actions.register' | t }}
-    </button>
-
-    } @else {
 
     @if (!okMsg) {
     <form class="form" (submit)="onRegisterSubmit($event)" novalidate>
@@ -97,7 +93,7 @@
       <label class="field">
         <span class="field__label typography-body-text">{{ 'socios.registerForm.password' | t }}</span>
         <input class="field__control" type="password" name="registerPassword" required minlength="8"
-          autocomplete="new-password" />
+               autocomplete="new-password" />
       </label>
 
       <label class="opt-in">
@@ -106,7 +102,8 @@
       </label>
 
       <button class="submit typography-button-text" type="submit" [disabled]="loading"
-        [attr.aria-busy]="loading ? 'true' : null" [attr.aria-disabled]="loading ? 'true' : null">
+              [attr.aria-busy]="loading ? 'true' : null"
+              [attr.aria-disabled]="loading ? 'true' : null">
         {{ loading ? ('general.loading' | t) : ('socios.registerForm.submit' | t) }}
       </button>
 
@@ -116,18 +113,17 @@
       </p>
     </form>
 
+    <!-- Ya tengo cuenta -->
     <button class="text-link typography-body-text" type="button" (click)="openLogin()">
       {{ 'socios.registerForm.alreadyRegistered' | t }}
     </button>
+
     } @else {
-    <!-- Mensaje OK tras registro correcto (SIN enlace a login hasta activar) -->
+    <!-- Mensaje OK tras registro correcto (sin enlace a login hasta activar) -->
     <p class="intro title typography-section-title" role="status" aria-live="polite" style="white-space: pre-line">
       {{ okMsg | t }}
     </p>
-    <!-- (No mostramos el enlace "Ya estoy registrado" aquí) -->
-    }
     }
   </div>
-
   }
 </section>

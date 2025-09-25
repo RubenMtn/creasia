@@ -1,13 +1,12 @@
 ﻿/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint no-empty: ["error", { "allowEmptyCatch": true }] */
-import { TranslationService } from '../../shared/i18n/translation.service'
+import { TranslationService } from '../../shared/i18n/translation.service';
 import { SociosService } from '../../services/socios.service';
 import { UserSessionService } from '../../services/user-session.service';
 import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TPipe } from '../../shared/i18n/t.pipe';
 import { Router } from '@angular/router';
-
 
 @Component({
   selector: 'app-socios',
@@ -20,13 +19,13 @@ export class SociosComponent implements OnInit, OnDestroy {
   private static readonly VIEW_STATE_KEY = 'creasia:sociosView';
   private static readonly ACTIVATION_KEY = 'creasia:activation';
   private static readonly PENDING_UID_KEY = 'creasia:pendingUid';
+
   private readonly hasWindow = typeof window !== 'undefined';
   private readonly i18n = inject(TranslationService);
   private router = inject(Router);
   private redirectTimer: any = null;
 
-
-  // âœ… NUEVO: base para llamadas del polling (evita ir a localhost:4200 en dev)
+  // Base para polling (en dev fuerza host público)
   private readonly apiBase = (() => {
     try {
       const host = window.location.hostname;
@@ -37,8 +36,10 @@ export class SociosComponent implements OnInit, OnDestroy {
     }
   })();
 
+  // Vista por defecto: login visible
   showRegisterForm = false;
-  showLoginForm = false;
+  showLoginForm = true;
+
   private socios = inject(SociosService);
   private session = inject(UserSessionService);
   loading = false;
@@ -46,17 +47,16 @@ export class SociosComponent implements OnInit, OnDestroy {
   // Claves i18n (no texto crudo)
   error = '';
   okMsg = '';
-  // Nombre opcional para saludar tras login
   greetName: string | null = null;
 
-  // --- Polling activaciÃ³n (para activaciÃ³n desde otro dispositivo) ---
+  // Polling de activación (para activaciones desde otros dispositivos)
   private activationTimer: any = null;
   private activationDeadline = 0;
   private pendingUid: number | null = null;
-  private readonly pollEveryMs = 5000;          // cada 5s
-  private readonly pollMaxMs = 2 * 60 * 1000; // mÃ¡x 2 minutos
+  private readonly pollEveryMs = 5000;        // cada 5s
+  private readonly pollMaxMs = 2 * 60 * 1000; // máx 2 minutos
 
-  // Listeners como propiedades flecha para poder quitarlos en ngOnDestroy
+  // Listeners
   private onStorage = (e: StorageEvent) => {
     if (!e.key || e.key !== SociosComponent.ACTIVATION_KEY) return;
     this.applyActivationMessageFromStorage();
@@ -68,31 +68,25 @@ export class SociosComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     if (!this.hasWindow) return;
 
-    const shouldRestore = window.sessionStorage.getItem('creasia:sociosRestore') === '1';
+    // Restaurar vista simple: 'register' o 'login' (default 'login')
     const stored = window.sessionStorage.getItem(SociosComponent.VIEW_STATE_KEY);
-    let restored = false;
-
-    if (shouldRestore && stored) restored = this.applyViewState(stored);
-
-    window.sessionStorage.removeItem('creasia:sociosRestore');
-
-    if (restored) {
-      this.persistViewState();
+    if (stored === 'register') {
+      this.showRegisterForm = true;
+      this.showLoginForm = false;
     } else {
       this.showRegisterForm = false;
-      this.showLoginForm = false;
-      window.sessionStorage.removeItem(SociosComponent.VIEW_STATE_KEY);
-      this.persistViewState();
+      this.showLoginForm = true;
     }
+    this.persistViewState();
 
-    // 1) Mensajes por ?activation=... (si venimos redirigidos)
+    // Mensajes via URL (activation/lang)
     this.applyActivationMessageFromURL();
 
-    // 2) SuscripciÃ³n a cambios en localStorage (si se activÃ³ en otra pestaÃ±a del MISMO navegador)
+    // Listeners para activación (misma origin) y re-foco
     window.addEventListener('storage', this.onStorage);
     window.addEventListener('focus', this.onFocus);
 
-    // 3) Reanudar polling si habÃ­a un UID pendiente en esta sesiÃ³n
+    // Reanudar polling si hubiera UID pendiente
     const pending = window.sessionStorage.getItem(SociosComponent.PENDING_UID_KEY);
     if (pending) {
       const uid = parseInt(pending, 10);
@@ -104,7 +98,7 @@ export class SociosComponent implements OnInit, OnDestroy {
       }
     }
 
-    // 4) Por si ya existe la marca (activado hace un momento en otra pestaÃ±a)
+    // Por si ya existe marca en localStorage
     this.applyActivationMessageFromStorage();
   }
 
@@ -134,60 +128,6 @@ export class SociosComponent implements OnInit, OnDestroy {
     this.persistViewState();
   }
 
-  // â¬‡ï¸ Helper para partir apellidos con partÃ­culas extendidas y regla del guion
-  private splitApellidos(input: string): { a1: string; a2: string | null } {
-    const text = (input ?? '')
-      .replace(/[\\/.&+]+/g, ' ')
-      .replace(/\s+/g, ' ')
-      .trim();
-    if (!text) return { a1: '', a2: null };
-
-    const tokens = text.split(' ');
-    const low = (s: string) => s.toLowerCase();
-    const CONNECTORS = new Set(['de', 'del', 'van', 'von', 'da', 'do', 'dos', 'das', 'di', 'du']);
-    const ARTICLES = new Set(['la', 'las', 'los', 'lo', 'el', 'le', 'der', 'den', 'de', 'del', 'da', 'do', 'dos', 'das']);
-    const isConn = (t?: string) => !!t && CONNECTORS.has(low(t));
-    const isArt = (t?: string) => !!t && ARTICLES.has(low(t));
-
-    const h = tokens.findIndex(t => t.includes('-'));
-    if (h !== -1 && tokens.length > 1) {
-      let start = h;
-      if (h - 2 >= 0 && isConn(tokens[h - 2]) && isArt(tokens[h - 1])) start = h - 2;
-      else if (h - 1 >= 0 && isConn(tokens[h - 1])) start = h - 1;
-
-      const hyphenSurname = tokens.slice(start, h + 1).join(' ');
-      const otherTokens = [...tokens.slice(0, start), ...tokens.slice(h + 1)];
-      const otherSurname = otherTokens.join(' ') || null;
-
-      if (start === 0) return { a1: hyphenSurname, a2: otherSurname };
-      return { a1: otherSurname ?? '', a2: hyphenSurname };
-    }
-
-    if (isConn(tokens[0])) {
-      let i = 1;
-      while (i < tokens.length && isArt(tokens[i])) i += 1;
-      if (i >= tokens.length) return { a1: tokens.join(' '), a2: null };
-      const cut = i + 1;
-      const a1 = tokens.slice(0, cut).join(' ');
-      const a2 = tokens.slice(cut).join(' ') || null;
-      return { a1, a2 };
-    }
-
-    if (isConn(tokens[1])) {
-      let i = 2;
-      while (i < tokens.length && isArt(tokens[i])) i += 1;
-      if (i >= tokens.length) return { a1: tokens.join(' '), a2: null };
-      const cut = i + 1;
-      const a1 = tokens.slice(0, cut).join(' ');
-      const a2 = tokens.slice(cut).join(' ') || null;
-      return { a1, a2 };
-    }
-
-    const a1 = tokens[0];
-    const a2 = tokens.slice(1).join(' ') || null;
-    return { a1, a2 };
-  }
-
   private isValidEmail(email: string): boolean {
     if (!email) return false;
     const re = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i;
@@ -197,7 +137,7 @@ export class SociosComponent implements OnInit, OnDestroy {
   onRegisterSubmit(event: Event): void {
     event.preventDefault();
     this.clearMessages();
-    this.stopActivationPolling(); // por si hubiera uno pendiente de un intento anterior
+    this.stopActivationPolling();
 
     const form = event.target as HTMLFormElement;
     const nombre = (form.elements.namedItem('registerName') as HTMLInputElement)?.value.trim() || '';
@@ -207,31 +147,16 @@ export class SociosComponent implements OnInit, OnDestroy {
     const optIn = (form.elements.namedItem('registerOptIn') as HTMLInputElement)?.checked ?? false;
     const lang = (localStorage.getItem('creasia:lang') ?? 'es').slice(0, 2) as 'es' | 'en' | 'zh';
 
-    // 1) Nada relleno
-    if (!nombre && !email && !password) {
-      this.error = 'socios.errors.fillFields';
-      return;
-    }
+    if (!nombre && !email && !password) { this.error = 'socios.errors.fillFields'; return; }
+    if (!nombre || !email || !password) { this.error = 'socios.errors.missingRequired'; return; }
+    if (!this.isValidEmail(email)) { this.error = 'socios.errors.invalidEmail'; return; }
+    if (password.length < 8) { this.error = 'socios.errors.invalidEmailOrPasswordMin8'; return; }
 
-    // 2) Falta algÃºn obligatorio (apellido es opcional)
-    if (!nombre || !email || !password) {
-      this.error = 'socios.errors.missingRequired';
-      return;
-    }
-
-    // 3) Email no vÃ¡lido
-    if (!this.isValidEmail(email)) {
-      this.error = 'socios.errors.invalidEmail';
-      return;
-    }
-
-    // 4) Password corta
-    if (password.length < 8) {
-      this.error = 'socios.errors.invalidEmailOrPasswordMin8';
-      return;
-    }
-
-    const { a1: apellido1, a2: apellido2 } = this.splitApellidos(apesRaw);
+    // Partición simple de apellidos (sin la versión extendida para simplificar)
+    const surname = (apesRaw ?? '').trim();
+    const [a1, ...rest] = surname.split(/\s+/);
+    const apellido1 = a1 || '';
+    const apellido2 = rest.length ? rest.join(' ') : null;
 
     this.loading = true;
     this.socios.register(email, password, nombre, apellido1, apellido2, !!optIn, lang).subscribe({
@@ -240,7 +165,6 @@ export class SociosComponent implements OnInit, OnDestroy {
           this.okMsg = 'socios.register.successCheckEmail';
           this.greetName = null;
 
-          // Guardar UID y empezar polling si el backend lo devuelve
           const uidVal = res?.uid;
           if (typeof uidVal === 'number' && uidVal > 0) {
             this.pendingUid = uidVal;
@@ -248,7 +172,7 @@ export class SociosComponent implements OnInit, OnDestroy {
             this.startActivationPolling();
           }
 
-          (form as HTMLFormElement).reset();
+          form.reset();
         } else {
           this.error = res.error || 'socios.errors.generic';
         }
@@ -257,7 +181,7 @@ export class SociosComponent implements OnInit, OnDestroy {
         if (e.status === 409) this.error = 'socios.errors.emailAlreadyRegistered';
         else if (e.status === 422) this.error = 'socios.errors.invalidEmailOrPassword';
         else this.error = 'socios.errors.server';
-        this.loading = false; // reactivar botÃ³n tras error
+        this.loading = false;
       },
       complete: () => (this.loading = false)
     });
@@ -271,8 +195,13 @@ export class SociosComponent implements OnInit, OnDestroy {
     const email = (form.elements.namedItem('loginEmail') as HTMLInputElement)?.value.trim();
     const password = (form.elements.namedItem('loginPassword') as HTMLInputElement)?.value;
 
-    if (!email || !password) {
-      this.error = 'socios.errors.emailAndPasswordRequired';
+    if (!email || !password) { this.error = 'socios.errors.emailAndPasswordRequired'; return; }
+
+    // Si ya está logado con el mismo email, mostrar aviso y no llamar al backend
+    const isLogged = localStorage.getItem('creasia:isLoggedIn') === '1';
+    const storedEmail = (localStorage.getItem('creasia:userEmail') || '').trim().toLowerCase();
+    if (isLogged && storedEmail && email.trim().toLowerCase() === storedEmail) {
+      this.error = 'socios.errors.alreadyLoggedIn';
       return;
     }
 
@@ -281,12 +210,16 @@ export class SociosComponent implements OnInit, OnDestroy {
       next: (res: any) => {
         if (res.ok && res.socio) {
           const nombre = (res.socio.nombre ?? '').trim();
-          const displayName = (nombre || res.socio.email || '').trim(); // siempre string
+          const displayName = (nombre || res.socio.email || '').trim();
           this.okMsg = 'socios.login.greeting';
           this.greetName = displayName;
           this.session.persistLogin(displayName, { token: '1' });
+          try {
+            localStorage.setItem('creasia:isLoggedIn', '1');
+            localStorage.setItem('creasia:userEmail', (res.socio.email || '').trim());
+          } catch { }
 
-          if (this.redirectTimer) { clearTimeout(this.redirectTimer); }
+          if (this.redirectTimer) clearTimeout(this.redirectTimer);
           this.redirectTimer = setTimeout(() => {
             void this.router.navigateByUrl('/');
           }, 2500);
@@ -305,27 +238,22 @@ export class SociosComponent implements OnInit, OnDestroy {
         this.loading = false;
         this.session.clearLogin();
       },
-      complete: () => (this.loading = false),
+      complete: () => (this.loading = false)
     });
   }
 
   logout(): void {
     this.session.clearLogin();
-    // opcional: volver al inicio
-    // void this.router.navigateByUrl('/');
+    try {
+      localStorage.setItem('creasia:isLoggedIn', '0');
+      localStorage.removeItem('creasia:userEmail');
+    } catch { }
   }
 
-  private applyViewState(state: string): boolean {
-    if (state === 'register') { this.showRegisterForm = true; this.showLoginForm = false; return true; }
-    if (state === 'login') { this.showRegisterForm = false; this.showLoginForm = true; return true; }
-    this.showRegisterForm = false; this.showLoginForm = false; return state === 'default';
-  }
 
   private persistViewState(): void {
     if (!this.hasWindow) return;
-    let state = 'default';
-    if (this.showRegisterForm) state = 'register';
-    else if (this.showLoginForm) state = 'login';
+    const state = this.showRegisterForm ? 'register' : 'login';
     window.sessionStorage.setItem(SociosComponent.VIEW_STATE_KEY, state);
   }
 
@@ -335,23 +263,20 @@ export class SociosComponent implements OnInit, OnDestroy {
     this.greetName = null;
   }
 
-  // Lee ?lang=... SIEMPRE, y opcionalmente ?activation=...
+  // Lee ?lang=... y opcionalmente ?activation=...
   private applyActivationMessageFromURL(): void {
     if (!this.hasWindow) return;
     const url = new URL(window.location.href);
 
-    // 1) Aplicar idioma si viene por query (independiente de activation)
+    // 1) Idioma
     const langParam = url.searchParams.get('lang');
     if (langParam) {
       const lang2 = (langParam.slice(0, 2).toLowerCase() as 'es' | 'en' | 'zh');
-      // setLang es async; no bloqueamos la UI
       try { localStorage.setItem('creasia:lang', lang2); } catch { }
-      // si tienes TranslationService inyectado:
-      //   private readonly i18n = inject(TranslationService);
       void this.i18n.setLang(lang2);
     }
 
-    // 2) Si no hay activation, solo limpia el parÃ¡metro lang y sal
+    // 2) Activación
     const status = url.searchParams.get('activation');
     if (!status) {
       if (langParam) {
@@ -361,7 +286,6 @@ export class SociosComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // 3) Procesar activation como ya hacÃ­as
     const okMap: Record<string, string> = { ok: 'socios.activation.ok' };
     const errMap: Record<string, string> = {
       expired: 'socios.activation.expired',
@@ -387,19 +311,18 @@ export class SociosComponent implements OnInit, OnDestroy {
       this.stopActivationPolling();
     }
 
-    // Forzar vista login (como ya hacÃ­as)
+    // Forzar vista login
     this.showLoginForm = true;
     this.showRegisterForm = false;
     this.persistViewState();
 
-    // 4) Limpia ambos params de la URL
+    // Limpiar la URL
     url.searchParams.delete('activation');
     if (langParam) url.searchParams.delete('lang');
     window.history.replaceState({}, '', url.toString());
   }
 
-
-  // Detecta activaciÃ³n si se hizo en otra pestaÃ±a (misma origin) mediante localStorage
+  // Detecta activación via localStorage (misma origin)
   private applyActivationMessageFromStorage(): void {
     if (!this.hasWindow) return;
     const status = window.localStorage.getItem(SociosComponent.ACTIVATION_KEY);
@@ -423,11 +346,10 @@ export class SociosComponent implements OnInit, OnDestroy {
       this.stopActivationPolling();
     }
 
-    // Consumir la marca para no repetir
     window.localStorage.removeItem(SociosComponent.ACTIVATION_KEY);
   }
 
-  // === Polling al backend para detectar activaciÃ³n aunque sea desde OTRO dispositivo ===
+  // === Polling al backend para detectar activación (también desde OTRO dispositivo) ===
   private startActivationPolling(): void {
     if (!this.hasWindow) return;
     if (!this.pendingUid || this.activationTimer) return;
@@ -440,7 +362,6 @@ export class SociosComponent implements OnInit, OnDestroy {
         return;
       }
 
-      // âœ… AquÃ­ forzamos el host correcto en dev (localhost -> creasia.es)
       const url = `${this.apiBase}/api/socios_activation_status.php?uid=${this.pendingUid}`;
 
       fetch(url, {
@@ -463,7 +384,7 @@ export class SociosComponent implements OnInit, OnDestroy {
         .catch(() => { /* silencioso */ });
     };
 
-    poll(); // primer intento inmediato
+    poll();
     this.activationTimer = window.setInterval(poll, this.pollEveryMs);
   }
 
@@ -477,16 +398,4 @@ export class SociosComponent implements OnInit, OnDestroy {
       window.sessionStorage.removeItem(SociosComponent.PENDING_UID_KEY);
     }
   }
-
-  private notifyHeaderUserUpdated(): void {
-    try {
-      // No hace falta payload; si quieres, podrÃ­as usar CustomEvent con detail
-      window.dispatchEvent(new Event('creasia:user-updated'));
-    } catch {
-      // silencioso
-    }
-  }
 }
-
-
-

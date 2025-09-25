@@ -32,16 +32,17 @@
     "caption": "We are an association created by people who have lived in China and know the vertigo of starting from scratch. Here, what matters is you: your curiosity, your desire to learn and connect. We are united by building a cultural and professional bridge, regardless of age, origin, identity, or orientation."
   },
   "socios": {
-    "title": "Benefits with Creasia and much more",
-    "registerCaption": "Register with your email and a password to access all the benefits our association provides: exclusive information, discounts, event invitations, and much more...",
-    "loginCaption": "If you are already a Creasia member, sign in with your email and password to enjoy all the benefits and updates we have for you.",
+    "title": "Exclusive perks, discounts, event invitations, updates...",
+    "registerCaption": "Sign up with your email and a password (minimum 8 characters):",
+    "loginCaption": "If you are already a registered Creasia member, sign in with your account:",
+    "loginRedirect": "Redirecting to the home page...",
     "actions": {
       "register": "Register",
       "login": "Sign in"
     },
     "registerForm": {
       "name": "Name",
-      "surname": "Surname(s)",
+      "surname": "Surname (optional)",
       "email": "Email",
       "password": "Password",
       "optIn": "Receive periodic updates",
@@ -79,7 +80,8 @@
       "generic": "Something went wrong",
       "fillFields": "Please fill in the fields",
       "missingRequired": "Please complete all required fields",
-      "invalidEmail": "Email is not valid"
+      "invalidEmail": "Email is not valid",
+      "alreadyLoggedIn": "You are already logged in. Please check your name in the button at the top right"
     },
     "general": {
       "loading": "Loading…"

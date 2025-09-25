@@ -49,16 +49,17 @@ const ES_FALLBACK: Dict = {
   },
 
   socios: {
-    title: 'Ventajas con Creasia y mucho más',
-    registerCaption: 'Regístrate con tu email y una contraseña para obtener todos los beneficios que proporciona nuestra asociación: información exclusiva, descuentos, invitaciones a eventos y mucho más...',
-    loginCaption: 'Si ya eres socio de Creasia, accede con tu usuario y contraseña y disfruta de todas las ventajas y novedades que tenemos para ti.',
+    title: 'Ventajas exclusivas, descuentos, invitaciones a eventos, novedades...',
+    registerCaption: 'Regístrate con tu email y una contraseña (mínimo 8 caracteres):', 
+    loginCaption: 'Si ya eres socio registrado de Creasia, accede con tu usuario:',
+    loginRedirect: 'Redirigiendo al inicio...',
     actions: {
       register: 'Registro',
       login: 'Accede'
     },
     registerForm: {
       name: 'Nombre',
-      surname: 'Apellido/s',
+      surname: 'Apellido/s (opcional)',
       email: 'Email',
       password: 'Contraseña',
       optIn: 'Recibir informaciones periódicas',
@@ -96,7 +97,8 @@ const ES_FALLBACK: Dict = {
       generic: 'Algo no ha ido bien',
       fillFields: 'Rellene los campos',
       missingRequired: 'Complete los campos obligatorios',
-      invalidEmail: 'El email no es válido'
+      invalidEmail: 'El email no es válido',
+      alreadyLoggedIn: 'Usuario ya logado, observe su nombre en el botón de arriba a la derecha',
     },
     general: {
       loading: 'Cargando…'
