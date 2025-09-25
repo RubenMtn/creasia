@@ -43,6 +43,11 @@ export class SociosService {
     this.session.clearLogin();
   }
 
+  me() {
+    return this.http.get<{ ok: boolean; socio?: unknown; }>(`${this.API}/socios_me.php`, {
+      withCredentials: true
+    });
+  }
 
 
 }

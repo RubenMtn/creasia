@@ -250,7 +250,6 @@ export class SociosComponent implements OnInit, OnDestroy {
     } catch { }
   }
 
-
   private persistViewState(): void {
     if (!this.hasWindow) return;
     const state = this.showRegisterForm ? 'register' : 'login';
@@ -263,7 +262,8 @@ export class SociosComponent implements OnInit, OnDestroy {
     this.greetName = null;
   }
 
-  // Lee ?lang=... y opcionalmente ?activation=...
+  // Lee ?lang=... y opcionalmente ?activation=... (&autologin=1)
+  // ✅ Robustecido: si activation=ok, intentamos me() SIEMPRE (tenga o no tenga autologin=1)
   private applyActivationMessageFromURL(): void {
     if (!this.hasWindow) return;
     const url = new URL(window.location.href);
@@ -276,8 +276,10 @@ export class SociosComponent implements OnInit, OnDestroy {
       void this.i18n.setLang(lang2);
     }
 
-    // 2) Activación
+    // 2) Activación (+ autologin opcional)
     const status = url.searchParams.get('activation');
+    //const autologin = url.searchParams.get('autologin') === '1';
+
     if (!status) {
       if (langParam) {
         url.searchParams.delete('lang');
@@ -286,7 +288,6 @@ export class SociosComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const okMap: Record<string, string> = { ok: 'socios.activation.ok' };
     const errMap: Record<string, string> = {
       expired: 'socios.activation.expired',
       used: 'socios.activation.used',
@@ -294,33 +295,83 @@ export class SociosComponent implements OnInit, OnDestroy {
       error: 'socios.activation.error'
     };
 
-    if (okMap[status]) {
-      this.okMsg = okMap[status];
-      this.error = '';
-      this.greetName = null;
-      this.stopActivationPolling();
+    // 👉 Si activation=ok, intentamos SIEMPRE detectar sesión existente (aunque falte autologin=1)
+    if (status === 'ok') {
+      fetch(`${this.apiBase}/api/socios_me.php`, {
+        method: 'GET',
+        credentials: 'include',
+        headers: { 'Accept': 'application/json' }
+      })
+        .then(r => r && r.ok ? r.json() : null)
+        .then((j: any) => {
+          if (j?.ok && j.socio) {
+            const nombre = (j.socio.nombre ?? '').trim();
+            const displayName = (nombre || j.socio.email || '').trim();
+
+            this.okMsg = 'socios.login.greeting';
+            this.error = '';
+            this.greetName = displayName;
+
+            try {
+              localStorage.setItem('creasia:isLoggedIn', '1');
+              localStorage.setItem('creasia:userEmail', (j.socio.email || '').trim());
+            } catch { }
+
+            this.session.persistLogin(displayName, { token: '1' });
+
+            this.showLoginForm = true;
+            this.showRegisterForm = false;
+            this.persistViewState();
+
+            // redirigir como en login normal
+            setTimeout(() => { void this.router.navigateByUrl('/'); }, 2500);
+          } else {
+            // Fallback: activado pero sin sesión → dejamos mensaje clásico
+            this.okMsg = 'socios.activation.ok';
+            this.error = '';
+            this.greetName = null;
+            this.showLoginForm = true;
+            this.showRegisterForm = false;
+            this.persistViewState();
+          }
+        })
+        .catch(() => {
+          this.okMsg = 'socios.activation.ok';
+          this.error = '';
+          this.greetName = null;
+          this.showLoginForm = true;
+          this.showRegisterForm = false;
+          this.persistViewState();
+        });
+
     } else if (errMap[status]) {
       this.error = errMap[status];
       this.okMsg = '';
       this.greetName = null;
-      this.stopActivationPolling();
+      this.showLoginForm = true;
+      this.showRegisterForm = false;
+      this.persistViewState();
     } else {
       this.error = 'socios.activation.invalid';
       this.okMsg = '';
       this.greetName = null;
-      this.stopActivationPolling();
+      this.showLoginForm = true;
+      this.showRegisterForm = false;
+      this.persistViewState();
     }
 
-    // Forzar vista login
+    // Forzar vista login (el form se ocultará si hay saludo)
     this.showLoginForm = true;
     this.showRegisterForm = false;
     this.persistViewState();
 
     // Limpiar la URL
     url.searchParams.delete('activation');
+    url.searchParams.delete('autologin');
     if (langParam) url.searchParams.delete('lang');
     window.history.replaceState({}, '', url.toString());
   }
+
 
   // Detecta activación via localStorage (misma origin)
   private applyActivationMessageFromStorage(): void {
