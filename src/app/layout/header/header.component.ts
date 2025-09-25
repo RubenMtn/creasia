@@ -31,6 +31,8 @@ interface SavedFieldState {
 })
 export class HeaderComponent {
   private static readonly RETURN_STATE_KEY = 'creasia:returnState';
+  private static readonly USER_MENU_AUTO_CLOSE_MS = 7000;
+
   private readonly session = inject(UserSessionService);
   private readonly socios = inject(SociosService);
 
@@ -63,6 +65,8 @@ export class HeaderComponent {
   private readonly route = inject(ActivatedRoute);
   private readonly host = inject(ElementRef<HTMLElement>);
   private originalBodyOverflow: string | null = null;
+  private userMenuTimer: ReturnType<typeof setTimeout> | null = null;
+
 
   constructor() {
     this.updateKey();
@@ -88,10 +92,31 @@ export class HeaderComponent {
     event.stopPropagation();
     const next = !this.userMenuOpen();
     this.userMenuOpen.set(next);
+    if (next) {
+      this.scheduleUserMenuAutoClose();
+    } else {
+      this.clearUserMenuTimer();
+    }
   }
 
   closeUserMenu(): void {
     if (this.userMenuOpen()) this.userMenuOpen.set(false);
+    this.clearUserMenuTimer();
+  }
+
+  private scheduleUserMenuAutoClose(): void {
+    this.clearUserMenuTimer();
+    this.userMenuTimer = setTimeout(() => {
+      this.userMenuOpen.set(false);
+      this.userMenuTimer = null;
+    }, HeaderComponent.USER_MENU_AUTO_CLOSE_MS);
+  }
+
+  private clearUserMenuTimer(): void {
+    if (this.userMenuTimer) {
+      clearTimeout(this.userMenuTimer);
+      this.userMenuTimer = null;
+    }
   }
 
   onUserMenuSelect(option: '1' | '2'): void {

@@ -1,4 +1,4 @@
-@use "tokens" as *;
+﻿@use "tokens" as *;
 @use "breakpoints" as *;
 
 :host {
@@ -11,8 +11,8 @@
 .switcher {
   position: relative;
   display: inline-flex;
+  flex-direction: column;
   align-items: center;
-  flex-direction: row-reverse;
   gap: var(--menu-gap);
 }
 
@@ -62,7 +62,10 @@
 }
 
 .menu {
-  position: static;
+  position: absolute;
+  inset-block-start: calc(140% + var(--menu-gap));
+  inset-inline-start: 50%;
+  transform: translateX(-50%);
   z-index: 10000;
   pointer-events: auto;
   list-style: none;
@@ -70,7 +73,6 @@
   padding: 0.12rem 0.14rem;
   background: #000000;
   border: 1px solid $border-dk;
-  border-radius: 0.5rem;
   box-shadow: 0 8px 22px rgba(0, 0, 0, 0.35);
   display: grid;
   grid-auto-flow: row;
