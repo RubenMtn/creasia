@@ -128,6 +128,12 @@ export class HeaderComponent {
     }
   }
 
+  @HostListener('window:creasia:lang-menu-toggle', ['$event'])
+  onLangMenuToggle(event: Event): void {
+    const detail = (event as CustomEvent<{ open: boolean }>).detail;
+    if (detail?.open) this.closeUserMenu();
+  }
+
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: MouseEvent): void {
     if (!this.userMenuOpen()) return;
@@ -366,6 +372,7 @@ export class HeaderComponent {
     }
   }
 }
+
 
 
 

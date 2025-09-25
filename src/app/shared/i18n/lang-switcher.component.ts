@@ -1,4 +1,4 @@
-import { Component, ElementRef, HostListener, OnDestroy, OnInit, inject } from '@angular/core';
+﻿import { Component, ElementRef, HostListener, OnDestroy, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Lang, TranslationService } from './translation.service';
 import { Subscription } from 'rxjs';
@@ -48,6 +48,7 @@ export class LangSwitcherComponent implements OnInit, OnDestroy {
   toggle(event?: Event): void {
     event?.stopPropagation();
     this.open = !this.open;
+    this.emitToggle();
     if (this.open) this.startAutoClose();
     else this.clearAutoClose();
   }
@@ -57,6 +58,7 @@ export class LangSwitcherComponent implements OnInit, OnDestroy {
     // Ya no seteamos current aquí, lo hará la suscripción
     await this.i18n.setLang(code);
     this.open = false;
+    this.emitToggle();
     this.clearAutoClose();
   }
 
@@ -81,10 +83,18 @@ export class LangSwitcherComponent implements OnInit, OnDestroy {
     return found ? found.label : this.current.toUpperCase();
   }
 
+  private emitToggle(): void {
+    if (typeof window === 'undefined') return;
+    window.dispatchEvent(new CustomEvent('creasia:lang-menu-toggle', { detail: { open: this.open } }));
+  }
+
   private startAutoClose(delayMs = 7000): void {
     this.clearAutoClose();
     this.autoCloseTimer = setTimeout(() => {
-      if (this.open) this.open = false;
+      if (this.open) {
+        this.open = false;
+        this.emitToggle();
+      }
       this.clearAutoClose();
     }, delayMs);
   }
@@ -99,7 +109,10 @@ export class LangSwitcherComponent implements OnInit, OnDestroy {
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: MouseEvent): void {
     if (!this.host.nativeElement.contains(event.target as Node)) {
-      this.open = false;
+      if (this.open) {
+        this.open = false;
+        this.emitToggle();
+      }
       this.clearAutoClose();
     }
   }
@@ -107,6 +120,7 @@ export class LangSwitcherComponent implements OnInit, OnDestroy {
   @HostListener('document:keydown.escape')
   onEscape(): void {
     this.open = false;
+    this.emitToggle();
     this.clearAutoClose();
   }
 }
