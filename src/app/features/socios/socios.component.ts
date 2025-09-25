@@ -1,13 +1,15 @@
 ﻿/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint no-empty: ["error", { "allowEmptyCatch": true }] */
-import { TranslationService } from '../../shared/i18n/translation.service';
-import { SociosService } from '../../services/socios.service';
-import { UserSessionService } from '../../services/user-session.service';
 import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { TPipe } from '../../shared/i18n/t.pipe';
 import { Router } from '@angular/router';
+
 import { HttpClient } from '@angular/common/http';
+import { TranslationService } from '../../shared/i18n/translation.service';
+import { TPipe } from '../../shared/i18n/t.pipe';
+
+import { SociosService } from '../../services/socios.service';
+import { UserSessionService } from '../../services/user-session.service';
 import { AuthService } from '../../services/auth.service';
 
 @Component({
@@ -25,9 +27,14 @@ export class SociosComponent implements OnInit, OnDestroy {
   private readonly hasWindow = typeof window !== 'undefined';
   private readonly i18n = inject(TranslationService);
   private router = inject(Router);
-  private redirectTimer: any = null;
+
+  // Servicios
   private http = inject(HttpClient);
+  private socios = inject(SociosService);
+  private session = inject(UserSessionService);
   private auth = inject(AuthService);
+
+  private redirectTimer: any = null;
 
   // Base para polling (en dev fuerza host público)
   private readonly apiBase = (() => {
@@ -44,8 +51,6 @@ export class SociosComponent implements OnInit, OnDestroy {
   showRegisterForm = false;
   showLoginForm = true;
 
-  private socios = inject(SociosService);
-  private session = inject(UserSessionService);
   loading = false;
 
   // Claves i18n (no texto crudo)
@@ -83,7 +88,7 @@ export class SociosComponent implements OnInit, OnDestroy {
     }
     this.persistViewState();
 
-    // Mensajes via URL (activation/lang)
+    // Mensajes via URL (activation/lang) + intento de autologin
     this.applyActivationMessageFromURL();
 
     // Listeners para activación (misma origin) y re-foco
@@ -216,12 +221,20 @@ export class SociosComponent implements OnInit, OnDestroy {
           const nombre = (res.socio.nombre ?? '').trim();
           const displayName = (nombre || res.socio.email || '').trim();
           this.okMsg = 'socios.login.greeting';
+          this.error = '';
           this.greetName = displayName;
+
+          // Guardar access en memoria (AuthService) si tu login.php lo devuelve
+          if (res.access_token) this.auth.setAccess(res.access_token);
+
           this.session.persistLogin(displayName, { token: '1' });
           try {
             localStorage.setItem('creasia:isLoggedIn', '1');
             localStorage.setItem('creasia:userEmail', (res.socio.email || '').trim());
           } catch { }
+
+          // Notificar al header para refrescar el icono/initials
+          try { window.dispatchEvent(new Event('creasia:user-updated')); } catch {}
 
           if (this.redirectTimer) clearTimeout(this.redirectTimer);
           this.redirectTimer = setTimeout(() => {
@@ -266,6 +279,7 @@ export class SociosComponent implements OnInit, OnDestroy {
     this.greetName = null;
   }
 
+  // Lee ?lang=... y opcionalmente ?activation=...
   private applyActivationMessageFromURL(): void {
     if (!this.hasWindow) return;
     const url = new URL(window.location.href);
@@ -311,12 +325,15 @@ export class SociosComponent implements OnInit, OnDestroy {
             this.error = '';
             this.greetName = displayName;
 
-            // Marcas UI previas que ya usabas
+            // Marcas UI previas
             try {
               localStorage.setItem('creasia:isLoggedIn', '1');
               localStorage.setItem('creasia:userEmail', (j.socio.email || '').trim());
             } catch { }
             this.session.persistLogin(displayName, { token: '1' });
+
+            // Notificar al header para que pinte el icono/nombre al instante
+            try { window.dispatchEvent(new Event('creasia:user-updated')); } catch {}
 
             // Forzar vista login (el form se ocultará por el saludo)
             this.showLoginForm = true;
@@ -372,7 +389,6 @@ export class SociosComponent implements OnInit, OnDestroy {
     if (langParam) url.searchParams.delete('lang');
     window.history.replaceState({}, '', url.toString());
   }
-
 
   // Detecta activación via localStorage (misma origin)
   private applyActivationMessageFromStorage(): void {
