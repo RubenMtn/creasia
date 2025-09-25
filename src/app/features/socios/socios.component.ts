@@ -7,6 +7,8 @@ import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TPipe } from '../../shared/i18n/t.pipe';
 import { Router } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-socios',
@@ -24,6 +26,8 @@ export class SociosComponent implements OnInit, OnDestroy {
   private readonly i18n = inject(TranslationService);
   private router = inject(Router);
   private redirectTimer: any = null;
+  private http = inject(HttpClient);
+  private auth = inject(AuthService);
 
   // Base para polling (en dev fuerza host público)
   private readonly apiBase = (() => {
@@ -262,8 +266,6 @@ export class SociosComponent implements OnInit, OnDestroy {
     this.greetName = null;
   }
 
-  // Lee ?lang=... y opcionalmente ?activation=... (&autologin=1)
-  // ✅ Robustecido: si activation=ok, intentamos me() SIEMPRE (tenga o no tenga autologin=1)
   private applyActivationMessageFromURL(): void {
     if (!this.hasWindow) return;
     const url = new URL(window.location.href);
@@ -276,10 +278,8 @@ export class SociosComponent implements OnInit, OnDestroy {
       void this.i18n.setLang(lang2);
     }
 
-    // 2) Activación (+ autologin opcional)
+    // 2) Activación
     const status = url.searchParams.get('activation');
-    //const autologin = url.searchParams.get('autologin') === '1';
-
     if (!status) {
       if (langParam) {
         url.searchParams.delete('lang');
@@ -295,38 +295,38 @@ export class SociosComponent implements OnInit, OnDestroy {
       error: 'socios.activation.error'
     };
 
-    // 👉 Si activation=ok, intentamos SIEMPRE detectar sesión existente (aunque falte autologin=1)
     if (status === 'ok') {
-      fetch(`${this.apiBase}/api/socios_me.php`, {
-        method: 'GET',
-        credentials: 'include',
-        headers: { 'Accept': 'application/json' }
-      })
-        .then(r => r && r.ok ? r.json() : null)
-        .then((j: any) => {
+      // 2.a Intentar autologin con el flujo seguro:
+      //     1) refresh (usa cookie HttpOnly) -> 2) me() con HttpClient (interceptor añade Bearer)
+      this.auth.refresh()
+        .then((ok) => {
+          if (!ok) throw new Error('refresh-failed');
+          return this.http.get<any>('/api/socios_me.php').toPromise();
+        })
+        .then((j) => {
           if (j?.ok && j.socio) {
-            const nombre = (j.socio.nombre ?? '').trim();
-            const displayName = (nombre || j.socio.email || '').trim();
+            const displayName = ((j.socio.nombre ?? '') || j.socio.email || '').trim();
 
             this.okMsg = 'socios.login.greeting';
             this.error = '';
             this.greetName = displayName;
 
+            // Marcas UI previas que ya usabas
             try {
               localStorage.setItem('creasia:isLoggedIn', '1');
               localStorage.setItem('creasia:userEmail', (j.socio.email || '').trim());
             } catch { }
-
             this.session.persistLogin(displayName, { token: '1' });
 
+            // Forzar vista login (el form se ocultará por el saludo)
             this.showLoginForm = true;
             this.showRegisterForm = false;
             this.persistViewState();
 
-            // redirigir como en login normal
+            // Redirección como en login normal
             setTimeout(() => { void this.router.navigateByUrl('/'); }, 2500);
           } else {
-            // Fallback: activado pero sin sesión → dejamos mensaje clásico
+            // Activado pero sin sesión (no llegó cookie, etc.)
             this.okMsg = 'socios.activation.ok';
             this.error = '';
             this.greetName = null;
@@ -336,6 +336,7 @@ export class SociosComponent implements OnInit, OnDestroy {
           }
         })
         .catch(() => {
+          // Fallback: mostramos solo "cuenta activada"
           this.okMsg = 'socios.activation.ok';
           this.error = '';
           this.greetName = null;
