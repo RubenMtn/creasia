@@ -27,7 +27,7 @@ export class LangSwitcherComponent implements OnInit, OnDestroy {
   open = false;
 
   ngOnInit(): void {
-    // 🔹 Mantener sync cuando el idioma cambia desde fuera
+    // ?? Mantener sync cuando el idioma cambia desde fuera
     this.sub = this.i18n.langChanges.subscribe((l) => {
       this.current = l;
     });
@@ -106,6 +106,21 @@ export class LangSwitcherComponent implements OnInit, OnDestroy {
     }
   }
 
+  closeFromExternal(): void {
+    if (!this.open) return;
+    this.open = false;
+    this.emitToggle();
+    this.clearAutoClose();
+  }
+
+  @HostListener('window:creasia:user-menu-toggle', ['$event'])
+  onUserMenuToggle(event: Event): void {
+    const detail = (event as CustomEvent<{ open: boolean }>).detail;
+    if (detail?.open) {
+      this.closeFromExternal();
+    }
+  }
+
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: MouseEvent): void {
     if (!this.host.nativeElement.contains(event.target as Node)) {
@@ -124,3 +139,4 @@ export class LangSwitcherComponent implements OnInit, OnDestroy {
     this.clearAutoClose();
   }
 }
+

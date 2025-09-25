@@ -1,6 +1,6 @@
 ﻿{
   "header": {
-    "brand": "Creasia",
+    "brand": "CREASIA",
     "home": "返回首页",
     "activities": "活动",
     "partners": "会员",
@@ -33,7 +33,7 @@
   },
   "socios": {
     "title": "Creasia 会员福利，远不止于此",
-    "caption": "使用你的邮箱和密码注册，即可获得协会提供的全部权益：独家资讯、折扣、活动邀请等更多惊喜……",
+    "registerCaption": "使用你的邮箱和密码注册，即可获得协会提供的全部权益：独家资讯、折扣、活动邀请等更多惊喜……",
     "loginCaption": "如果你已是 Creasia 会员，请使用邮箱和密码登录，享受我们为你准备的所有福利与最新动态。",
     "actions": {
       "register": "注册",

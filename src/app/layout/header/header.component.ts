@@ -1,6 +1,6 @@
 ﻿/* eslint no-empty: ["error", { "allowEmptyCatch": true }] */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Component, ElementRef, HostListener, inject, signal } from '@angular/core';
+import { Component, ElementRef, HostListener, ViewChild, inject, signal } from '@angular/core';
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -39,6 +39,9 @@ export class HeaderComponent {
   readonly userName = this.session.userName;
   readonly userInitials = this.session.userInitials;
   readonly isLoggedIn = this.session.isLoggedIn;
+
+  @ViewChild(LangSwitcherComponent)
+  private langSwitcher?: LangSwitcherComponent;
 
   readonly userMenuOpen = signal(false);
 
@@ -91,7 +94,11 @@ export class HeaderComponent {
   toggleUserMenu(event: MouseEvent): void {
     event.stopPropagation();
     const next = !this.userMenuOpen();
+    if (next) {
+      this.langSwitcher?.closeFromExternal();
+    }
     this.userMenuOpen.set(next);
+    this.emitUserMenuToggle(next);
     if (next) {
       this.scheduleUserMenuAutoClose();
     } else {
@@ -100,14 +107,22 @@ export class HeaderComponent {
   }
 
   closeUserMenu(): void {
-    if (this.userMenuOpen()) this.userMenuOpen.set(false);
-    this.clearUserMenuTimer();
+    if (this.userMenuOpen()) {
+      this.userMenuOpen.set(false);
+      this.emitUserMenuToggle(false);
+    }
+  }
+
+  private emitUserMenuToggle(open: boolean): void {
+    if (typeof window === 'undefined') return;
+    window.dispatchEvent(new CustomEvent('creasia:user-menu-toggle', { detail: { open } }));
   }
 
   private scheduleUserMenuAutoClose(): void {
     this.clearUserMenuTimer();
     this.userMenuTimer = setTimeout(() => {
       this.userMenuOpen.set(false);
+      this.emitUserMenuToggle(false);
       this.userMenuTimer = null;
     }, HeaderComponent.USER_MENU_AUTO_CLOSE_MS);
   }
@@ -145,7 +160,7 @@ export class HeaderComponent {
   }
 
 
-  /* ───────── Header existente ───────── */
+  /* --------- Header existente --------- */
 
   @HostListener('document:keydown.escape')
   onEscape(): void {
@@ -372,6 +387,16 @@ export class HeaderComponent {
     }
   }
 }
+
+
+
+
+
+
+
+
+
+
 
 
 

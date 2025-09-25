@@ -33,7 +33,7 @@
   },
   "socios": {
     "title": "Benefits with Creasia and much more",
-    "caption": "Register with your email and a password to access all the benefits our association provides: exclusive information, discounts, event invitations, and much more...",
+    "registerCaption": "Register with your email and a password to access all the benefits our association provides: exclusive information, discounts, event invitations, and much more...",
     "loginCaption": "If you are already a Creasia member, sign in with your email and password to enjoy all the benefits and updates we have for you.",
     "actions": {
       "register": "Register",

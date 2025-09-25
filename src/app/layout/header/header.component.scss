@@ -319,6 +319,7 @@
 
 /* -- Mobile (≤ tablet) ----------------------------------------------------- */
 @include for-mobile {
+  .brand { font-size: clamp(2.4rem, 5vw, 2rem); } // ajusta los valores que quieras
   .brand--networking { font-size: clamp(1.5rem, 5vw, 2rem); }
   .brand--activities { font-size: clamp(1.4rem, 5vw, 2rem); }
   .brand--gourmet    { font-size: clamp(1rem, 5vw, 2rem); }
