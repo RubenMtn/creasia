@@ -1,9 +1,13 @@
-﻿import { Component, ElementRef, HostListener, inject, signal } from '@angular/core';
+﻿/* eslint no-empty: ["error", { "allowEmptyCatch": true }] */
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { Component, ElementRef, HostListener, inject, signal } from '@angular/core';
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { LangSwitcherComponent } from '../../shared/i18n/lang-switcher.component';
 import { TPipe } from '../../shared/i18n/t.pipe';
+import { UserSessionService } from '../../services/user-session.service';
+import { SociosService } from '../../services/socios.service';
 
 interface MenuItem {
   labelKey: string;
@@ -27,6 +31,14 @@ interface SavedFieldState {
 })
 export class HeaderComponent {
   private static readonly RETURN_STATE_KEY = 'creasia:returnState';
+  private readonly session = inject(UserSessionService);
+  private readonly socios = inject(SociosService);
+
+  readonly userName = this.session.userName;
+  readonly userInitials = this.session.userInitials;
+  readonly isLoggedIn = this.session.isLoggedIn;
+
+  readonly userMenuOpen = signal(false);
 
   readonly headerKey = signal('header.brand');
   readonly isHome = signal(true);
@@ -54,24 +66,65 @@ export class HeaderComponent {
 
   constructor() {
     this.updateKey();
+    this.session.refreshFromStorage();
+    this.closeUserMenu();
+
     this.router.events
       .pipe(filter((event): event is NavigationEnd => event instanceof NavigationEnd), takeUntilDestroyed())
       .subscribe((event) => {
         this.updateKey();
         this.restorePendingState(event.urlAfterRedirects);
+        // re-hidratar por si el login ocurrió en otra ruta
+        this.session.refreshFromStorage();
+        this.closeUserMenu();
       });
   }
+
+  goToProfile(): void {
+    // Llévale a /socios (o a una futura pantalla de perfil)
+    void this.router.navigateByUrl('/socios');
+  }
+  toggleUserMenu(event: MouseEvent): void {
+    event.stopPropagation();
+    const next = !this.userMenuOpen();
+    this.userMenuOpen.set(next);
+  }
+
+  closeUserMenu(): void {
+    if (this.userMenuOpen()) this.userMenuOpen.set(false);
+  }
+
+  onUserMenuSelect(option: '1' | '2'): void {
+    this.closeUserMenu();
+    if (option === '1') {
+      this.goToProfile();
+    } else if (option === '2') {
+      this.socios.logout();
+    }
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    if (!this.userMenuOpen()) return;
+    const target = event.target as Node | null;
+    if (!target) return;
+    const wrapper = this.host.nativeElement.querySelector('.user-menu');
+    if (wrapper && wrapper.contains(target)) return;
+    this.closeUserMenu();
+  }
+
+
+  /* ───────── Header existente ───────── */
 
   @HostListener('document:keydown.escape')
   onEscape(): void {
     this.closeMenu();
+    this.closeUserMenu();
   }
 
   @HostListener('window:resize')
   onWindowResize(): void {
-    if (!this.menuOpen()) {
-      return;
-    }
+    if (!this.menuOpen()) return;
 
     if (typeof window !== 'undefined') {
       window.requestAnimationFrame(() => this.updateMenuOffsets());
@@ -97,9 +150,7 @@ export class HeaderComponent {
   }
 
   closeMenu(): void {
-    if (this.menuOpen()) {
-      this.menuOpen.set(false);
-    }
+    if (this.menuOpen()) this.menuOpen.set(false);
     this.toggleBodyScroll(false);
     this.menuOffsets.set({ top: 0, bottom: 0 });
   }
@@ -166,9 +217,7 @@ export class HeaderComponent {
   }
 
   private updateMenuOffsets(): void {
-    if (typeof window === 'undefined') {
-      return;
-    }
+    if (typeof window === 'undefined') return;
 
     const headerEl = this.host.nativeElement.querySelector('.hdr') as HTMLElement | null;
     const footerEl = document.querySelector('app-footer') as HTMLElement | null;
@@ -180,9 +229,7 @@ export class HeaderComponent {
   }
 
   private restartAnimation(): void {
-    if (typeof window === 'undefined') {
-      return;
-    }
+    if (typeof window === 'undefined') return;
 
     const currentUrl = this.router.url;
     const isOnHome = this.isHome();
@@ -205,37 +252,27 @@ export class HeaderComponent {
   }
 
   private storeReturnState(originUrl: string): void {
-    if (typeof window === 'undefined') {
-      return;
-    }
+    if (typeof window === 'undefined') return;
 
     const fields = this.captureFormState();
     const payload = { url: originUrl, fields };
 
     if (originUrl.startsWith('/socios')) {
       try {
-        window.sessionStorage.setItem('creasia:sociosRestore', '1');
-      } catch {
-        // ignore storage errors
-      }
+        window.sessionStorage.setItem(HeaderComponent.RETURN_STATE_KEY, '1');
+      } catch { }
     }
 
     try {
       window.sessionStorage.setItem(HeaderComponent.RETURN_STATE_KEY, JSON.stringify(payload));
-    } catch {
-      // ignore storage errors
-    }
+    } catch { }
   }
 
   private restorePendingState(url: string): void {
-    if (typeof window === 'undefined') {
-      return;
-    }
+    if (typeof window === 'undefined') return;
 
     const raw = window.sessionStorage.getItem(HeaderComponent.RETURN_STATE_KEY);
-    if (!raw) {
-      return;
-    }
+    if (!raw) return;
 
     let payload: { url: string; fields: SavedFieldState[] } | null = null;
     try {
@@ -245,27 +282,21 @@ export class HeaderComponent {
       return;
     }
 
-    if (!payload || payload.url !== url) {
-      return;
-    }
+    if (!payload || payload.url !== url) return;
 
     window.sessionStorage.removeItem(HeaderComponent.RETURN_STATE_KEY);
     queueMicrotask(() => this.restoreFormState(payload!.fields ?? []));
   }
 
   private captureFormState(): SavedFieldState[] {
-    if (typeof document === 'undefined') {
-      return [];
-    }
+    if (typeof document === 'undefined') return [];
 
-    const elements = Array.from(document.querySelectorAll<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>('input, textarea, select'));
+    const elements = Array.from(
+      document.querySelectorAll<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>('input, textarea, select')
+    );
 
     return elements.map((element, index) => {
-      const entry: SavedFieldState = {
-        index,
-        value: element.value ?? '',
-        checked: null
-      };
+      const entry: SavedFieldState = { index, value: element.value ?? '', checked: null };
 
       if (element instanceof HTMLInputElement && (element.type === 'checkbox' || element.type === 'radio')) {
         entry.checked = element.checked;
@@ -276,22 +307,18 @@ export class HeaderComponent {
   }
 
   private restoreFormState(fields: SavedFieldState[]): void {
-    if (typeof document === 'undefined') {
-      return;
-    }
+    if (typeof document === 'undefined') return;
 
-    const elements = Array.from(document.querySelectorAll<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>('input, textarea, select'));
+    const elements = Array.from(
+      document.querySelectorAll<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>('input, textarea, select')
+    );
 
     fields.forEach(({ index, value, checked }) => {
       const element = elements[index];
-      if (!element) {
-        return;
-      }
+      if (!element) return;
 
       if (element instanceof HTMLInputElement && (element.type === 'checkbox' || element.type === 'radio')) {
-        if (checked !== null) {
-          element.checked = checked;
-        }
+        if (checked !== null) element.checked = checked;
       }
 
       element.value = value ?? '';
@@ -301,9 +328,7 @@ export class HeaderComponent {
   }
 
   private toggleBodyScroll(disable: boolean): void {
-    if (typeof document === 'undefined') {
-      return;
-    }
+    if (typeof document === 'undefined') return;
 
     if (disable) {
       if (this.originalBodyOverflow === null) {
@@ -316,3 +341,12 @@ export class HeaderComponent {
     }
   }
 }
+
+
+
+
+
+
+
+
+

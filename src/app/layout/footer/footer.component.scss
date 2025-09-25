@@ -35,7 +35,7 @@
 
 .ftr__icon {
   inline-size: 1rem;
-  block-size: 1rem;
+  block-size: 2rem;
   object-fit: contain;
 }
 
@@ -44,18 +44,19 @@
     padding: $space-1 * 0.75;
   }
 
+  // Separación entre los iconos
   .ftr__social {
-    gap: $space-1 * 1.2;
+    gap: $space-1 * 4;
   }
 
   .ftr__link {
     font-size: 0.6rem;
     gap: 0.3rem;
   }
-
+// Tamaño de los iconos
   .ftr__icon {
-    inline-size: 0.8rem;
-    block-size: 0.8rem;
+    inline-size: 1.3rem;
+    block-size: 1.3rem;
   }
 }
 

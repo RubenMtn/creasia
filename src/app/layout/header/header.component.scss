@@ -14,370 +14,289 @@
 }
 
 @include from-tablet {
-  .hdr {
-    padding: $space-2; // tablet y escritorio
-  }
+  .hdr { padding: $space-2; } // tablet y escritorio
 }
 
+/* ---------- Botón home y hamburguesa (igual que tenías) ---------- */
 .home {
   position: absolute;
-  inset-inline-start: var(--lang-gutter, 10vw);
+  inset-inline-start: calc(var(--lang-gutter, 10vw) + 50px);
   top: 50%;
   transform: translateY(-50%);
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 22px;
-  height: 22px;
-  padding: 0;
-  border: none;
-  background: transparent;
-  cursor: pointer;
+  width: 22px; height: 22px;
+  padding: 0; border: none; background: transparent; cursor: pointer;
 
-  img {
-    width: 100%;
-    height: auto;
-  }
+  img { width: 120%; height: auto; }
 }
 
-.home:focus-visible {
-  outline: 2px solid rgba(255, 255, 255, 0.6);
-  outline-offset: 4px;
-}
+.home:focus-visible { outline: 2px solid rgba(255,255,255,.6); outline-offset: 4px; }
 
 .hamburger {
   position: absolute;
   inset-inline-start: var(--lang-gutter, 10vw);
   top: 50%;
   transform: translateY(-50%);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  padding: 0;
-  border: none;
-  background: transparent;
-  cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 28px; height: 28px; padding: 0; border: none; background: transparent; cursor: pointer;
 
   span {
-    position: absolute;
-    display: block;
-    width: 100%;
-    height: 3px;
-    border-radius: 999px;
-    background: $text-light;
-    transform-origin: center;
+    position: absolute; display: block; width: 100%; height: 3px; border-radius: 999px;
+    background: $text-light; transform-origin: center;
     transition: transform 220ms ease, opacity 180ms ease;
   }
-
-  span:nth-child(1) {
-    transform: translateY(-7px);
-  }
-
-  span:nth-child(2) {
-    transform: translateY(0);
-  }
-
-  span:nth-child(3) {
-    transform: translateY(7px);
-  }
+  span:nth-child(1) { transform: translateY(-7px); }
+  span:nth-child(2) { transform: translateY(0); }
+  span:nth-child(3) { transform: translateY(7px); }
 
   &.open {
-    span:nth-child(1) {
-      transform: translateY(0) rotate(45deg);
-    }
-
-    span:nth-child(2) {
-      opacity: 0;
-    }
-
-    span:nth-child(3) {
-      transform: translateY(0) rotate(-45deg);
-    }
+    span:nth-child(1) { transform: translateY(0) rotate(45deg); }
+    span:nth-child(2) { opacity: 0; }
+    span:nth-child(3) { transform: translateY(0) rotate(-45deg); }
   }
 }
+.hamburger:focus-visible { outline: 2px solid rgba(255,255,255,.6); outline-offset: 4px; }
 
-.hamburger:focus-visible {
-  outline: 2px solid rgba(255, 255, 255, 0.6);
-  outline-offset: 4px;
-}
-
-// Menu desplegable
+/* ---------- Panel de menú (igual) ---------- */
 .menu-overlay {
-  position: fixed;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  z-index: 9500;
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
-  padding: $space-2;
-  padding-top: calc(env(safe-area-inset-top, 0px) + #{$space-1});
+  position: fixed; top: 0; bottom: 0; left: 0; right: 0; z-index: 9500;
+  display: flex; align-items: flex-start; justify-content: center;
+  padding: $space-2; padding-top: calc(env(safe-area-inset-top, 0px) + #{$space-1});
   padding-bottom: calc(env(safe-area-inset-bottom, 0px) + #{$space-2});
-  background: rgba($bg-dark, 0.92);
-  backdrop-filter: blur(18px);
-  overflow-y: auto;
+  background: rgba($bg-dark, .92); backdrop-filter: blur(18px); overflow-y: auto;
 }
 
 .menu-panel {
-  width: min(480px, 100%);
-  padding: $space-3;
-  border-radius: $radius-2xl;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba($bg-near, 0.88);
-  box-shadow: 0 24px 70px rgba($bg-dark, 0.45);
+  width: min(480px, 100%); padding: $space-3; border-radius: $radius-2xl;
+  border: 1px solid rgba(255,255,255,.12); background: rgba($bg-near, .88);
+  box-shadow: 0 24px 70px rgba($bg-dark, .45);
 }
 
-.menu-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: $space-2;
-}
+.menu-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: $space-2; }
 
 .menu-link {
-  width: 100%;
-  display: inline-flex;
-  align-items: center;
-  justify-content: flex-start;
-  gap: $space-2;
-  padding: $space-2 $space-3;
-  border: 1px solid transparent;
-  border-radius: $radius-2xl;
-  background: rgba(7, 7, 7, 0.7);
-  color: $text-light;
-  font-family: $font-body;
-  font-size: clamp(1rem, 4vw, 1.5rem);
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  cursor: pointer;
+  width: 100%; display: inline-flex; align-items: center; justify-content: flex-start; gap: $space-2;
+  padding: $space-2 $space-3; border: 1px solid transparent; border-radius: $radius-2xl;
+  background: rgba(7,7,7,.7); color: $text-light; font-family: $font-body;
+  font-size: clamp(1rem, 4vw, 1.5rem); letter-spacing: .05em; text-transform: uppercase; cursor: pointer;
   transition: background 180ms ease, border-color 180ms ease, transform 200ms ease;
 }
 
-.menu-link__icon {
-  width: 1.5rem;
-  height: 1.5rem;
-  flex-shrink: 0;
-  object-fit: contain;
-}
+.menu-link__icon { width: 1.5rem; height: 1.5rem; flex-shrink: 0; object-fit: contain; }
+.menu-link__label { flex: 1; text-align: left; }
 
-.menu-link__label {
-  flex: 1;
-  text-align: left;
-}
-
-
-
-.menu-link:hover {
-  background: rgba(57, 57, 57, 0.7);
-  border-color: rgba(70, 70, 70, 0.8);
-  transform: translateX(4px);
-}
-
-.menu-link:focus-visible {
-  outline: 2px solid rgba(30, 30, 30, 0.5);
-  outline-offset: 4px;
-  background: rgba(20, 20, 20, 0.3);
-}
+.menu-link:hover { background: rgba(57,57,57,.7); border-color: rgba(70,70,70,.8); transform: translateX(4px); }
+.menu-link:focus-visible { outline: 2px solid rgba(30,30,30,.5); outline-offset: 4px; background: rgba(20,20,20,.3); }
 
 @include from-desktop {
   .menu-overlay {
-    justify-content: flex-start;
-    align-items: flex-start;
-    padding-top: $space-3;
-    padding-bottom: $space-3;
+    justify-content: flex-start; align-items: flex-start;
+    padding-top: $space-3; padding-bottom: $space-3;
     padding-inline-start: max(var(--lang-gutter, 8vw), #{$space-3});
-    padding-inline-end: $space-3;
-    background: transparent;
-    backdrop-filter: none;
+    padding-inline-end: $space-3; background: transparent; backdrop-filter: none;
   }
-
   .menu-panel {
-    width: 320px;
-    padding: $space-3;
-    align-self: flex-start;
-    background: rgba($bg-near, 0.94);
-    box-shadow: 0 24px 60px rgba($bg-dark, 0.35);
+    width: 320px; padding: $space-3; align-self: flex-start;
+    background: rgba($bg-near, .94); box-shadow: 0 24px 60px rgba($bg-dark, .35);
   }
-
-  .menu-list {
-    gap: $space-2 * 0.75;
-  }
-
-  .menu-link {
-    font-size: 1.05rem;
-    letter-spacing: 0.04em;
-    text-transform: none;
-    justify-content: flex-start;
-    transform: none;
-  }
-
-
-  .menu-link:hover {
-    transform: none;
-  }
+  .menu-list { gap: $space-2 * .75; }
+  .menu-link { font-size: 1.05rem; letter-spacing: .04em; text-transform: none; justify-content: flex-start; transform: none; }
+  .menu-link:hover { transform: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .hamburger span {
-    transition: none;
-  }
-
-  .menu-link {
-    transition: none;
-  }
-
+  .hamburger span { transition: none; }
+  .menu-link { transition: none; }
 }
 
-// Selector de idioma anclado a la derecha.
-.lang {
+/* ---------- Bloque derecho (avatar + idioma) ---------- */
+.hdr-right {
   position: absolute;
   inset-inline-end: var(--lang-gutter, 10vw);
   top: 50%;
   transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  gap: $space-2 * 0.75; // espacio entre avatar e idioma
+  min-height: 24px;
+}
+
+/* Avatar de usuario */
+.user-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px; height: 30px;
+  border-radius: 8px; // esquinas redondeadas
+  padding: 0;
+  border: none;
+  font-family: $font-title;
+  font-weight: 700;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: #1a1a1a;
+  //background: $gold-soft; // amarillo suave definido en tokens
+  background: white; // amarillo suave definido en tokens
+  cursor: pointer;
+  box-shadow: 0 0 0 1px rgba(0,0,0,.2) inset;
+}
+
+.user-login {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+}
+.user-login:focus-visible {
+  outline: 2px solid rgba(255,255,255,.6);
+  outline-offset: 3px;
+}
+
+.user-login__icon {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+}
+
+
+.user-menu {
+  position: relative;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.25rem;
+}
+
+.user-menu__trigger {
+  position: relative;
+  z-index: 2;
+}
+
+.user-menu__list {
+  position: absolute;
+  inset-inline-end: 0;
+  inset-block-start: calc(100% + 4px);
+  z-index: 9600;
+  pointer-events: auto;
+  list-style: none;
+  margin: 0;
+  padding: 0.15rem 0.2rem;
+  background: rgba(0, 0, 0, 0.94);
+  border: 1px solid $border-dk;
+  border-radius: 0.5rem;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.4);
+  display: grid;
+  grid-auto-flow: row;
+  gap: 0.18rem;
+  min-width: 44px;
+}
+
+.user-menu__opt {
+  gap: 0.25rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36px;
+  padding: 0.18rem 0.4rem;
+  background: transparent;
+  color: $text-light;
+  border: 0;
+  border-radius: 0.375rem;
+  font-family: $font-title;
+  font-size: 0.82rem;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 160ms ease, outline 160ms ease;
+}
+
+.user-menu__icon {
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+}
+
+.user-menu__opt:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.user-menu__opt:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.25);
+  outline-offset: 0;
+}
+
+@include for-tablet {
+  .user-menu__list {
+    min-width: 48px;
+    padding: 0.18rem 0.22rem;
+  }
+
+  .user-menu__opt {
+    min-width: 40px;
+    font-size: 0.88rem;
+  }
+}
+
+/* Reposicionamos el lang switcher para que fluya junto al badge */
+.lang {
+  position: static;   // deja de ser absolute
+  transform: none;
+  top: auto;
   min-width: 30px;
   min-height: 24px;
   overflow: visible;
 }
 
-.hdr .lang {
-  --menu-gap: -2px; // movil
-}
+.hdr .lang { --menu-gap: -2px; }
+@include for-tablet { .hdr .lang { --menu-gap: -4px; } }
+@include for-desktop { .hdr .lang { --menu-gap: -6px; } }
 
-@include for-tablet {
-  .hdr .lang {
-    --menu-gap: -4px; // tablet
-  }
-}
-
-@include for-desktop {
-  .hdr .lang {
-    --menu-gap: -6px; // escritorio
-  }
-}
-
-// Marca "Creasia" con animacion de entrada.
+/* ---------- Marca ---------- */
 .brand {
-  margin: 0;
-  font-family: $font-title;
-  color: $text-light;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  line-height: 1.1;
-  position: relative;
+  margin: 0; font-family: $font-title; color: $text-light; text-transform: uppercase;
+  letter-spacing: .08em; line-height: 1.1; position: relative;
   animation: inkIn 1200ms 180ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
-  font-size: clamp(2.25rem, 8vw, 2.8rem); // movil
+  font-size: clamp(2.25rem, 8vw, 2.8rem);
 }
 
-// Para lo tÃ­tulos de cabecera mÃ¡s grandes quepan bien en la versiÃ³n mÃ³vil:
-@include for-mobile {
-  .brand--networking {
-    font-size: clamp(1.5rem, 5vw, 2rem);
-  }
+/* (resto igual que tenías) */
+.brand--networking { @include for-mobile { font-size: clamp(1.5rem, 5vw, 2rem); } }
+.brand--activities { @include for-mobile { font-size: clamp(1.4rem, 5vw, 2rem); } }
+.brand--gourmet    { @include for-mobile { font-size: clamp(1rem, 5vw, 2rem); } }
+.brand--consulting { @include for-mobile { font-size: clamp(1.4rem, 5vw, 2rem); } }
 
-  .brand--activities {
-    font-size: clamp(1.4rem, 5vw, 2rem);
-  }
-  
-  .brand--gourmet {
-    font-size: clamp(1rem, 5vw, 2rem);
-  }
-
-  .brand--consulting {
-    font-size: clamp(1.4rem, 5vw, 2rem);
-  }
-
-}
-
-@include from-tablet {
-  .brand {
-    font-size: clamp(2.6rem, 5vw, 3.2rem); // tablet
-  }
-}
-
-@include from-desktop {
-  .brand {
-    font-size: clamp(3.2rem, 4vw, 4rem); // escritorio
-  }
-}
+@include from-tablet { .brand { font-size: clamp(2.6rem, 5vw, 3.2rem); } }
+@include from-desktop { .brand { font-size: clamp(3.2rem, 4vw, 4rem); } }
 
 .brand::after {
-  content: "";
-  position: absolute;
-  left: 50%;
-  bottom: -0.37em;
-  transform: translateX(-50%);
-  width: 0;
-  height: 2px;
-  border-radius: 2px;
+  content: ""; position: absolute; left: 50%; bottom: -0.37em; transform: translateX(-50%);
+  width: 0; height: 2px; border-radius: 2px;
   background: linear-gradient(90deg, transparent 0 10%, $gold-soft 30% 70%, transparent 90% 100%);
-  box-shadow: 0 0 10px rgba($gold-soft, 0.45);
+  box-shadow: 0 0 10px rgba($gold-soft, .45);
   animation: strokeIn 1100ms 500ms cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
 }
-
-@include from-tablet {
-  .brand::after {
-    height: 3px; // tablet
-  }
-}
-
-@include from-desktop {
-  .brand::after {
-    height: 4px; // escritorio
-  }
-}
+@include from-tablet { .brand::after { height: 3px; } }
+@include from-desktop { .brand::after { height: 4px; } }
 
 @media (prefers-reduced-motion: reduce) {
-  .brand {
-    animation: none;
-    opacity: 1;
-    transform: none;
-  }
-
-  .brand::after {
-    animation: none;
-    width: 70%;
-  }
+  .brand { animation: none; opacity: 1; transform: none; }
+  .brand::after { animation: none; width: 70%; }
 }
 
-@keyframes inkIn {
-  0% {
-    opacity: 0;
-    transform: translateY(8px);
-    letter-spacing: 0.30em;
-    filter: blur(2px);
-  }
+@keyframes inkIn { 0% { opacity: 0; transform: translateY(8px); letter-spacing: .30em; filter: blur(2px); }
+  60% { opacity: 1; filter: blur(0); }
+  100% { transform: none; letter-spacing: .10em; } }
+@keyframes strokeIn { to { width: 70%; } }
 
-  60% {
-    opacity: 1;
-    filter: blur(0);
-  }
-
-  100% {
-    transform: none;
-    letter-spacing: 0.10em;
-  }
-}
-
-@keyframes strokeIn {
-  to {
-    width: 70%;
-  }
-}
+/* Soporte chino (como tenías) */
+:host-context(html[lang="zh"]) .brand { text-transform: none; letter-spacing: 0; }
 
 
 
-
-
-
-
-
-:host-context(html[lang="zh"]) .brand {
-  text-transform: none;
-  letter-spacing: 0;
-}

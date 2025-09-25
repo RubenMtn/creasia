@@ -1,7 +1,8 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+﻿/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint no-empty: ["error", { "allowEmptyCatch": true }] */
 import { TranslationService } from '../../shared/i18n/translation.service'
 import { SociosService } from '../../services/socios.service';
+import { UserSessionService } from '../../services/user-session.service';
 import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TPipe } from '../../shared/i18n/t.pipe';
@@ -25,7 +26,7 @@ export class SociosComponent implements OnInit, OnDestroy {
   private redirectTimer: any = null;
 
 
-  // ✅ NUEVO: base para llamadas del polling (evita ir a localhost:4200 en dev)
+  // âœ… NUEVO: base para llamadas del polling (evita ir a localhost:4200 en dev)
   private readonly apiBase = (() => {
     try {
       const host = window.location.hostname;
@@ -39,6 +40,7 @@ export class SociosComponent implements OnInit, OnDestroy {
   showRegisterForm = false;
   showLoginForm = false;
   private socios = inject(SociosService);
+  private session = inject(UserSessionService);
   loading = false;
 
   // Claves i18n (no texto crudo)
@@ -47,12 +49,12 @@ export class SociosComponent implements OnInit, OnDestroy {
   // Nombre opcional para saludar tras login
   greetName: string | null = null;
 
-  // --- Polling activación (para activación desde otro dispositivo) ---
+  // --- Polling activaciÃ³n (para activaciÃ³n desde otro dispositivo) ---
   private activationTimer: any = null;
   private activationDeadline = 0;
   private pendingUid: number | null = null;
   private readonly pollEveryMs = 5000;          // cada 5s
-  private readonly pollMaxMs = 2 * 60 * 1000; // máx 2 minutos
+  private readonly pollMaxMs = 2 * 60 * 1000; // mÃ¡x 2 minutos
 
   // Listeners como propiedades flecha para poder quitarlos en ngOnDestroy
   private onStorage = (e: StorageEvent) => {
@@ -86,11 +88,11 @@ export class SociosComponent implements OnInit, OnDestroy {
     // 1) Mensajes por ?activation=... (si venimos redirigidos)
     this.applyActivationMessageFromURL();
 
-    // 2) Suscripción a cambios en localStorage (si se activó en otra pestaña del MISMO navegador)
+    // 2) SuscripciÃ³n a cambios en localStorage (si se activÃ³ en otra pestaÃ±a del MISMO navegador)
     window.addEventListener('storage', this.onStorage);
     window.addEventListener('focus', this.onFocus);
 
-    // 3) Reanudar polling si había un UID pendiente en esta sesión
+    // 3) Reanudar polling si habÃ­a un UID pendiente en esta sesiÃ³n
     const pending = window.sessionStorage.getItem(SociosComponent.PENDING_UID_KEY);
     if (pending) {
       const uid = parseInt(pending, 10);
@@ -102,7 +104,7 @@ export class SociosComponent implements OnInit, OnDestroy {
       }
     }
 
-    // 4) Por si ya existe la marca (activado hace un momento en otra pestaña)
+    // 4) Por si ya existe la marca (activado hace un momento en otra pestaÃ±a)
     this.applyActivationMessageFromStorage();
   }
 
@@ -132,7 +134,7 @@ export class SociosComponent implements OnInit, OnDestroy {
     this.persistViewState();
   }
 
-  // ⬇️ Helper para partir apellidos con partículas extendidas y regla del guion
+  // â¬‡ï¸ Helper para partir apellidos con partÃ­culas extendidas y regla del guion
   private splitApellidos(input: string): { a1: string; a2: string | null } {
     const text = (input ?? '')
       .replace(/[\\/.&+]+/g, ' ')
@@ -211,13 +213,13 @@ export class SociosComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // 2) Falta algún obligatorio (apellido es opcional)
+    // 2) Falta algÃºn obligatorio (apellido es opcional)
     if (!nombre || !email || !password) {
       this.error = 'socios.errors.missingRequired';
       return;
     }
 
-    // 3) Email no válido
+    // 3) Email no vÃ¡lido
     if (!this.isValidEmail(email)) {
       this.error = 'socios.errors.invalidEmail';
       return;
@@ -255,7 +257,7 @@ export class SociosComponent implements OnInit, OnDestroy {
         if (e.status === 409) this.error = 'socios.errors.emailAlreadyRegistered';
         else if (e.status === 422) this.error = 'socios.errors.invalidEmailOrPassword';
         else this.error = 'socios.errors.server';
-        this.loading = false; // reactivar botón tras error
+        this.loading = false; // reactivar botÃ³n tras error
       },
       complete: () => (this.loading = false)
     });
@@ -278,29 +280,21 @@ export class SociosComponent implements OnInit, OnDestroy {
     this.socios.login(email, password).subscribe({
       next: (res: any) => {
         if (res.ok && res.socio) {
-          const nombre = (res.socio.nombre || '').trim();
+          const nombre = (res.socio.nombre ?? '').trim();
+          const displayName = (nombre || res.socio.email || '').trim(); // siempre string
           this.okMsg = 'socios.login.greeting';
-          this.greetName = nombre || res.socio.email; // fallback
+          this.greetName = displayName;
+          this.session.persistLogin(displayName, { token: '1' });
 
-          // 🔁 por si el usuario hace doble login muy rápido
-          if (this.redirectTimer) {
-            clearTimeout(this.redirectTimer);
-            this.redirectTimer = null;
-          }
-
-          // ⏳ Redirige al home a los 2.5s
+          if (this.redirectTimer) { clearTimeout(this.redirectTimer); }
           this.redirectTimer = setTimeout(() => {
-            // Con Router (recomendado):
-            this.router.navigateByUrl('/');
-
-            // Si por algún motivo no hay routing configurado:
-            // window.location.href = '/';
+            void this.router.navigateByUrl('/');
           }, 2500);
         } else {
           this.error = res.error || 'socios.errors.invalidCredentials';
           this.greetName = null;
+          this.session.clearLogin();
         }
-
       },
       error: (e) => {
         this.error =
@@ -309,9 +303,16 @@ export class SociosComponent implements OnInit, OnDestroy {
               : e.status === 403 ? 'socios.errors.mustActivate'
                 : 'socios.errors.server';
         this.loading = false;
+        this.session.clearLogin();
       },
       complete: () => (this.loading = false),
     });
+  }
+
+  logout(): void {
+    this.session.clearLogin();
+    // opcional: volver al inicio
+    // void this.router.navigateByUrl('/');
   }
 
   private applyViewState(state: string): boolean {
@@ -334,71 +335,71 @@ export class SociosComponent implements OnInit, OnDestroy {
     this.greetName = null;
   }
 
- // Lee ?lang=... SIEMPRE, y opcionalmente ?activation=...
-private applyActivationMessageFromURL(): void {
-  if (!this.hasWindow) return;
-  const url = new URL(window.location.href);
+  // Lee ?lang=... SIEMPRE, y opcionalmente ?activation=...
+  private applyActivationMessageFromURL(): void {
+    if (!this.hasWindow) return;
+    const url = new URL(window.location.href);
 
-  // 1) Aplicar idioma si viene por query (independiente de activation)
-  const langParam = url.searchParams.get('lang');
-  if (langParam) {
-    const lang2 = (langParam.slice(0, 2).toLowerCase() as 'es' | 'en' | 'zh');
-    // setLang es async; no bloqueamos la UI
-    try { localStorage.setItem('creasia:lang', lang2); } catch {}
-    // si tienes TranslationService inyectado:
-    //   private readonly i18n = inject(TranslationService);
-    void this.i18n.setLang(lang2);
-  }
-
-  // 2) Si no hay activation, solo limpia el parámetro lang y sal
-  const status = url.searchParams.get('activation');
-  if (!status) {
+    // 1) Aplicar idioma si viene por query (independiente de activation)
+    const langParam = url.searchParams.get('lang');
     if (langParam) {
-      url.searchParams.delete('lang');
-      window.history.replaceState({}, '', url.toString());
+      const lang2 = (langParam.slice(0, 2).toLowerCase() as 'es' | 'en' | 'zh');
+      // setLang es async; no bloqueamos la UI
+      try { localStorage.setItem('creasia:lang', lang2); } catch { }
+      // si tienes TranslationService inyectado:
+      //   private readonly i18n = inject(TranslationService);
+      void this.i18n.setLang(lang2);
     }
-    return;
+
+    // 2) Si no hay activation, solo limpia el parÃ¡metro lang y sal
+    const status = url.searchParams.get('activation');
+    if (!status) {
+      if (langParam) {
+        url.searchParams.delete('lang');
+        window.history.replaceState({}, '', url.toString());
+      }
+      return;
+    }
+
+    // 3) Procesar activation como ya hacÃ­as
+    const okMap: Record<string, string> = { ok: 'socios.activation.ok' };
+    const errMap: Record<string, string> = {
+      expired: 'socios.activation.expired',
+      used: 'socios.activation.used',
+      invalid: 'socios.activation.invalid',
+      error: 'socios.activation.error'
+    };
+
+    if (okMap[status]) {
+      this.okMsg = okMap[status];
+      this.error = '';
+      this.greetName = null;
+      this.stopActivationPolling();
+    } else if (errMap[status]) {
+      this.error = errMap[status];
+      this.okMsg = '';
+      this.greetName = null;
+      this.stopActivationPolling();
+    } else {
+      this.error = 'socios.activation.invalid';
+      this.okMsg = '';
+      this.greetName = null;
+      this.stopActivationPolling();
+    }
+
+    // Forzar vista login (como ya hacÃ­as)
+    this.showLoginForm = true;
+    this.showRegisterForm = false;
+    this.persistViewState();
+
+    // 4) Limpia ambos params de la URL
+    url.searchParams.delete('activation');
+    if (langParam) url.searchParams.delete('lang');
+    window.history.replaceState({}, '', url.toString());
   }
 
-  // 3) Procesar activation como ya hacías
-  const okMap: Record<string, string> = { ok: 'socios.activation.ok' };
-  const errMap: Record<string, string> = {
-    expired: 'socios.activation.expired',
-    used: 'socios.activation.used',
-    invalid: 'socios.activation.invalid',
-    error: 'socios.activation.error'
-  };
 
-  if (okMap[status]) {
-    this.okMsg = okMap[status];
-    this.error = '';
-    this.greetName = null;
-    this.stopActivationPolling();
-  } else if (errMap[status]) {
-    this.error = errMap[status];
-    this.okMsg = '';
-    this.greetName = null;
-    this.stopActivationPolling();
-  } else {
-    this.error = 'socios.activation.invalid';
-    this.okMsg = '';
-    this.greetName = null;
-    this.stopActivationPolling();
-  }
-
-  // Forzar vista login (como ya hacías)
-  this.showLoginForm = true;
-  this.showRegisterForm = false;
-  this.persistViewState();
-
-  // 4) Limpia ambos params de la URL
-  url.searchParams.delete('activation');
-  if (langParam) url.searchParams.delete('lang');
-  window.history.replaceState({}, '', url.toString());
-}
-
-
-  // Detecta activación si se hizo en otra pestaña (misma origin) mediante localStorage
+  // Detecta activaciÃ³n si se hizo en otra pestaÃ±a (misma origin) mediante localStorage
   private applyActivationMessageFromStorage(): void {
     if (!this.hasWindow) return;
     const status = window.localStorage.getItem(SociosComponent.ACTIVATION_KEY);
@@ -426,7 +427,7 @@ private applyActivationMessageFromURL(): void {
     window.localStorage.removeItem(SociosComponent.ACTIVATION_KEY);
   }
 
-  // === Polling al backend para detectar activación aunque sea desde OTRO dispositivo ===
+  // === Polling al backend para detectar activaciÃ³n aunque sea desde OTRO dispositivo ===
   private startActivationPolling(): void {
     if (!this.hasWindow) return;
     if (!this.pendingUid || this.activationTimer) return;
@@ -439,7 +440,7 @@ private applyActivationMessageFromURL(): void {
         return;
       }
 
-      // ✅ Aquí forzamos el host correcto en dev (localhost -> creasia.es)
+      // âœ… AquÃ­ forzamos el host correcto en dev (localhost -> creasia.es)
       const url = `${this.apiBase}/api/socios_activation_status.php?uid=${this.pendingUid}`;
 
       fetch(url, {
@@ -476,4 +477,16 @@ private applyActivationMessageFromURL(): void {
       window.sessionStorage.removeItem(SociosComponent.PENDING_UID_KEY);
     }
   }
+
+  private notifyHeaderUserUpdated(): void {
+    try {
+      // No hace falta payload; si quieres, podrÃ­as usar CustomEvent con detail
+      window.dispatchEvent(new Event('creasia:user-updated'));
+    } catch {
+      // silencioso
+    }
+  }
 }
+
+
+

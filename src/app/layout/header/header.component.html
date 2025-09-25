@@ -1,54 +1,90 @@
 ﻿<!-- eslint-disable @angular-eslint/template/click-events-have-key-events -->
 <header class="hdr">
-  <button
-    type="button"
-    class="hamburger"
-    [class.open]="menuOpen()"
-    (click)="toggleMenu()"
-    [attr.aria-label]="'menu.toggle' | t"
-    [attr.aria-expanded]="menuOpen()"
-    title="Menu"
-  >
+  <button type="button" class="hamburger" [class.open]="menuOpen()" (click)="toggleMenu()"
+    [attr.aria-label]="'menu.toggle' | t" [attr.aria-expanded]="menuOpen()" title="Menu">
     <span></span>
     <span></span>
     <span></span>
   </button>
-  <h1
-    class="brand"
-    [class.brand--activities]="headerKey() === 'header.activities'"
+
+  <button type="button" class="home" aria-label="Ir al inicio" title="Inicio" (click)="goHome($event)">
+    <img src="assets/icons/home.png" alt="" aria-hidden="true" />
+  </button>
+
+
+  <h1 class="brand" [class.brand--activities]="headerKey() === 'header.activities'"
     [class.brand--networking]="headerKey() === 'header.networking'"
     [class.brand--gourmet]="headerKey() === 'header.gourmet'"
-    [class.brand--consulting]="headerKey() === 'header.consulting'"
-  >
+    [class.brand--consulting]="headerKey() === 'header.consulting'">
     {{ headerKey() | t }}
   </h1>
-  <app-lang-switcher class="lang"></app-lang-switcher>
-</header>
-@if (menuOpen()) {
-  <div
-    class="menu-overlay"
-    role="dialog"
-    aria-modal="true"
-    tabindex="-1"
-    (click)="closeMenu()"
-    (keydown.enter)="closeMenu()"
-    (keydown.space)="closeMenu()"
-    [style.top.px]="menuOffsets().top"
-    [style.bottom.px]="menuOffsets().bottom"
-  >
-    <nav class="menu-panel" role="navigation" (click)="$event.stopPropagation()" [attr.aria-label]="'menu.title' | t">
-      <ul class="menu-list">
-        @for (item of menuItems; track item.labelKey) {
-          <li>
-            <button type="button" class="menu-link" (click)="onMenuItemSelect(item)">
-              @if (item.icon) {
-                <img class="menu-link__icon" [src]="item.icon" alt="" aria-hidden="true" />
-              }
-              <span class="menu-link__label">{{ item.labelKey | t }}</span>
-            </button>
-          </li>
-        }
+
+  <div class="hdr-right">
+    <app-lang-switcher class="lang"></app-lang-switcher>
+    @if (isLoggedIn()) {
+    <div class="user-menu" [class.user-menu--open]="userMenuOpen()">
+      <button type="button" class="user-badge user-menu__trigger"
+        aria-haspopup="menu"
+        [attr.aria-expanded]="userMenuOpen() ? 'true' : 'false'"
+        [attr.aria-label]="'Usuario activo: ' + (userName() || userInitials() || '•')"
+        title="{{ userName() || userInitials() || '•' }}"
+        (click)="toggleUserMenu($event)">
+        {{ userInitials() || '•' }}
+      </button>
+
+      @if (userMenuOpen()) {
+      <ul class="user-menu__list" role="menu">
+        <li role="none">
+          <button type="button" class="user-menu__opt" role="menuitem" aria-label="Configurar usuario" title="Configurar usuario" (click)="onUserMenuSelect('1'); $event.stopPropagation()">
+            <img class="user-menu__icon" src="assets/icons/configuser.png" alt="" aria-hidden="true" />
+          </button>
+        </li>
+        <li role="none">
+          <button type="button" class="user-menu__opt" role="menuitem" aria-label="Cerrar sesión" title="Cerrar sesión" (click)="onUserMenuSelect('2'); $event.stopPropagation()">
+            <img class="user-menu__icon" src="assets/icons/closesion.png" alt="" aria-hidden="true" />
+          </button>
+        </li>
       </ul>
-    </nav>
+      }
+    </div>
+    } @else {
+    <button type="button" class="user-login" aria-label="Iniciar sesión" title="Iniciar sesión" (click)="goToProfile()">
+      <img class="user-login__icon" src="assets/icons/inicsesion.png" alt="" aria-hidden="true" />
+    </button>
+    }
   </div>
+
+
+</header>
+
+@if (menuOpen()) {
+<div class="menu-overlay" role="dialog" aria-modal="true" tabindex="-1" (click)="closeMenu()"
+  (keydown.enter)="closeMenu()" (keydown.space)="closeMenu()" [style.top.px]="menuOffsets().top"
+  [style.bottom.px]="menuOffsets().bottom">
+  <nav class="menu-panel" role="navigation" (click)="$event.stopPropagation()" [attr.aria-label]="'menu.title' | t">
+    <ul class="menu-list">
+      @for (item of menuItems; track item.labelKey) {
+      <li>
+        <button type="button" class="menu-link" (click)="onMenuItemSelect(item)">
+          @if (item.icon) {
+          <img class="menu-link__icon" [src]="item.icon" alt="" aria-hidden="true" />
+          }
+          <span class="menu-link__label">{{ item.labelKey | t }}</span>
+        </button>
+      </li>
+      }
+    </ul>
+  </nav>
+</div>
 }
+
+
+
+
+
+
+
+
+
+
+
