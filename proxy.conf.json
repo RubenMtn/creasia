@@ -1,0 +1,10 @@
+{
+  "/api": {
+    "target": "https://creasia.es",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "debug",
+    "cookieDomainRewrite": "localhost",
+    "followRedirects": true
+  }
+}

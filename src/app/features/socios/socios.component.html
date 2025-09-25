@@ -8,9 +8,9 @@
   <!-- ===== LOGIN ===== -->
   <div class="login-block login-block--active">
 
-    <!-- Cabecera de login (solo si no estamos mostrando el saludo final de login) -->
+    <!-- Cabecera de login: solo cuando NO hay okMsg -->
     <p class="login-caption typography-body-text"
-       *ngIf="!okMsg || okMsg === 'socios.activation.ok'">
+       *ngIf="!okMsg">
       {{ 'socios.loginCaption' | t }}
     </p>
 
@@ -53,7 +53,7 @@
       {{ 'socios.loginForm.notRegistered' | t }}
     </button>
 
-    <!-- Saludo tras login correcto (oculta la cabecera y el formulario) -->
+    <!-- Saludo tras login correcto (oculta cabecera y formulario) -->
     <ng-container *ngIf="okMsg && okMsg !== 'socios.activation.ok'">
       <p class="intro title typography-section-title" role="status"
          aria-live="polite" style="white-space: pre-line">
@@ -69,8 +69,7 @@
   <!-- ===== REGISTRO ===== -->
   <div class="register-block">
 
-    <!-- Cabecera de registro -->
-    <p class="register-caption typography-body-text">{{ 'socios.registerCaption' | t }}</p>
+    <!-- (Cabecera de registro eliminada para que no aparezca al abrir registro) -->
 
     @if (!okMsg) {
     <form class="form" (submit)="onRegisterSubmit($event)" novalidate>
