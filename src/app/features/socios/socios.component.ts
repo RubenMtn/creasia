@@ -79,6 +79,14 @@ export class SociosComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     if (!this.hasWindow) return;
 
+    // 0) NUEVO: si viene ?code=... (desde el botón del email), activamos desde el front
+    const qp = this.route.snapshot.queryParams;
+    if (qp['code']) {
+      ppDebug('PruebaPte ▶ UI.Activation.queryParams', qp); // ➕ log
+      this.activateFromCode(String(qp['code']), String(qp['lang'] ?? 'es'));
+      return; // la activación gestionará la UI y la redirección
+    }
+
     // Restaurar vista simple: 'register' o 'login' (default 'login')
     const stored = window.sessionStorage.getItem(SociosComponent.VIEW_STATE_KEY);
     if (stored === 'register') {
@@ -90,22 +98,14 @@ export class SociosComponent implements OnInit, OnDestroy {
     }
     this.persistViewState();
 
-    // 1) NUEVO: si viene ?code=... (desde el botón del email), activamos desde el front
-    const qp = this.route.snapshot.queryParams;
-    if (qp['code']) {
-      ppDebug('PruebaPte ▶ UI.Activation.queryParams', qp); // ➕ log solicitado
-      this.activateFromCode(String(qp['code']), String(qp['lang'] ?? 'es'));
-      return; // la activación gestionará la UI y la redirección
-    }
-
-    // 2) Mensajes via URL (activation/lang) + intento de autologin (flujo previo)
+    // Flujo previo: ?activation=...
     this.applyActivationMessageFromURL();
 
-    // 3) Listeners para activación (misma origin) y re-foco
+    // Listeners
     window.addEventListener('storage', this.onStorage);
     window.addEventListener('focus', this.onFocus);
 
-    // 4) Reanudar polling si hubiera UID pendiente
+    // Reanudar polling si hubiera UID pendiente
     const pending = window.localStorage.getItem(SociosComponent.PENDING_UID_KEY);
     if (pending) {
       const uid = parseInt(pending, 10);
@@ -117,7 +117,7 @@ export class SociosComponent implements OnInit, OnDestroy {
       }
     }
 
-    // 5) Por si ya existe marca en localStorage
+    // Por si ya existe marca en localStorage
     this.applyActivationMessageFromStorage();
   }
 
@@ -141,15 +141,14 @@ export class SociosComponent implements OnInit, OnDestroy {
     // Llamada directa al endpoint JSON (misma origin) con cookies
     this.http.post<any>('/api/auth/activate_token.php', { code, lang }, { withCredentials: true })
       .subscribe({
-        next: (j) => {
-          ppDebug('PruebaPte ▶ UI.Activation.response', j); // ➕ log solicitado
+        next: async (j) => {
+          ppDebug('PruebaPte ▶ UI.Activation.response', j); // ➕ log
           if (j?.ok && j.socio) {
             const displayName = ((j.socio.nombre ?? '') || j.socio.email || '').trim();
             this.okMsg = 'socios.login.greeting';
             this.greetName = displayName;
             this.error = '';
 
-            // persistimos sesión en front
             try {
               localStorage.setItem('creasia:isLoggedIn', '1');
               localStorage.setItem('creasia:userEmail', (j.socio.email || '').trim());
@@ -170,7 +169,6 @@ export class SociosComponent implements OnInit, OnDestroy {
               void this.router.navigateByUrl('/');
             }, 1200);
 
-            // Fallback por si el router no entra (webviews)
             setTimeout(() => {
               try { window.location.assign('/'); } catch {}
             }, 2500);
@@ -196,6 +194,8 @@ export class SociosComponent implements OnInit, OnDestroy {
         complete: () => (this.loading = false)
       });
   }
+
+  // ——— resto: registro / login / logout / utilidades (SIN CAMBIOS FUNCIONALES) ———
 
   openRegister(): void {
     this.clearMessages();
@@ -243,7 +243,7 @@ export class SociosComponent implements OnInit, OnDestroy {
     this.loading = true;
     this.socios.register(email, password, nombre, apellido1, apellido2, !!optIn, lang).subscribe({
       next: (res: any) => {
-        ppDebug('UI.Register.response', res); // ➕ log solicitado
+        ppDebug('UI.Register.response', res); // ➕ log
         if (res.ok) {
           this.okMsg = 'socios.register.successCheckEmail';
           this.greetName = null;
@@ -290,7 +290,7 @@ export class SociosComponent implements OnInit, OnDestroy {
     this.loading = true;
     this.socios.login(email, password).subscribe({
       next: (res: any) => {
-        ppDebug('UI.Login.response', res); // ➕ log solicitado
+        ppDebug('UI.Login.response', res); // ➕ log
         if (res.ok && res.socio) {
           const nombre = (res.socio.nombre ?? '').trim();
           const displayName = (nombre || res.socio.email || '').trim();
