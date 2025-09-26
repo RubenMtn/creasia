@@ -260,10 +260,15 @@ export class SociosComponent implements OnInit, OnDestroy {
           // Notificar al header para refrescar el icono/initials
           try { window.dispatchEvent(new Event('creasia:user-updated')); } catch { }
 
+          // Redirección más robusta (reemplaza en ambos sitios donde navegas al '/')
           if (this.redirectTimer) clearTimeout(this.redirectTimer);
           this.redirectTimer = setTimeout(() => {
-            void this.router.navigateByUrl('/');
+            // replaceUrl evita historia extra; location.assign fuerza un “hard nav” si algo se atasca
+            this.router.navigateByUrl('/', { replaceUrl: true })
+              .then(ok => { if (!ok) location.assign('/'); })
+              .catch(() => location.assign('/'));
           }, 2500);
+
         } else {
           this.error = res.error || 'socios.errors.invalidCredentials';
           this.greetName = null;

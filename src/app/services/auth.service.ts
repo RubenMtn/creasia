@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-empty-function */
 // src/app/services/auth.service.ts
 // Servicio de autenticación con soporte de refresh y fetch autorizado.
 // Comentarios en español y sin cabeceras personalizadas para no chocar con CORS.

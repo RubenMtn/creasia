@@ -7,13 +7,14 @@
       autoplay
       muted
       playsinline
-      preload="auto"
+      preload="metadata"
+      disablepictureinpicture
+      controlslist="nodownload noplaybackrate noremoteplayback"
       (loadedmetadata)="onMeta(vid)"
       (ended)="startFade(vid)"
       (transitionend)="onFadeEnd($event)"
       [class.fade-out]="fading">
     </video>
-
     <img
       class="layer image"
       src="assets/images/facedok.png"
