@@ -96,14 +96,14 @@ export class SociosComponent implements OnInit, OnDestroy {
     window.addEventListener('focus', this.onFocus);
 
     // Reanudar polling si hubiera UID pendiente
-    const pending = window.sessionStorage.getItem(SociosComponent.PENDING_UID_KEY);
+    const pending = window.localStorage.getItem(SociosComponent.PENDING_UID_KEY);
     if (pending) {
       const uid = parseInt(pending, 10);
       if (!Number.isNaN(uid) && uid > 0) {
         this.pendingUid = uid;
         this.startActivationPolling();
       } else {
-        window.sessionStorage.removeItem(SociosComponent.PENDING_UID_KEY);
+        window.localStorage.removeItem(SociosComponent.PENDING_UID_KEY);
       }
     }
 
@@ -177,7 +177,7 @@ export class SociosComponent implements OnInit, OnDestroy {
           const uidVal = res?.uid;
           if (typeof uidVal === 'number' && uidVal > 0) {
             this.pendingUid = uidVal;
-            window.sessionStorage.setItem(SociosComponent.PENDING_UID_KEY, String(uidVal));
+            window.localStorage.setItem(SociosComponent.PENDING_UID_KEY, String(uidVal));
             this.startActivationPolling();
           }
 
@@ -433,6 +433,7 @@ export class SociosComponent implements OnInit, OnDestroy {
       const url = `${this.apiBase}/api/socios_activation_status.php?uid=${this.pendingUid}`;
 
       fetch(url, {
+        cache: 'no-store',
         method: 'GET',
         credentials: 'omit',
         headers: { 'Accept': 'application/json' }
@@ -463,7 +464,7 @@ export class SociosComponent implements OnInit, OnDestroy {
     }
     this.pendingUid = null;
     if (this.hasWindow) {
-      window.sessionStorage.removeItem(SociosComponent.PENDING_UID_KEY);
+      window.localStorage.removeItem(SociosComponent.PENDING_UID_KEY);
     }
   }
 }
