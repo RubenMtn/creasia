@@ -1,27 +1,31 @@
 <!--
-  Carrusel accesible:
-  - role="region" y roledescription="carousel" para AT.
-  - tabindex="0" para permitir navegación con teclado (← →).
+  Carrusel accesible con continuidad (clones).
+  - tabindex="0" para navegación con teclado.
+  - (transitionend) en el track para detectar fin y “saltar” sin transición.
 -->
 <section
   class="carousel"
   [style.height]="height"
   role="region"
   aria-roledescription="carousel"
-  [attr.aria-label]="'Carrusel de imágenes (' + images.length + ' ítems)'" 
+  [attr.aria-label]="'Carrusel de imágenes (' + images.length + ' ítems)'"
   tabindex="0"
   (touchstart)="onTouchStart($event)"
   (touchmove)="onTouchMove($event)"
   (touchend)="onTouchEnd()"
 >
-  <!-- Pista de slides (transform según índice) -->
+  <!-- Pista -->
   <div
+    #trackEl
     class="track"
-    [style.transform]="'translateX(' + (-100 * current) + '%)'"
+    [class.notransition]="!enableTransition"
+    [style.transform]="trackTranslate"
     [style.height]="height"
+    (transitionend)="onTrackTransitionEnd($event)"
   >
-    <ng-container *ngFor="let it of images; let i = index">
-      <div class="slide" [class.active]="i === current" [style.height]="height">
+    <!-- Render extendido: [última] + imágenes + [primera] -->
+    <ng-container *ngFor="let it of extendedImages; let i = index">
+      <div class="slide" [style.height]="height">
         <a *ngIf="it.link; else noLink" [href]="it.link" class="slide-link" tabindex="-1" aria-hidden="true">
           <img class="slide-img" [src]="it.src" [alt]="it.alt || ''" loading="lazy" />
           <div *ngIf="it.caption" class="caption">{{ it.caption }}</div>

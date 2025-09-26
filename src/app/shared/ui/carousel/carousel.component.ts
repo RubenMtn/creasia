@@ -1,3 +1,4 @@
+/* eslint-disable no-empty */
 /* eslint-disable @typescript-eslint/no-inferrable-types */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /**
@@ -8,12 +9,12 @@
  * - Swipe en móvil (gestos táctiles).
  * - Indicadores (bullets) opcionales.
  *
- * CAMBIOS CLAVE (para resolver el lint @angular-eslint/prefer-inject):
- * - Sustituida la inyección por constructor por `inject()`:
- *   • `private cdr = inject(ChangeDetectorRef)`
- *   • `private zone = inject(NgZone)`
- * - Mantiene OnPush y forzado de repintado con markForCheck().
- * - El temporizador corre fuera de Angular y solo entra al avanzar slide.
+ * CONTINUIDAD SUAVE (FIX “retroceso”):
+ * - Clones: [última] + imágenes + [primera] sólo si loop=true y hay ≥2.
+ * - Índice visual (visIndex) arranca en 1 (primera real).
+ * - Salto sin transición con forzado de reflow + flag isSnapping.
+ * - Autoplay ignora ticks durante el “snap”.
+ * - transitionend filtrado por transform y el propio track.
  */
 import { CommonModule } from '@angular/common';
 import {
@@ -27,17 +28,15 @@ import {
   SimpleChanges,
   ChangeDetectorRef,
   NgZone,
-  inject, // ➕ usamos la API de inyección funcional
+  ViewChild,
+  ElementRef,
+  inject,
 } from '@angular/core';
 
 export interface CarouselImage {
-  /** Ruta de la imagen (relativa a /assets o absoluta) */
   src: string;
-  /** Texto alternativo para accesibilidad */
   alt?: string;
-  /** Caption opcional (se muestra sobre la imagen) */
   caption?: string;
-  /** Enlace opcional: si existe, la diapositiva se hace clicable */
   link?: string;
 }
 
@@ -50,50 +49,73 @@ export interface CarouselImage {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CarouselComponent implements OnInit, OnDestroy, OnChanges {
-  // ====== Entradas configurables ======
-
-  /** Lista de imágenes del carrusel */
+  // ====== Entradas ======
   @Input() images: CarouselImage[] = [];
-
-  /** Altura del carrusel (px, vh, etc.). Ej: '420px', '60vh' */
   @Input() height: string = '420px';
-
-  /** Intervalo del autoplay (ms). 0 o negativo desactiva autoplay */
-  @Input() autoplayMs: number = 5000;
-
-  /** Si true, al llegar al final vuelve al inicio */
+  @Input() autoplayMs: number = 7000;
   @Input() loop: boolean = true;
-
-  /** Muestra u oculta los “bullets” (indicadores) */
   @Input() showIndicators: boolean = true;
-
-  /** Muestra u oculta los botones prev/next */
   @Input() showArrows: boolean = true;
-
-  /** Si true (por defecto), el hover pausa el autoplay en desktop */
   @Input() pauseOnHover: boolean = true;
 
   // ====== Estado interno ======
-  current = 0;          // índice actual
-  private timer: any;   // id del setInterval del autoplay
+  /** Índice visual sobre la lista extendida */
+  visIndex = 0;
+  /** Controla si aplicamos transición CSS en el track */
+  enableTransition = true;
+  /** Estamos realizando un “snap” sin transición */
+  private isSnapping = false;
+
+  private timer: any;
   private hovering = false;
   private touchStartX = 0;
   private touchDeltaX = 0;
 
-  // ➕ Inyección con inject() (resuelve el warning prefer-inject)
+  @ViewChild('trackEl', { static: false }) private trackEl?: ElementRef<HTMLDivElement>;
+
+  // Inyección (API funcional)
   private cdr = inject(ChangeDetectorRef);
   private zone = inject(NgZone);
 
+  // Índice lógico (0..n-1) para bullets/estado
+  get current(): number {
+    const n = this.images?.length ?? 0;
+    if (n <= 1) return 0;
+    if (!this.loop) {
+      return Math.max(0, Math.min(this.visIndex, n - 1));
+    }
+    // loop=true con clones
+    if (this.visIndex === 0) return n - 1;       // clone de última
+    if (this.visIndex === n + 1) return 0;       // clone de primera
+    return this.visIndex - 1;                    // 1..n -> 0..n-1
+  }
+
+  // Lista extendida con clones sólo si loop
+  get extendedImages(): CarouselImage[] {
+    const arr = this.images ?? [];
+    if (this.loop && arr.length > 1) {
+      const first = arr[0];
+      const last = arr[arr.length - 1];
+      return [last, ...arr, first];
+    }
+    return arr;
+  }
+
+  // Transform CSS del track
+  get trackTranslate(): string {
+    return `translateX(${-(100 * this.visIndex)}%)`;
+  }
+
   // ====== Ciclo de vida ======
   ngOnInit(): void {
+    this.normalizeIndicesOnImagesChange();
     this.startAutoplay();
-    // Pausar si la pestaña deja de estar visible (ahorra batería)
     document.addEventListener('visibilitychange', this.onVisibility, false);
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    // Reinicio defensivo si cambian imágenes o intervalo
-    if (changes['images'] || changes['autoplayMs']) {
+    if (changes['images'] || changes['autoplayMs'] || changes['loop']) {
+      this.normalizeIndicesOnImagesChange();
       this.restartAutoplayDefensive();
     }
   }
@@ -103,23 +125,41 @@ export class CarouselComponent implements OnInit, OnDestroy, OnChanges {
     document.removeEventListener('visibilitychange', this.onVisibility, false);
   }
 
-  // ====== Autoplay ======
+  // ====== Helpers ======
+  /** Asegura visIndex correcto al cambiar imágenes o loop */
+  private normalizeIndicesOnImagesChange(): void {
+    const n = this.images?.length ?? 0;
+    if (this.loop && n > 1) {
+      this.visIndex = 1; // primera real
+    } else {
+      this.visIndex = 0; // sin clones
+    }
+    this.enableTransition = true;
+    this.isSnapping = false;
+    this.cdr.markForCheck();
+  }
 
-  /** Pausa/Reanuda según visibilidad de la pestaña */
+  private forceReflow(): void {
+    try {
+      // Leer un layout prop fuerza el reflow del track
+      void this.trackEl?.nativeElement.offsetHeight;
+    } catch {}
+  }
+
+  // ====== Autoplay ======
   private onVisibility = () => {
     if (document.hidden) this.stopAutoplay();
     else this.startAutoplay();
   };
 
-  /** Inicia el autoplay si procede (≥2 imágenes y autoplayMs > 0) */
   private startAutoplay(): void {
-    this.stopAutoplay(); // limpia si ya había uno
-    if (this.autoplayMs > 0 && this.images && this.images.length > 1) {
-      // ✅ Ejecutar el temporizador fuera de Angular para no provocar CD constante
+    this.stopAutoplay();
+    const n = this.images?.length ?? 0;
+    if (this.autoplayMs > 0 && n > 1) {
       this.zone.runOutsideAngular(() => {
         this.timer = setInterval(() => {
-          // ↩️ Volvemos a Angular sólo para avanzar y marcar el repintado
           this.zone.run(() => {
+            if (this.isSnapping) return; // no avanzar mientras “saltamos”
             if (!this.pauseOnHover || !this.hovering) {
               this.nextInternal();
             }
@@ -129,7 +169,6 @@ export class CarouselComponent implements OnInit, OnDestroy, OnChanges {
     }
   }
 
-  /** Detiene el autoplay si existía */
   private stopAutoplay(): void {
     if (this.timer) {
       clearInterval(this.timer);
@@ -137,51 +176,88 @@ export class CarouselComponent implements OnInit, OnDestroy, OnChanges {
     }
   }
 
-  /**
-   * Reinicio defensivo del autoplay cuando:
-   * - las imágenes cambian (p. ej., llegan asíncronas), o
-   * - cambia el intervalo autoplayMs.
-   * Además, si `current` se sale del rango al cambiar el array, lo reajustamos.
-   */
   private restartAutoplayDefensive(): void {
-    if (this.images && this.images.length > 0) {
-      if (this.current > this.images.length - 1) this.current = 0;
-    } else {
-      this.current = 0;
-    }
-    // Forzamos repintado por si cambia inmediatamente el track
     this.cdr.markForCheck();
     this.startAutoplay();
   }
 
-  // ====== Navegación (métodos internos que SIEMPRE marcan CD) ======
+  // ====== Navegación ======
   private prevInternal(): void {
-    const len = this.images?.length ?? 0;
-    if (len <= 1) return;
-    if (this.current > 0) this.current--;
-    else if (this.loop) this.current = len - 1;
-    this.cdr.markForCheck(); // asegura repintado en OnPush
+    const n = this.images?.length ?? 0;
+    if (n <= 1 || this.isSnapping) return;
+
+    this.enableTransition = true;
+    if (this.loop && n > 1) {
+      this.visIndex -= 1;
+    } else {
+      this.visIndex = Math.max(0, this.visIndex - 1);
+    }
+    this.cdr.markForCheck();
   }
 
   private nextInternal(): void {
-    const len = this.images?.length ?? 0;
-    if (len <= 1) return;
-    if (this.current < len - 1) this.current++;
-    else if (this.loop) this.current = 0;
-    this.cdr.markForCheck(); // asegura repintado en OnPush
+    const n = this.images?.length ?? 0;
+    if (n <= 1 || this.isSnapping) return;
+
+    this.enableTransition = true;
+    if (this.loop && n > 1) {
+      this.visIndex += 1;
+    } else {
+      this.visIndex = Math.min(n - 1, this.visIndex + 1);
+    }
+    this.cdr.markForCheck();
   }
 
   private goToInternal(index: number): void {
-    const len = this.images?.length ?? 0;
-    if (len === 0 || index < 0 || index >= len) return;
-    this.current = index;
-    this.cdr.markForCheck(); // asegura repintado en OnPush
+    const n = this.images?.length ?? 0;
+    if (n === 0 || index < 0 || index >= n || this.isSnapping) return;
+
+    this.enableTransition = true;
+    this.visIndex = (this.loop && n > 1) ? (index + 1) : index;
+    this.cdr.markForCheck();
   }
 
-  // ====== API pública (llama a los internos) ======
+  // API pública
   prev(): void { this.prevInternal(); }
   next(): void { this.nextInternal(); }
-  goTo(index: number): void { this.goToInternal(index); }
+  goTo(i: number): void { this.goToInternal(i); }
+
+  // ====== Snap en clones ======
+  onTrackTransitionEnd(ev: TransitionEvent): void {
+    // Filtramos: sólo si el evento viene del track y por transform
+    if (ev.propertyName !== 'transform') return;
+    if (!this.trackEl || ev.target !== this.trackEl.nativeElement) return;
+
+    const n = this.images?.length ?? 0;
+    if (!(this.loop && n > 1)) return;
+
+    // Si estamos en el clone de la primera (n+1), saltamos a la primera real (1).
+    if (this.visIndex === n + 1) {
+      this.snapWithoutTransition(1);
+      return;
+    }
+    // Si estamos en el clone de la última (0), saltamos a la última real (n).
+    if (this.visIndex === 0) {
+      this.snapWithoutTransition(n);
+      return;
+    }
+  }
+
+  /** Salta a visIndex “target” sin transición y sin permitir ticks durante el salto */
+  private snapWithoutTransition(targetVisIndex: number): void {
+    this.isSnapping = true;           // ⛔ bloquear autoplay/navegación
+    this.enableTransition = false;    // quitar transición
+    this.visIndex = targetVisIndex;   // mover a la real
+    this.cdr.markForCheck();
+    this.forceReflow();               // 🔁 asegurar que el DOM aplica el cambio sin transición
+
+    // Rehabilitar transición en el siguiente frame y liberar el snap
+    requestAnimationFrame(() => {
+      this.enableTransition = true;
+      this.isSnapping = false;
+      this.cdr.markForCheck();
+    });
+  }
 
   // ====== Accesibilidad (teclado) ======
   @HostListener('keydown', ['$event'])
@@ -191,29 +267,20 @@ export class CarouselComponent implements OnInit, OnDestroy, OnChanges {
   }
 
   // ====== Hover: pausa el autoplay (en escritorio) ======
-  @HostListener('mouseenter')
-  onEnter(): void {
-    this.hovering = true;
-  }
-
-  @HostListener('mouseleave')
-  onLeave(): void {
-    this.hovering = false;
-  }
+  @HostListener('mouseenter') onEnter(): void { this.hovering = true; }
+  @HostListener('mouseleave') onLeave(): void { this.hovering = false; }
 
   // ====== Gestos táctiles (swipe) ======
   onTouchStart(ev: TouchEvent): void {
     this.touchStartX = ev.touches[0]?.clientX ?? 0;
     this.touchDeltaX = 0;
   }
-
   onTouchMove(ev: TouchEvent): void {
     const x = ev.touches[0]?.clientX ?? 0;
     this.touchDeltaX = x - this.touchStartX;
   }
-
   onTouchEnd(): void {
-    const threshold = 50; // px mínimos para considerar swipe
+    const threshold = 50;
     if (this.touchDeltaX > threshold) this.prevInternal();
     else if (this.touchDeltaX < -threshold) this.nextInternal();
     this.touchDeltaX = 0;

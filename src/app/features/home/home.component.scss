@@ -196,6 +196,15 @@
 }
 
 
+@include for-mobile {
+  .hero {
+    padding: $space-1 0;
+  }
+
+  .title-below {
+    margin: $space-1 auto 0;
+  }
+}
 
 @include from-desktop {
   // Escritorio (>= 1280px)
