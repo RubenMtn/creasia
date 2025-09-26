@@ -225,7 +225,8 @@ export class SociosComponent implements OnInit, OnDestroy {
           this.greetName = displayName;
 
           // Guardar access en memoria (AuthService) si tu login.php lo devuelve
-          if (res.access_token) this.auth.setAccess(res.access_token);
+          const access = res.access_token || res.access;
+          if (access) this.auth.setAccess(access);
 
           this.session.persistLogin(displayName, { token: '1' });
           try {
@@ -315,7 +316,8 @@ export class SociosComponent implements OnInit, OnDestroy {
       this.auth.refresh()
         .then((ok) => {
           if (!ok) throw new Error('refresh-failed');
-          return this.http.get<any>('/api/socios_me.php').toPromise();
+          
+          return this.auth.authorizedFetch('/api/socios_me.php', { method: 'GET', credentials: 'include' }).then(res => res.ok ? res.json() : null);
         })
         .then((j) => {
           if (j?.ok && j.socio) {

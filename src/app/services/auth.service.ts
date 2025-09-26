@@ -35,6 +35,18 @@ export class AuthService {
 
   async logout(): Promise<void> {
     this.setAccess(null);
-    await fetch('/api/auth/logout.php', { method: 'POST', credentials: 'include' }).catch(()=>{});
+    await fetch('/api/auth/logout.php', { method: 'POST', credentials: 'include' }).catch(() => { });
   }
+  async authorizedFetch(u: string, i: RequestInit = {}): Promise<Response> {
+    const h = new Headers(i.headers || {}), t = this.getAccess();
+    if (t && !h.has('Authorization')) h.set('Authorization', `Bearer ${t}`);
+    let r = await fetch(u, { ...i, headers: h });
+    if (r.status === 401 && await this.refresh()) {
+      const h2 = new Headers(i.headers || {}), t2 = this.getAccess();
+      if (t2) h2.set('Authorization', `Bearer ${t2}`);
+      r = await fetch(u, { ...i, headers: h2 });
+    }
+    return r;
+  }
+
 }
