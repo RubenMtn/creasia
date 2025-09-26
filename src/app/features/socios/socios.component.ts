@@ -2,7 +2,7 @@
 /* eslint no-empty: ["error", { "allowEmptyCatch": true }] */
 import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 
 import { HttpClient } from '@angular/common/http';
 import { TranslationService } from '../../shared/i18n/translation.service';
@@ -11,6 +11,9 @@ import { TPipe } from '../../shared/i18n/t.pipe';
 import { SociosService } from '../../services/socios.service';
 import { UserSessionService } from '../../services/user-session.service';
 import { AuthService } from '../../services/auth.service';
+
+// 🔎 Logs de depuración "PruebaPte"
+import { ppDebug } from '../../core/prueba-pte-debug.helper'; // ajusta la ruta si difiere
 
 @Component({
   selector: 'app-socios',
@@ -27,6 +30,7 @@ export class SociosComponent implements OnInit, OnDestroy {
   private readonly hasWindow = typeof window !== 'undefined';
   private readonly i18n = inject(TranslationService);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
 
   // Servicios
   private http = inject(HttpClient);
@@ -68,14 +72,21 @@ export class SociosComponent implements OnInit, OnDestroy {
   // Listeners
   private onStorage = (e: StorageEvent) => {
     if (!e.key || e.key !== SociosComponent.ACTIVATION_KEY) return;
+    ppDebug('PruebaPte ▶︎ storage event (ACTIVATION_KEY)', { newValue: e.newValue });
     this.applyActivationMessageFromStorage();
   };
   private onFocus = () => {
+    ppDebug('PruebaPte ▶︎ window focus → recheck activation in storage');
     this.applyActivationMessageFromStorage();
   };
 
   ngOnInit(): void {
     if (!this.hasWindow) return;
+
+    // 🔎 Log de query params reales
+    try {
+      ppDebug('UI.Activation.queryParams', this.route.snapshot.queryParams);
+    } catch { /* no-op */ }
 
     // Restaurar vista simple: 'register' o 'login' (default 'login')
     const stored = window.sessionStorage.getItem(SociosComponent.VIEW_STATE_KEY);
@@ -101,6 +112,7 @@ export class SociosComponent implements OnInit, OnDestroy {
       const uid = parseInt(pending, 10);
       if (!Number.isNaN(uid) && uid > 0) {
         this.pendingUid = uid;
+        ppDebug('PruebaPte ▶︎ resume activation polling', { uid });
         this.startActivationPolling();
       } else {
         window.localStorage.removeItem(SociosComponent.PENDING_UID_KEY);
@@ -128,6 +140,7 @@ export class SociosComponent implements OnInit, OnDestroy {
     this.showRegisterForm = true;
     this.showLoginForm = false;
     this.persistViewState();
+    ppDebug('PruebaPte ▶︎ UI.OpenRegister');
   }
 
   openLogin(): void {
@@ -135,6 +148,7 @@ export class SociosComponent implements OnInit, OnDestroy {
     this.showLoginForm = true;
     this.showRegisterForm = false;
     this.persistViewState();
+    ppDebug('PruebaPte ▶︎ UI.OpenLogin');
   }
 
   private isValidEmail(email: string): boolean {
@@ -168,8 +182,11 @@ export class SociosComponent implements OnInit, OnDestroy {
     const apellido2 = rest.length ? rest.join(' ') : null;
 
     this.loading = true;
+    ppDebug('UI.Register.submit', { email, nombre, apellido1, apellido2, optIn, lang, password: '***' });
+
     this.socios.register(email, password, nombre, apellido1, apellido2, !!optIn, lang).subscribe({
       next: (res: any) => {
+        ppDebug('UI.Register.response', res);
         if (res.ok) {
           this.okMsg = 'socios.register.successCheckEmail';
           this.greetName = null;
@@ -178,6 +195,7 @@ export class SociosComponent implements OnInit, OnDestroy {
           if (typeof uidVal === 'number' && uidVal > 0) {
             this.pendingUid = uidVal;
             window.localStorage.setItem(SociosComponent.PENDING_UID_KEY, String(uidVal));
+            ppDebug('PruebaPte ▶︎ start activation polling (from register)', { uid: uidVal });
             this.startActivationPolling();
           }
 
@@ -187,6 +205,7 @@ export class SociosComponent implements OnInit, OnDestroy {
         }
       },
       error: (e) => {
+        ppDebug('UI.Register.error', { status: e?.status, message: e?.message, error: e?.error });
         if (e.status === 409) this.error = 'socios.errors.emailAlreadyRegistered';
         else if (e.status === 422) this.error = 'socios.errors.invalidEmailOrPassword';
         else this.error = 'socios.errors.server';
@@ -215,8 +234,12 @@ export class SociosComponent implements OnInit, OnDestroy {
     }
 
     this.loading = true;
+    ppDebug('UI.Login.submit', { email });
+
     this.socios.login(email, password).subscribe({
       next: (res: any) => {
+        ppDebug('UI.Login.response', res);
+
         if (res.ok && res.socio) {
           const nombre = (res.socio.nombre ?? '').trim();
           const displayName = (nombre || res.socio.email || '').trim();
@@ -235,7 +258,7 @@ export class SociosComponent implements OnInit, OnDestroy {
           } catch { }
 
           // Notificar al header para refrescar el icono/initials
-          try { window.dispatchEvent(new Event('creasia:user-updated')); } catch {}
+          try { window.dispatchEvent(new Event('creasia:user-updated')); } catch { }
 
           if (this.redirectTimer) clearTimeout(this.redirectTimer);
           this.redirectTimer = setTimeout(() => {
@@ -248,6 +271,7 @@ export class SociosComponent implements OnInit, OnDestroy {
         }
       },
       error: (e) => {
+        ppDebug('UI.Login.error', { status: e?.status, message: e?.message, error: e?.error });
         this.error =
           e.status === 401 ? 'socios.errors.invalidCredentials'
             : e.status === 422 ? 'socios.errors.emailOrPasswordRequired'
@@ -261,6 +285,7 @@ export class SociosComponent implements OnInit, OnDestroy {
   }
 
   logout(): void {
+    ppDebug('UI.Logout.click');
     this.session.clearLogin();
     try {
       localStorage.setItem('creasia:isLoggedIn', '0');
@@ -291,6 +316,7 @@ export class SociosComponent implements OnInit, OnDestroy {
       const lang2 = (langParam.slice(0, 2).toLowerCase() as 'es' | 'en' | 'zh');
       try { localStorage.setItem('creasia:lang', lang2); } catch { }
       void this.i18n.setLang(lang2);
+      ppDebug('PruebaPte ▶︎ set lang from URL', { lang: lang2 });
     }
 
     // 2) Activación
@@ -310,16 +336,21 @@ export class SociosComponent implements OnInit, OnDestroy {
       error: 'socios.activation.error'
     };
 
+    ppDebug('PruebaPte ▶︎ activation status from URL', { status });
+
     if (status === 'ok') {
       // 2.a Intentar autologin con el flujo seguro:
-      //     1) refresh (usa cookie HttpOnly) -> 2) me() con HttpClient (interceptor añade Bearer)
+      //     1) refresh (usa cookie HttpOnly) -> 2) me() con HttpClient (withCredentials)
       this.auth.refresh()
         .then((ok) => {
+          ppDebug('Flow.Refresh.result', { ok });
           if (!ok) throw new Error('refresh-failed');
-          
-          return this.auth.authorizedFetch('/api/socios_me.php', { method: 'GET', credentials: 'include' }).then(res => res.ok ? res.json() : null);
+          return this.http.get<any>('/api/socios_me.php', { withCredentials: true })
+            .toPromise()
+            .then(res => res ?? null);
         })
         .then((j) => {
+          ppDebug('Flow.Me.result', j);
           if (j?.ok && j.socio) {
             const displayName = ((j.socio.nombre ?? '') || j.socio.email || '').trim();
 
@@ -335,7 +366,7 @@ export class SociosComponent implements OnInit, OnDestroy {
             this.session.persistLogin(displayName, { token: '1' });
 
             // Notificar al header para que pinte el icono/nombre al instante
-            try { window.dispatchEvent(new Event('creasia:user-updated')); } catch {}
+            try { window.dispatchEvent(new Event('creasia:user-updated')); } catch { }
 
             // Forzar vista login (el form se ocultará por el saludo)
             this.showLoginForm = true;
@@ -354,7 +385,8 @@ export class SociosComponent implements OnInit, OnDestroy {
             this.persistViewState();
           }
         })
-        .catch(() => {
+        .catch((e) => {
+          ppDebug('Flow.RefreshOrMe.error', { error: String(e) });
           // Fallback: mostramos solo "cuenta activada"
           this.okMsg = 'socios.activation.ok';
           this.error = '';
@@ -398,6 +430,8 @@ export class SociosComponent implements OnInit, OnDestroy {
     const status = window.localStorage.getItem(SociosComponent.ACTIVATION_KEY);
     if (!status) return;
 
+    ppDebug('PruebaPte ▶︎ activation status from storage', { status });
+
     if (status === 'ok') {
       this.okMsg = 'socios.activation.ok';
       this.error = '';
@@ -428,11 +462,13 @@ export class SociosComponent implements OnInit, OnDestroy {
 
     const poll = () => {
       if (!this.pendingUid || Date.now() > this.activationDeadline) {
+        ppDebug('PruebaPte ▶︎ stop polling (timeout or no uid)');
         this.stopActivationPolling();
         return;
       }
 
       const url = `${this.apiBase}/api/socios_activation_status.php?uid=${this.pendingUid}`;
+      ppDebug('PruebaPte ▶︎ polling activation', { url });
 
       fetch(url, {
         cache: 'no-store',
@@ -442,6 +478,7 @@ export class SociosComponent implements OnInit, OnDestroy {
       })
         .then(r => r.ok ? r.json() : null)
         .then((j: any) => {
+          ppDebug('PruebaPte ▶︎ polling result', j);
           if (j && j.ok && j.activated === true) {
             this.okMsg = 'socios.activation.ok';
             this.error = '';
@@ -452,7 +489,7 @@ export class SociosComponent implements OnInit, OnDestroy {
             this.stopActivationPolling();
           }
         })
-        .catch(() => { /* silencioso */ });
+        .catch((e) => { ppDebug('PruebaPte ▶︎ polling error', { error: String(e) }); });
     };
 
     poll();
