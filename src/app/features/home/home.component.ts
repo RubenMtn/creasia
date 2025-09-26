@@ -16,6 +16,7 @@ import {
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { fromEvent } from 'rxjs';
 import { TPipe } from '../../shared/i18n/t.pipe';
+import { CarouselComponent } from "../../shared/ui/carousel/carousel.component";
 
 type LinkAnchor = 'top' | 'right' | 'bottom' | 'left';
 type AnimationPhase = 'points' | 'connectors';
@@ -52,7 +53,7 @@ interface Connector {
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [RouterLink, TPipe],
+  imports: [RouterLink, TPipe, CarouselComponent],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss'
 })
@@ -98,6 +99,16 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
   private readonly LINKS_DURATION = 900;
   private readonly LINKS_BUFFER = 160;
 
+  homeSlides = [
+  { src: 'assets/home/slide1.jpg', alt: 'Proyecto A', caption: '' },
+  { src: 'assets/home/slide2.jpg', alt: 'Proyecto B', caption: '' },
+  { src: 'assets/home/slide3.jpg', alt: 'Proyecto C', caption: '' },
+  { src: 'assets/home/slide4.jpg', alt: 'Proyecto D', caption: '' },
+  { src: 'assets/home/slide5.jpg', alt: 'Proyecto E', caption: '' },
+  { src: 'assets/home/slide6.jpg', alt: 'Proyecto F', caption: '' },
+  { src: 'assets/home/slide7.jpg', alt: 'Proyecto G', caption: '' },
+];
+
   fading = false;
   skipToEnd = false;
   showImage = false;
@@ -113,8 +124,6 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
   readonly facePoints: FacePoint[] = [
     { id: 'eye-left', x: 34.5, y: 31.2 },
     { id: 'eye-right', x: 67, y: 31.2 },
-    { id: 'nose-left', x: 40.3, y: 53.1 },
-    { id: 'nose-right', x: 59.2, y: 58 },
     { id: 'mouth-left', x: 42, y: 85 },
     { id: 'mouth-right', x: 56.4, y: 90 }
   ];
@@ -127,13 +136,11 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
 
   private readonly links: LinkItem[] = [
     { key: 'menu.activities', route: '/actividades', cls: 'l-top-left', pointId: 'eye-left', anchor: 'bottom' },
-    { key: 'menu.partners', route: '/socios', cls: 'l-mid-left', pointId: 'nose-left', anchor: 'right' },
-    { key: 'menu.networking', route: '/networking', cls: 'l-bot-left', pointId: 'mouth-left', anchor: 'top' },
     { key: 'menu.gourmet', route: '/gourmet', cls: 'l-top-right', pointId: 'eye-right', anchor: 'bottom' },
-    { key: 'menu.trips', route: '/viajes', cls: 'l-mid-right', pointId: 'nose-right', anchor: 'left' },
-    { key: 'menu.languages', route: '/idiomas', cls: 'l-bot-right', pointId: 'mouth-right', anchor: 'top' }
+    { key: 'menu.partners', route: '/socios', cls: 'l-bot-left', pointId: 'mouth-left', anchor: 'right' },
+    { key: 'menu.trips', route: '/viajes', cls: 'l-bot-right', pointId: 'mouth-right', anchor: 'left' },
   ];
-  
+ 
   constructor(
     private readonly zone: NgZone,
     private readonly route: ActivatedRoute,

@@ -1,0 +1,70 @@
+<!--
+  Carrusel accesible:
+  - role="region" y roledescription="carousel" para AT.
+  - tabindex="0" para permitir navegación con teclado (← →).
+-->
+<section
+  class="carousel"
+  [style.height]="height"
+  role="region"
+  aria-roledescription="carousel"
+  [attr.aria-label]="'Carrusel de imágenes (' + images.length + ' ítems)'" 
+  tabindex="0"
+  (touchstart)="onTouchStart($event)"
+  (touchmove)="onTouchMove($event)"
+  (touchend)="onTouchEnd()"
+>
+  <!-- Pista de slides (transform según índice) -->
+  <div
+    class="track"
+    [style.transform]="'translateX(' + (-100 * current) + '%)'"
+    [style.height]="height"
+  >
+    <ng-container *ngFor="let it of images; let i = index">
+      <div class="slide" [class.active]="i === current" [style.height]="height">
+        <a *ngIf="it.link; else noLink" [href]="it.link" class="slide-link" tabindex="-1" aria-hidden="true">
+          <img class="slide-img" [src]="it.src" [alt]="it.alt || ''" loading="lazy" />
+          <div *ngIf="it.caption" class="caption">{{ it.caption }}</div>
+        </a>
+        <ng-template #noLink>
+          <img class="slide-img" [src]="it.src" [alt]="it.alt || ''" loading="lazy" />
+          <div *ngIf="it.caption" class="caption">{{ it.caption }}</div>
+        </ng-template>
+      </div>
+    </ng-container>
+  </div>
+
+  <!-- Flechas -->
+  <button
+    *ngIf="showArrows && images.length > 1"
+    class="nav nav-prev"
+    type="button"
+    aria-label="Anterior"
+    (click)="prev()"
+  >
+    &#10094;
+  </button>
+  <button
+    *ngIf="showArrows && images.length > 1"
+    class="nav nav-next"
+    type="button"
+    aria-label="Siguiente"
+    (click)="next()"
+  >
+    &#10095;
+  </button>
+
+  <!-- Indicadores -->
+  <div *ngIf="showIndicators && images.length > 1" class="indicators" role="tablist" aria-label="Indicadores">
+    <button
+      *ngFor="let _ of images; let i = index"
+      type="button"
+      class="dot"
+      [class.active]="i === current"
+      (click)="goTo(i)"
+      [attr.aria-label]="'Ir a la diapositiva ' + (i + 1)"
+      [attr.aria-selected]="i === current"
+      role="tab"
+    ></button>
+  </div>
+</section>
