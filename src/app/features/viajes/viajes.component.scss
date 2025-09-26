@@ -1,4 +1,4 @@
-@use "tokens" as *;
+﻿@use "tokens" as *;
 
 .content {
   padding-top: $space-2;
@@ -9,8 +9,26 @@
 
 .intro {
   text-align: center;
+  display: grid;
+  gap: $space-1;
 }
 
 .viajes-body {
+  display: grid;
+  gap: $space-2;
   min-height: clamp(240px, 45vh, 520px);
+  color: $text-light;
+}
+
+.viajes-section {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.viajes-section__title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: $gold-soft;
 }

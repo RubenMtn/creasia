@@ -50,7 +50,7 @@ const ES_FALLBACK: Dict = {
 
   socios: {
     title: 'Ventajas exclusivas, descuentos, invitaciones a eventos, novedades...',
-    registerCaption: 'Regístrate con tu email y una contraseña (mínimo 8 caracteres):', 
+    registerCaption: 'Regístrate con tu email y una contraseña (mínimo 8 caracteres):',
     loginCaption: 'Si ya eres socio registrado de Creasia, accede con tu usuario:',
     loginRedirect: 'Redirigiendo al inicio...',
     actions: {
@@ -109,6 +109,34 @@ const ES_FALLBACK: Dict = {
     loading: 'Cargando…'
   },
 
+  actividades: {
+    title: 'Actividades de Creasia',
+    section1: {
+      title: '1. Qué ofrecen las actividades de Creasia',
+      body1: 'Diseñamos un calendario que mezcla cultura, formación y comunidad para que vivas China desde Madrid y también in situ. Cada propuesta busca tender puentes entre personas con curiosidad por el país.'
+    },
+    section2: {
+      title: '2. Idiomas y clases de chino',
+      body1: 'Nuestros programas de idioma van desde sesiones introductorias de mandarín hasta acompañamiento específico para profesionales que necesitan negociar o presentar en China.',
+      body2: 'Profesorado nativo combina conversación, talleres de pronunciación y vocabulario práctico para que viajes, estudios o reuniones fluyan con seguridad.'
+    },
+    section3: {
+      title: '3. Cultura y tradiciones',
+      body1: 'Caligrafía, pintura con tinta, artes marciales y celebraciones del Año Nuevo Chino te conectan con rituales centenarios en un entorno inclusivo.',
+      body2: 'Invitamos a artistas, maestros y mediadores culturales que explican el simbolismo detrás de cada práctica y la adaptan a todos los niveles.'
+    },
+    section4: {
+      title: '4. Networking con propósito',
+      body1: 'Encuentros mensuales, mesas de negocio y reuniones de alumni conectan a miembros de sectores que ya construyen vínculos con China.',
+      body2: 'Ampliarás tu red con emprendedores, estudiantes y creativos mientras aprendes a colaborar entre culturas en un ambiente relajado y multilingüe.'
+    },
+    section5: {
+      title: '5. Talleres y aprendizaje vivencial',
+      body1: 'Clases de cocina, ceremonias de té, cinefórums y laboratorios temáticos ofrecen experiencias prácticas con sabores, sonidos e historias de distintas regiones.',
+      body2: 'Los grupos son intencionadamente reducidos para que puedas preguntar, compartir descubrimientos y generar amistades duraderas.'
+    }
+  },
+
   consultoria: {
     title: 'Consultoría',
     caption: 'Estrategias hechas a medida para conectar culturas, equipos y negocios entre España y China.',
@@ -120,11 +148,9 @@ const ES_FALLBACK: Dict = {
     contact: 'Cuéntanos tu reto y diseñaremos una propuesta personalizada para tu organización.'
   },
 
-  actividades: { title: 'Actividades' },
-  cultura:     { title: 'Cultura' },
-  viajes:      { title: 'Viajes' },
-  idiomas:     { title: 'Idiomas' },
-  networking:  { title: 'Networking' },
+  cultura: { title: 'Cultura' },
+  idiomas: { title: 'Idiomas' },
+  networking: { title: 'Networking' },
 
   gourmet: {
     title: 'Gourmet Pass',
@@ -144,6 +170,34 @@ const ES_FALLBACK: Dict = {
     altPassport: 'Pasaporte Gourmet Creasia',
     altDining: 'Persona disfrutando del Pasaporte Gourmet',
     altKids: 'Niños compartiendo helado'
+  },
+
+  viajes: {
+    title: 'Viajes organizados',
+    section1: {
+      title: '1. Viajar con Creasia',
+      body1: 'Organizamos viajes en grupo a China que combinan los iconos imprescindibles con rincones que normalmente solo conocen quienes han vivido allí. Cada ruta la curan especialistas que han residido y trabajado en el país, para que cada parada te conecte con la cultura que queremos compartir.'
+    },
+    section2: {
+      title: '2. Maravillas que descubrirás',
+      body1: 'Desde la Gran Muralla en Mutianyu hasta la Ciudad Prohibida, los pueblos acuáticos de Suzhou y los rascacielos futuristas de Shanghái y Shenzhen, abrimos puertas a los contrastes de China.',
+      body2: 'También exploramos barrios artesanos, montañas de té, polos de arte contemporáneo y enclaves Patrimonio Mundial donde tradición e innovación conviven.'
+    },
+    section3: {
+      title: '3. Oportunidades y puentes de negocio',
+      body1: 'Los viajes de Creasia catalizan alianzas: coordinamos encuentros con emprendedores, cámaras de comercio y espacios de innovación acordes al perfil del grupo.',
+      body2: 'Busques proveedores, inversión o inspiración, te ayudamos a interpretar el contexto, entender los códigos culturales y dar seguimiento a los contactos que generes.'
+    },
+    section4: {
+      title: '4. Viajar en comunidad Creasia',
+      body1: 'Te acompañan coordinadores bilingües, guías locales y un equipo que se ocupa de la logística para que tú te centres en aprender y disfrutar.',
+      body2: 'Sesiones previas a la salida, materiales compartidos y networking tras el viaje mantienen unido al grupo y convierten la experiencia en una aventura colaborativa.'
+    },
+    section5: {
+      title: '5. Organización y próximos pasos',
+      body1: 'Preparamos itinerarios, gestionamos reservas, asesoramos sobre visados y seguros, y adaptamos el programa a necesidades de accesibilidad o alimentación.',
+      body2: 'Si quieres sumarte a la próxima salida o proponer un viaje a medida, contacta con nuestro equipo desde el área de socios y te guiaremos personalmente.'
+    }
   },
 
   legal: {
@@ -208,7 +262,7 @@ export class TranslationService {
     if (isPlatformBrowser(this.platformId)) {
       // Guardar si vino desde URL, para que persista entre rutas y recargas
       if (urlLang) {
-        try { localStorage.setItem('creasia:lang', urlLang); } catch {}
+        try { localStorage.setItem('creasia:lang', urlLang); } catch { }
       }
       void this.ensureLoaded(initial);
       this.updateDocumentLang(initial);
@@ -219,7 +273,7 @@ export class TranslationService {
           const u = new URL(window.location.href);
           u.searchParams.delete('lang');
           window.history.replaceState({}, '', u.toString());
-        } catch {}
+        } catch { }
       }
     }
   }
@@ -240,7 +294,7 @@ export class TranslationService {
 
     // Persistimos selección (en navegador)
     if (isPlatformBrowser(this.platformId)) {
-      try { localStorage.setItem('creasia:lang', lang); } catch {}
+      try { localStorage.setItem('creasia:lang', lang); } catch { }
     }
 
     this.bump();
@@ -276,7 +330,7 @@ export class TranslationService {
     try {
       const saved = localStorage.getItem('creasia:lang');
       if (saved && this.isSupported(saved)) return saved as Lang;
-    } catch {}
+    } catch { }
 
     // Idioma del navegador
     const nav = (navigator?.language || navigator?.languages?.[0] || 'es')
@@ -289,7 +343,7 @@ export class TranslationService {
 
   private isSupported(v: string | null | undefined): boolean {
     return !!v && ['es', 'en', 'zh'].includes(v.slice(0, 2).toLowerCase());
-    }
+  }
 
   private normalize(v: string): Lang {
     const c = (v || 'es').slice(0, 2).toLowerCase();
