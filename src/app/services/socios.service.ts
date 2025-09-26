@@ -65,7 +65,7 @@ export class SociosService {
     ppDebug('PruebaPte ▶ SociosService.register body', body);
 
     return this.http
-      .post<RegisterResponse>(`${this.API}/socios_register.php?debug=1`, body, {
+      .post<RegisterResponse>(`${this.API}/socios_register.php`, body, {
         withCredentials: true, // importante para cookies (sobre todo en prod)
       })
       .pipe(
