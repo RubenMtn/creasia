@@ -329,7 +329,7 @@
 
 @include for-mobile {
   :host {
-    position: sticky;     // o fixed si quieres que quede flotante al hacer scroll
+    position: fixed;     // o fixed si quieres que quede flotante al hacer scroll
     top: 0;
     left: 0;
     right: 0;
