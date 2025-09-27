@@ -178,6 +178,16 @@
     /* tap más inmediato */
   }
 
+  /* Capa anchor que cubre todo el slide (por encima de la imagen) */
+  .slide-link-overlay {
+    position: absolute;
+    inset: 0;
+    display: block;
+    z-index: 3;
+    /* velos = 3 con pointer-events:none; flechas = 4 */
+    background: transparent;
+  }
+
 
   /* Si en móvil las quieres un pelín más cerca del borde,
      puedes ajustar el gap (acerca hacia dentro valores negativos): */

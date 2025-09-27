@@ -9,19 +9,26 @@
       [style.transform]="'translateX(' + (-translateXPx) + 'px)'"
       [style.transition]="enableTransition ? 'transform ' + transitionMs + 'ms ease-in-out' : 'none'"
       [style.height]="height" (transitionend)="onTrackTransitionEnd($event)">
+
       <!-- Render extendido (triple base). Cada slide con su ancho inline -->
       <ng-container *ngFor="let sl of extSlides; let i = index">
 
-        <!-- Imagen (unificado con tap/click) -->
+        <!-- Imagen (tap + swipe + overlay anchor) -->
         <div *ngIf="sl.kind === 'img'; else sepTpl" class="slide img-slide" [style.width.px]="slideW[i]"
           [style.height]="height" role="button" tabindex="0" aria-label="Ir a Galería"
           (pointerdown)="onSlidePointerDown($event)" (pointerup)="onSlidePointerUp($event)"
-          (touchstart)="onSlidePointerDown($event)" (touchend)="onSlidePointerUp($event)"
-          (pointercancel)="onSlidePointerCancel()" (touchcancel)="onSlidePointerCancel()" (click)="onSlideClick()"
+          (pointercancel)="onSlidePointerCancel()" (touchstart)="onSlidePointerDown($event)"
+          (touchend)="onSlidePointerUp($event)" (touchcancel)="onSlidePointerCancel()" (click)="onSlideClick()"
           (keyup.enter)="goToGaleria()">
+
           <img class="slide-img" [src]="sl.data.src" [alt]="sl.data.alt || ''" loading="lazy" draggable="false"
             (load)="onImgLoad()" />
+
           <div *ngIf="sl.data.caption" class="caption">{{ sl.data.caption }}</div>
+
+          <!-- 🔒 Capa anchor overlay: click robusto en Android -->
+          <a class="slide-link-overlay" href="/galeria" (click)="onSlideAnchorClick($event)" aria-hidden="true"
+            tabindex="-1"></a>
         </div>
 
         <!-- Separador negro -->

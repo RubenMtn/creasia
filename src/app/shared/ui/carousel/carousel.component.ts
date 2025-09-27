@@ -391,6 +391,18 @@ export class CarouselComponent implements OnInit, AfterViewInit, OnDestroy, OnCh
     Promise.resolve().then(() => this.router.navigateByUrl('/galeria'));
   }
 
+  onSlideAnchorClick(ev: Event): void {
+    // Si venimos de swipe o ya navegamos en pointerup, NO navegamos por el anchor
+    if (this._justSwiped || this._ignoreNextClick) {
+      ev.preventDefault();
+      this._ignoreNextClick = false;
+      return;
+    }
+    // Evita la navegación del anchor y usa el router (diferido) para SPA
+    ev.preventDefault();
+    Promise.resolve().then(() => this.router.navigateByUrl('/galeria'));
+  }
+
   onSlidePointerCancel(): void {
     // Si el SO cancela el gesto, anulamos el tap
     this._tapStart = null;
