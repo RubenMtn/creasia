@@ -93,26 +93,26 @@
   "actividades": {
     "title": "Creasia Activities",
     "section1": {
-      "title": "1. What Creasia Activities Offer",
+      "title": "What Creasia Activities Offer",
       "body1": "We curate a calendar that blends culture, training, and community so you can live China from Madrid and beyond. Every proposal is designed to create bridges between people who share curiosity about the country."
     },
     "section2": {
-      "title": "2. Languages and Chinese Classes",
+      "title": "Languages and Chinese Classes",
       "body1": "Our language programs range from introductory Mandarin sessions to tailored coaching for professionals who need to negotiate or present in China.",
       "body2": "Native teachers combine conversation, pronunciation workshops, and practical vocabulary so you can feel confident during trips, studies, or business meetings."
     },
     "section3": {
-      "title": "3. Culture and Traditions",
+      "title": "Culture and Traditions",
       "body1": "Calligraphy, ink painting, martial arts, and Chinese New Year celebrations help you connect with centuries-old rituals in an inclusive environment.",
       "body2": "We invite artists, masters, and cultural mediators who open up the symbolism behind each practice and adapt it to all levels."
     },
     "section4": {
-      "title": "4. Networking with Purpose",
+      "title": "Networking with Purpose",
       "body1": "Monthly meetups, business roundtables, and alumni gatherings connect members across sectors that are building ties with China.",
       "body2": "You will expand your circle with entrepreneurs, students, and creatives while learning to collaborate across cultures in a relaxed, multilingual atmosphere."
     },
     "section5": {
-      "title": "5. Workshops and Experiential Learning",
+      "title": "Workshops and Experiential Learning",
       "body1": "Cooking classes, tea ceremonies, cinema clubs, and thematic laboratories give you hands-on experiences with flavours, sounds, and stories from different regions.",
       "body2": "Group dynamics are intentionally small so that every participant can ask questions, share insights, and forge lasting friendships."
     }
@@ -120,26 +120,26 @@
   "viajes": {
     "title": "Organized Trips",
     "section1": {
-      "title": "1. Traveling with Creasia",
+      "title": "Traveling with Creasia",
       "body1": "We design group journeys to China that combine iconic highlights with moments that only locals usually discover. Each route is curated by specialists who have lived and worked in the country, so every stop connects you with the culture we love to share."
     },
     "section2": {
-      "title": "2. Wonders You Will Experience",
+      "title": "Wonders You Will Experience",
       "body1": "From the Great Wall at Mutianyu to the Forbidden City, Suzhou water towns, and the futuristic skylines of Shanghai and Shenzhen, we open the doors to China's contrasts.",
       "body2": "We also explore artisan districts, tea mountains, contemporary art hubs, and UNESCO heritage sites that reveal how tradition and innovation coexist."
     },
     "section3": {
-      "title": "3. Opportunities and Business Bridges",
+      "title": "Opportunities and Business Bridges",
       "body1": "Creasia trips are a catalyst for partnerships: we arrange meetings with entrepreneurs, chambers of commerce, and innovation spaces that match the profile of our travelers.",
       "body2": "Whether you are looking for suppliers, investors, or inspiration, we help you interpret the context, navigate cultural codes, and follow up on the contacts you make."
     },
     "section4": {
-      "title": "4. Traveling in the Creasia Community",
+      "title": "Traveling in the Creasia Community",
       "body1": "You will be accompanied by bilingual coordinators, local guides, and a team that takes care of logistics so you can focus on learning and enjoying.",
       "body2": "Pre-departure sessions, shared resources, and post-trip networking keep the group connected and make the experience feel like a collaborative adventure."
     },
     "section5": {
-      "title": "5. Organization and Next Steps",
+      "title": "Organization and Next Steps",
       "body1": "We prepare itineraries, secure reservations, advise on visas and insurance, and adapt the program to accessibility or dietary needs.",
       "body2": "If you want to join the next departure or propose a tailored journey, contact our team through the partners area so we can guide you personally."
     }
@@ -221,5 +221,7 @@
     "contact": "Tell us about your challenge and we’ll design a tailored proposal for your organization."
   }
 }
+
+
 
 
