@@ -1,4 +1,3 @@
-<!-- Carrusel: separador negro “viaja” entre imágenes, y velos laterales crean fade in/out -->
 <section
   #wrapEl
   class="carousel"
@@ -10,7 +9,7 @@
   (mouseenter)="onMouseEnter()"
   (mouseleave)="onMouseLeave()"
 >
-  <!-- Pista que se desplaza en píxeles -->
+  <!-- Pista -->
   <div
     #trackEl
     class="track"
@@ -20,7 +19,7 @@
     [style.height]="height"
     (transitionend)="onTrackTransitionEnd($event)"
   >
-    <!-- Render extendido (con bloques triple base). Cada slide tiene su ancho inline -->
+    <!-- Render extendido (triple base). Cada slide con su ancho inline -->
     <ng-container *ngFor="let sl of extSlides; let i = index">
       <!-- Imagen -->
       <div
@@ -30,16 +29,16 @@
         [style.height]="height"
       >
         <a *ngIf="sl.data.link; else nolink" [href]="sl.data.link" class="slide-link" tabindex="-1" aria-hidden="true">
-          <img class="slide-img" [src]="sl.data.src" [alt]="sl.data.alt || ''" loading="lazy" />
+          <img class="slide-img" [src]="sl.data.src" [alt]="sl.data.alt || ''" loading="lazy" (load)="onImgLoad()" />
           <div *ngIf="sl.data.caption" class="caption">{{ sl.data.caption }}</div>
         </a>
         <ng-template #nolink>
-          <img class="slide-img" [src]="sl.data.src" [alt]="sl.data.alt || ''" loading="lazy" />
+          <img class="slide-img" [src]="sl.data.src" [alt]="sl.data.alt || ''" loading="lazy" (load)="onImgLoad()" />
           <div *ngIf="sl.data.caption" class="caption">{{ sl.data.caption }}</div>
         </ng-template>
       </div>
 
-      <!-- Separador negro (slide real, sin dwell) -->
+      <!-- Separador negro -->
       <ng-template #sepTpl>
         <div
           class="slide sep-slide"
@@ -52,16 +51,16 @@
     </ng-container>
   </div>
 
-  <!-- CAMBIO: velos laterales para fade in/out al entrar/salir -->
+  <!-- Velos laterales para fade (solo cuando hay imágenes) -->
   <div
-    *ngIf="fadeEdges"
+    *ngIf="fadeEdges && imagesReady"
     class="edge-fade left"
     [style.width.%]="fadeEdgeWidth * 100"
     [style.background]="'linear-gradient(to right, ' + fadeColor + ', rgba(0,0,0,0))'"
     aria-hidden="true"
   ></div>
   <div
-    *ngIf="fadeEdges"
+    *ngIf="fadeEdges && imagesReady"
     class="edge-fade right"
     [style.width.%]="fadeEdgeWidth * 100"
     [style.background]="'linear-gradient(to left, ' + fadeColor + ', rgba(0,0,0,0))'"
@@ -84,7 +83,7 @@
     (click)="next()"
   >&#10095;</button>
 
-  <!-- Indicadores (solo por imágenes reales) -->
+  <!-- Indicadores -->
   <div *ngIf="showIndicators && images.length > 1" class="indicators" role="tablist" aria-label="Indicadores">
     <button
       *ngFor="let _ of images; let i = index"

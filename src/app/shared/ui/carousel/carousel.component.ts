@@ -3,16 +3,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * Carrusel infinito con franja negra entre fotos (sin parada en la franja).
- * - BASE: [IMG, SEP, IMG, SEP, ...]  (SEP = franja negra de ancho ratio)
- * - EXTENDIDO: [BASE][BASE][BASE] y arrancamos en el bloque central.
- * - Avance IMG→IMG (salta SEP), franja sólo visible durante la transición.
- * - Animación en píxeles (cada slide tiene su ancho).
- *
- * Estabilidad:
- * - Posicionamiento inicial sin transición (evita “viaje” al abrir).
- * - Snap/recentrado sin transición (evita “retroceso”).
- *
- * CAMBIO (fade): añadimos velos laterales configurables para fade in/out.
+ * Mejora: arranque siempre sobre una IMAGEN, sin transición, y mostramos los velos de fade
+ * sólo cuando al menos una imagen ha cargado (imagesReady = true).
  */
 import { CommonModule } from '@angular/common';
 import {
@@ -63,14 +55,14 @@ export class CarouselComponent implements OnInit, AfterViewInit, OnDestroy, OnCh
   @Input() separatorColor: string = '#000';
   @Input() transitionMs: number = 600;
 
-  // CAMBIO: controles del efecto fade lateral
-  @Input() fadeEdges: boolean = true;             // activar/desactivar velos laterales
-  @Input() fadeEdgeWidth: number = 0.12;          // ancho de cada velo (12% del carrusel)
-  @Input() fadeColor: string = 'rgba(0,0,0,1)';   // color del velo (usa rgba para controlar intensidad)
+  // Velos de fade (bisel negro lateral durante la transición)
+  @Input() fadeEdges: boolean = true;
+  @Input() fadeEdgeWidth: number = 0.12;             // 12% por lado
+  @Input() fadeColor: string = 'rgba(0,0,0,0.9)';    // opacidad del velo
 
   // ===== Estado =====
   baseSlides: Slide[] = [];   // [IMG, SEP, IMG, SEP, ...]
-  extSlides: Slide[] = [];    // [BASE][BASE][BASE] si loop=true y 2+ imgs; si no, solo BASE
+  extSlides: Slide[] = [];    // infinito: [BASE][BASE][BASE] o [BASE] si loop=false
 
   containerW = 0;
   slideW: number[] = [];
@@ -83,6 +75,9 @@ export class CarouselComponent implements OnInit, AfterViewInit, OnDestroy, OnCh
   private autoplayFrozen = false;
   private initialPositioned = false;
 
+  /** ✅ Se activa cuando al menos una imagen ha cargado: habilita velos de fade */
+  imagesReady = false;
+
   private timer: any = null;
   private hovering = false;
   private resizeObs: ResizeObserver | null = null;
@@ -93,7 +88,7 @@ export class CarouselComponent implements OnInit, AfterViewInit, OnDestroy, OnCh
   private cdr = inject(ChangeDetectorRef);
   private zone = inject(NgZone);
 
-  // Índice lógico actual para bullets (0..n-1)
+  // Índice lógico actual (0..n-1) para bullets
   get current(): number {
     const n = this.images.length;
     if (n === 0) return 0;
@@ -104,7 +99,6 @@ export class CarouselComponent implements OnInit, AfterViewInit, OnDestroy, OnCh
     return Math.floor(basePos / 2) % n;
   }
 
-  // ===== Lifecycle =====
   ngOnInit(): void {
     this.rebuildSlides();
   }
@@ -125,7 +119,7 @@ export class CarouselComponent implements OnInit, AfterViewInit, OnDestroy, OnCh
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['images'] || changes['separatorRatio'] || changes['loop'] ||
         changes['autoplayMs'] || changes['transitionMs'] ||
-        changes['fadeEdges'] || changes['fadeEdgeWidth'] || changes['fadeColor']) { // CAMBIO: considerar inputs de fade
+        changes['fadeEdges'] || changes['fadeEdgeWidth'] || changes['fadeColor']) {
       this.rebuildSlides();
       this.placeInitialPositionNoTransition();
       this.restartAutoplay();
@@ -149,14 +143,18 @@ export class CarouselComponent implements OnInit, AfterViewInit, OnDestroy, OnCh
       return;
     }
 
+    // BASE: IMG, SEP, IMG, SEP... (si 1 imagen, sin SEP)
     imgs.forEach((im, i) => {
       this.baseSlides.push({ kind: 'img', idx: i, data: im });
       if (imgs.length > 1) this.baseSlides.push({ kind: 'sep' });
     });
 
     if (this.loop && imgs.length > 1) {
+      // Triple BASE para infinito suave
       this.extSlides = [...this.baseSlides, ...this.baseSlides, ...this.baseSlides];
-      this.visIndex = this.baseSlides.length; // centro
+      // ✅ Arrancar en el bloque central **sobre la PRIMERA IMAGEN real** (no separador)
+      const firstImgPosInBase = Math.max(0, this.baseSlides.findIndex(sl => sl.kind === 'img'));
+      this.visIndex = this.baseSlides.length + firstImgPosInBase;
     } else {
       this.extSlides = [...this.baseSlides];
       this.visIndex = 0;
@@ -203,9 +201,15 @@ export class CarouselComponent implements OnInit, AfterViewInit, OnDestroy, OnCh
 
     this.measureAndLayout();
 
-    this.visIndex = (this.loop && this.images.length > 1)
-      ? this.baseSlides.length
-      : 0;
+    // ✅ Asegurar que arrancamos sobre una IMAGEN real (no en un separador)
+    if (this.extSlides[this.visIndex]?.kind !== 'img') {
+      const baseLen = this.baseSlides.length;
+      // Buscar la primera imagen en el bloque central
+      const firstImgPosInBase = Math.max(0, this.baseSlides.findIndex(sl => sl.kind === 'img'));
+      this.visIndex = (this.loop && this.images.length > 1)
+        ? baseLen + firstImgPosInBase
+        : firstImgPosInBase;
+    }
 
     this.cdr.detectChanges();
     this.forceReflow();
@@ -254,13 +258,12 @@ export class CarouselComponent implements OnInit, AfterViewInit, OnDestroy, OnCh
 
   // ===== Navegación =====
   private stepSize(): number {
-    return this.images.length > 1 ? 2 : 1; // IMG→IMG saltando SEP
+    return this.images.length > 1 ? 2 : 1; // IMG→IMG (saltando SEP)
   }
 
   private nextInternal(): void {
     if (!this.initialPositioned || this.images.length <= 1) return;
     if (this.autoplayFrozen || this.isSnapping || !this.enableTransition) return;
-
     this.enableTransition = true;
     this.visIndex += this.stepSize();
     this.cdr.markForCheck();
@@ -269,7 +272,6 @@ export class CarouselComponent implements OnInit, AfterViewInit, OnDestroy, OnCh
   private prevInternal(): void {
     if (!this.initialPositioned || this.images.length <= 1) return;
     if (this.autoplayFrozen || this.isSnapping || !this.enableTransition) return;
-
     this.enableTransition = true;
     this.visIndex -= this.stepSize();
     this.cdr.markForCheck();
@@ -278,7 +280,6 @@ export class CarouselComponent implements OnInit, AfterViewInit, OnDestroy, OnCh
   private goToInternal(imgIndex: number): void {
     if (imgIndex < 0 || imgIndex > this.images.length - 1) return;
     if (this.autoplayFrozen || this.isSnapping) return;
-
     this.enableTransition = true;
     if (!this.loop || this.images.length <= 1) {
       this.visIndex = this.images.length > 1 ? imgIndex * 2 : 0;
@@ -299,7 +300,6 @@ export class CarouselComponent implements OnInit, AfterViewInit, OnDestroy, OnCh
     if (!(this.loop && this.images.length > 1)) return;
 
     const baseLen = this.baseSlides.length;
-
     if (this.visIndex >= baseLen * 2) {
       this.snapWithoutTransition(this.visIndex - baseLen);
       return;
@@ -335,6 +335,14 @@ export class CarouselComponent implements OnInit, AfterViewInit, OnDestroy, OnCh
     if (!this.offsets.length) return 0;
     const i = Math.max(0, Math.min(this.visIndex, this.offsets.length - 1));
     return this.offsets[i] ?? 0;
+  }
+
+  // ===== Imagen cargada: habilita velos de fade =====
+  onImgLoad(): void {
+    if (!this.imagesReady) {
+      this.imagesReady = true;
+      this.cdr.markForCheck();
+    }
   }
 
   // ===== Hover =====
