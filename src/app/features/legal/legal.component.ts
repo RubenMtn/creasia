@@ -10,4 +10,14 @@ import { TPipe } from '../../shared/i18n/t.pipe';
   templateUrl: './legal.component.html',
   styleUrl: './legal.component.scss'
 })
-export class LegalComponent {}
+export class LegalComponent {
+  // Subir suavemente al ancla "...-top"
+  scrollToTopAnchor(): void {
+    const el = document.getElementById('legal-top');
+    if (el && 'scrollIntoView' in el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } else {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }
+}

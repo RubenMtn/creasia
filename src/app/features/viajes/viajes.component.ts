@@ -9,7 +9,18 @@ import { TPipe } from '../../shared/i18n/t.pipe';
   templateUrl: './viajes.component.html',
   styleUrl: './viajes.component.scss'
 })
-export class ViajesComponent {}
+export class ViajesComponent {
+
+  // Subir suavemente al ancla "...-top"
+  scrollToTopAnchor(): void {
+    const el = document.getElementById('viajes-top');
+    if (el && 'scrollIntoView' in el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } else {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }
+}
 
 
 

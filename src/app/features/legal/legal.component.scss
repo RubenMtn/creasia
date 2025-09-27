@@ -44,5 +44,26 @@
   }
 }
 
+/* Botón “volver arriba”: puntero de mano */
+.btn-volver-arriba {
+  cursor: pointer;
+}
 
+/* Por si el <img> interno estuviera sobrescribiendo algo */
+.btn-volver-arriba * {
+  cursor: pointer;
+}
+
+/* (Opcional) feedback visual */
+.btn-volver-arriba:hover { transform: translateY(-2px); }
+.btn-volver-arriba:active { transform: translateY(0); }
+
+html { scroll-behavior: smooth; } /* extra; el método ya hace smooth */
+.volver-arriba { display: flex; justify-content: center; padding: 24px 0 48px; }
+.btn-volver-arriba {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 56px; height: 56px; border-radius: 50%;
+  background: black; border: 0; box-shadow: 0 8px 20px rgba(0,0,0,.25);
+}
+.btn-volver-arriba img { display: block; max-width: 60%; height: auto; }
 
