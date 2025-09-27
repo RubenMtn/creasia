@@ -82,6 +82,8 @@ export class CarouselComponent implements OnInit, AfterViewInit, OnDestroy, OnCh
 
   /** ✅ Se activa cuando al menos una imagen ha cargado: habilita velos de fade */
   imagesReady = false;
+  // arriba, dentro de la clase
+  private readonly TARGET_ROUTE = '/galeria';
 
   private timer: any = null;
   private hovering = false;
@@ -391,11 +393,16 @@ export class CarouselComponent implements OnInit, AfterViewInit, OnDestroy, OnCh
     );
   }
 
-
   onSlidePointerDown(ev: any): void {
     const x = ev?.clientX ?? ev?.changedTouches?.[0]?.clientX ?? 0;
     const y = ev?.clientY ?? ev?.changedTouches?.[0]?.clientY ?? 0;
     this._tapStart = { x, y };
+  }
+
+  onSlideClick(): void {
+    if (this._justSwiped || this._ignoreNextClick) { this._ignoreNextClick = false; return; }
+    this.router.navigateByUrl(this.TARGET_ROUTE)
+      .catch(() => { try { window.location.assign(this.TARGET_ROUTE); } catch { } });
   }
 
   onSlidePointerUp(ev: any): void {
@@ -406,16 +413,17 @@ export class CarouselComponent implements OnInit, AfterViewInit, OnDestroy, OnCh
     const dy = Math.abs(y - this._tapStart.y);
     this._tapStart = null;
 
-    // Umbral de TAP: si no hubo arrastre, navegamos
-    if (dx < 10 && dy < 10) {
-      if (this._justSwiped) return; // si justo venimos de swipe, no navegamos
-      Promise.resolve().then(() => this.router.navigateByUrl('/galeria'));
+    if (dx < 10 && dy < 10 && !this._justSwiped) {
+      this._ignoreNextClick = true; // evita “click fantasma” posterior
+      this.router.navigateByUrl(this.TARGET_ROUTE)
+        .catch(() => { try { window.location.assign(this.TARGET_ROUTE); } catch { } });
     }
   }
 
-  onSlideClick(): void {
-    if (this._justSwiped) return; // evita click fantasma tras swipe
-    Promise.resolve().then(() => this.router.navigateByUrl('/galeria'));
+  goToGaleria(): void {
+    if (this._justSwiped) return;
+    this.router.navigateByUrl(this.TARGET_ROUTE)
+      .catch(() => { try { window.location.assign(this.TARGET_ROUTE); } catch { } });
   }
 
   onSwiped(): void {
@@ -423,10 +431,6 @@ export class CarouselComponent implements OnInit, AfterViewInit, OnDestroy, OnCh
     setTimeout(() => (this._justSwiped = false), 180); // ventana breve anti-click fantasma
   }
 
-  goToGaleria(): void {
-    if (this._justSwiped) return;
-    this.router.navigateByUrl('/galeria');
-  }
 
   // ===== Hover =====
   onMouseEnter(): void { this.hovering = true; }
