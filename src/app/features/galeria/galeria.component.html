@@ -4,6 +4,19 @@
   </div>
 
   <article class="galeria-body typography-body-text">
-    <!-- contenido pendiente -->
+    <div *ngIf="images.length; else emptyState" class="gallery-grid">
+      <button *ngFor="let image of images" type="button" class="gallery-item" (click)="open(image)">
+        <img [src]="image" [attr.alt]="'galeria.photoAlt' | t" loading="lazy" />
+      </button>
+    </div>
+    <ng-template #emptyState>
+      <p class="empty-message">{{ 'galeria.empty' | t }}</p>
+    </ng-template>
   </article>
+
+  <div *ngIf="selectedImage" class="lightbox" (click)="close()" role="button" tabindex="0" (keydown.enter)="close()"
+    (keydown.space)="close()">
+    <img [src]="selectedImage" [attr.alt]="'galeria.photoAlt' | t" />
+  </div>
+
 </section>

@@ -26,6 +26,7 @@ const ES_FALLBACK: Dict = {
     networking: 'NETWORKING',
     consulting: 'CONSULTORÍA',
     legal: 'LEGAL',
+    galeria: 'GALERÍA',
   },
   menu: {
     toggle: 'Abrir menú',
@@ -41,6 +42,7 @@ const ES_FALLBACK: Dict = {
     networking: 'NETWORKING',
     consulting: 'CONSULTORÍA',
     legal: 'LEGAL',
+    galeria: 'GALERÍA',
   },
 
   home: {
@@ -108,6 +110,13 @@ const ES_FALLBACK: Dict = {
   general: {
     loading: 'Cargando…'
   },
+
+  galeria: {
+    title: 'Buenos momentos',
+    photoAlt: 'Fotografia de la galeria Creasia',
+    empty: 'No hay imagenes disponibles por ahora.'
+  },
+
 
   actividades: {
     title: 'Actividades de Creasia',

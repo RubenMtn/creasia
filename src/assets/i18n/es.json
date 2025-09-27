@@ -32,7 +32,7 @@
   },
   "socios": {
     "title": "Ventajas exclusivas, descuentos, invitaciones a eventos, novedades...",
-    "registerCaption": "Regístrate con tu email y una contraseña (mínimo 8 caracteres):", 
+    "registerCaption": "Regístrate con tu email y una contraseña (mínimo 8 caracteres):",
     "loginCaption": "Si ya eres socio registrado de Creasia, accede con tu usuario:",
     "loginRedirect": "Redirigiendo al inicio...",
     "actions": {
@@ -218,9 +218,10 @@
     "service2": "Acompañamiento comercial y búsqueda de socios estratégicos.",
     "service3": "Formación in-company para equipos en transición internacional.",
     "contact": "Cuéntanos tu reto y diseñaremos una propuesta personalizada para tu organización."
+  },
+  "galeria": {
+    "title": "Buenos momentos",
+    "photoAlt": "Fotografía de la galería Creasia",
+    "empty": "No hay imágenes disponibles por ahora."
   }
 }
-
-
-
-

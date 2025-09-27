@@ -219,9 +219,10 @@
     "service2": "Commercial support and search for strategic partners.",
     "service3": "In-company training for teams in international transition.",
     "contact": "Tell us about your challenge and we’ll design a tailored proposal for your organization."
+  },
+  "galeria": {
+    "title": "Good moments",
+    "photoAlt": "Creasia gallery photograph",
+    "empty": "No images to display yet."
   }
 }
-
-
-
-
