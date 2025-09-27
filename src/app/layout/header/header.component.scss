@@ -327,6 +327,19 @@
   .brand--consulting { font-size: clamp(1.4rem, 5vw, 2rem); }
 }
 
+@include for-mobile {
+  :host {
+    position: sticky;     // o fixed si quieres que quede flotante al hacer scroll
+    top: 0;
+    left: 0;
+    right: 0;
+    display: block;
+    width: 100%;
+    z-index: 1000;
+    background: $bg-dark; // mismo fondo que .hdr para evitar transparencias
+  }
+}
+
 /* -- Tablet and above ------------------------------------------------------ */
 @include from-tablet {
   .hdr { padding: $space-2; }
