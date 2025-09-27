@@ -8,10 +8,11 @@
  * - Avance IMG→IMG (salta SEP), franja sólo visible durante la transición.
  * - Animación en píxeles (cada slide tiene su ancho).
  *
- * CAMBIOS para eliminar “retroceso” y “movimiento raro” al abrir:
- * - CAMBIO: Posicionamiento inicial sin transición (disable → set index → detectChanges → reflow → enable).
- * - CAMBIO: Snap/recentrado sin transición con congelación total del autoplay.
- * - CAMBIO: Guards extra contra ticks durante snaps y mientras la transición está desactivada.
+ * Estabilidad:
+ * - Posicionamiento inicial sin transición (evita “viaje” al abrir).
+ * - Snap/recentrado sin transición (evita “retroceso”).
+ *
+ * CAMBIO (fade): añadimos velos laterales configurables para fade in/out.
  */
 import { CommonModule } from '@angular/common';
 import {
@@ -62,6 +63,11 @@ export class CarouselComponent implements OnInit, AfterViewInit, OnDestroy, OnCh
   @Input() separatorColor: string = '#000';
   @Input() transitionMs: number = 600;
 
+  // CAMBIO: controles del efecto fade lateral
+  @Input() fadeEdges: boolean = true;             // activar/desactivar velos laterales
+  @Input() fadeEdgeWidth: number = 0.12;          // ancho de cada velo (12% del carrusel)
+  @Input() fadeColor: string = 'rgba(0,0,0,1)';   // color del velo (usa rgba para controlar intensidad)
+
   // ===== Estado =====
   baseSlides: Slide[] = [];   // [IMG, SEP, IMG, SEP, ...]
   extSlides: Slide[] = [];    // [BASE][BASE][BASE] si loop=true y 2+ imgs; si no, solo BASE
@@ -73,10 +79,9 @@ export class CarouselComponent implements OnInit, AfterViewInit, OnDestroy, OnCh
   visIndex = 0;
   enableTransition = true;
 
-  // CAMBIO: flags para evitar animaciones “fantasma”
-  private isSnapping = false;      // durante recentrado/snap
-  private autoplayFrozen = false;  // congela ticks del autoplay en operaciones críticas
-  private initialPositioned = false; // ya colocamos posición inicial sin transición
+  private isSnapping = false;
+  private autoplayFrozen = false;
+  private initialPositioned = false;
 
   private timer: any = null;
   private hovering = false;
@@ -105,13 +110,11 @@ export class CarouselComponent implements OnInit, AfterViewInit, OnDestroy, OnCh
   }
 
   ngAfterViewInit(): void {
-    // CAMBIO: colocar posición inicial SIN transición y sólo entonces arrancar autoplay
-    this.placeInitialPositionNoTransition(); // <- clave para quitar el “movimiento raro” al abrir
+    this.placeInitialPositionNoTransition();
     this.startAutoplay();
     const host = this.wrapEl?.nativeElement;
     if (host && 'ResizeObserver' in window) {
       this.resizeObs = new ResizeObserver(() => {
-        // CAMBIO: en resize, re-medir y recolocar sin transición
         this.placeInitialPositionNoTransition();
       });
       this.resizeObs.observe(host);
@@ -121,9 +124,9 @@ export class CarouselComponent implements OnInit, AfterViewInit, OnDestroy, OnCh
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['images'] || changes['separatorRatio'] || changes['loop'] ||
-        changes['autoplayMs'] || changes['transitionMs']) {
+        changes['autoplayMs'] || changes['transitionMs'] ||
+        changes['fadeEdges'] || changes['fadeEdgeWidth'] || changes['fadeColor']) { // CAMBIO: considerar inputs de fade
       this.rebuildSlides();
-      // CAMBIO: tras cambios, recolocar sin transición antes de reactivar autoplay
       this.placeInitialPositionNoTransition();
       this.restartAutoplay();
     }
@@ -146,14 +149,12 @@ export class CarouselComponent implements OnInit, AfterViewInit, OnDestroy, OnCh
       return;
     }
 
-    // BASE: IMG, SEP, IMG, SEP (si solo 1 imagen, sin SEP)
     imgs.forEach((im, i) => {
       this.baseSlides.push({ kind: 'img', idx: i, data: im });
       if (imgs.length > 1) this.baseSlides.push({ kind: 'sep' });
     });
 
     if (this.loop && imgs.length > 1) {
-      // infinito suave: tres bloques BASE y arrancar en el central
       this.extSlides = [...this.baseSlides, ...this.baseSlides, ...this.baseSlides];
       this.visIndex = this.baseSlides.length; // centro
     } else {
@@ -163,7 +164,7 @@ export class CarouselComponent implements OnInit, AfterViewInit, OnDestroy, OnCh
 
     this.enableTransition = true;
     this.isSnapping = false;
-    this.initialPositioned = false; // CAMBIO: forzaremos recolocación sin transición
+    this.initialPositioned = false;
     this.cdr.markForCheck();
   }
 
@@ -194,28 +195,25 @@ export class CarouselComponent implements OnInit, AfterViewInit, OnDestroy, OnCh
     this.cdr.markForCheck();
   }
 
-  // ===== Colocación inicial sin transición (FIX arranque) =====
+  // ===== Colocación inicial sin transición =====
   private placeInitialPositionNoTransition(): void {
-    // CAMBIO: desactivar transición, medir, fijar índice de arranque y reflow antes de reactivar
-    this.autoplayFrozen = true;          // congela ticks
-    this.enableTransition = false;       // sin transición
-    this.cdr.detectChanges();            // aplica [class.notransition] / [style.transition]
+    this.autoplayFrozen = true;
+    this.enableTransition = false;
+    this.cdr.detectChanges();
 
     this.measureAndLayout();
 
-    // índice de arranque: centro si loop & 2+, si no 0
     this.visIndex = (this.loop && this.images.length > 1)
       ? this.baseSlides.length
       : 0;
 
-    this.cdr.detectChanges();            // aplica nuevo transform (sin transición)
-    this.forceReflow();                  // fija el frame actual
+    this.cdr.detectChanges();
+    this.forceReflow();
 
-    // reactivar transición en el próximo frame
     requestAnimationFrame(() => {
       this.enableTransition = true;
-      this.initialPositioned = true;     // a partir de aquí puede correr el autoplay
-      this.autoplayFrozen = false;       // liberar
+      this.initialPositioned = true;
+      this.autoplayFrozen = false;
       this.cdr.markForCheck();
     });
   }
@@ -237,7 +235,6 @@ export class CarouselComponent implements OnInit, AfterViewInit, OnDestroy, OnCh
       this.zone.runOutsideAngular(() => {
         this.timer = setInterval(() => {
           this.zone.run(() => {
-            // CAMBIO: no avanzar si estamos congelados o “snapping”
             if (this.autoplayFrozen || this.isSnapping) return;
             if (!this.pauseOnHover || !this.hovering) this.nextInternal();
           });
@@ -262,7 +259,7 @@ export class CarouselComponent implements OnInit, AfterViewInit, OnDestroy, OnCh
 
   private nextInternal(): void {
     if (!this.initialPositioned || this.images.length <= 1) return;
-    if (this.autoplayFrozen || this.isSnapping || !this.enableTransition) return; // CAMBIO: más guards
+    if (this.autoplayFrozen || this.isSnapping || !this.enableTransition) return;
 
     this.enableTransition = true;
     this.visIndex += this.stepSize();
@@ -271,7 +268,7 @@ export class CarouselComponent implements OnInit, AfterViewInit, OnDestroy, OnCh
 
   private prevInternal(): void {
     if (!this.initialPositioned || this.images.length <= 1) return;
-    if (this.autoplayFrozen || this.isSnapping || !this.enableTransition) return; // CAMBIO: más guards
+    if (this.autoplayFrozen || this.isSnapping || !this.enableTransition) return;
 
     this.enableTransition = true;
     this.visIndex -= this.stepSize();
@@ -280,13 +277,12 @@ export class CarouselComponent implements OnInit, AfterViewInit, OnDestroy, OnCh
 
   private goToInternal(imgIndex: number): void {
     if (imgIndex < 0 || imgIndex > this.images.length - 1) return;
-    if (this.autoplayFrozen || this.isSnapping) return; // CAMBIO
+    if (this.autoplayFrozen || this.isSnapping) return;
 
     this.enableTransition = true;
     if (!this.loop || this.images.length <= 1) {
       this.visIndex = this.images.length > 1 ? imgIndex * 2 : 0;
     } else {
-      // colocar en el bloque central
       this.visIndex = this.baseSlides.length + (imgIndex * 2);
     }
     this.cdr.markForCheck();
@@ -296,7 +292,7 @@ export class CarouselComponent implements OnInit, AfterViewInit, OnDestroy, OnCh
   next(): void { this.nextInternal(); }
   goTo(i: number): void { this.goToInternal(i); }
 
-  // ===== Fin de transición: recentrado invisible en el bloque central =====
+  // ===== Fin de transición: recentrado invisible =====
   onTrackTransitionEnd(ev: TransitionEvent): void {
     if (ev.propertyName !== 'transform') return;
     if (!this.trackEl || ev.target !== this.trackEl.nativeElement) return;
@@ -304,12 +300,10 @@ export class CarouselComponent implements OnInit, AfterViewInit, OnDestroy, OnCh
 
     const baseLen = this.baseSlides.length;
 
-    // Si salimos por la derecha (tercer bloque), recentrar restando baseLen.
     if (this.visIndex >= baseLen * 2) {
       this.snapWithoutTransition(this.visIndex - baseLen);
       return;
     }
-    // Si salimos por la izquierda (primer bloque), recentrar sumando baseLen.
     if (this.visIndex < baseLen) {
       this.snapWithoutTransition(this.visIndex + baseLen);
       return;
@@ -317,22 +311,21 @@ export class CarouselComponent implements OnInit, AfterViewInit, OnDestroy, OnCh
   }
 
   private snapWithoutTransition(target: number): void {
-    // CAMBIO: congelar autoplay y bloquear cambios mientras hacemos el snap.
     this.autoplayFrozen = true;
     this.isSnapping = true;
 
-    this.enableTransition = false;   // sin transición
-    this.cdr.detectChanges();        // aplicar “no transition”
+    this.enableTransition = false;
+    this.cdr.detectChanges();
 
-    this.visIndex = target;          // mover a la posición equivalente del bloque central
-    this.cdr.detectChanges();        // aplicar transform sin transición
+    this.visIndex = target;
+    this.cdr.detectChanges();
 
-    this.forceReflow();              // fijar el frame sin animación
+    this.forceReflow();
 
     requestAnimationFrame(() => {
-      this.enableTransition = true;  // reactivar transición
+      this.enableTransition = true;
       this.isSnapping = false;
-      this.autoplayFrozen = false;   // liberar autoplay
+      this.autoplayFrozen = false;
       this.cdr.markForCheck();
     });
   }
@@ -344,7 +337,7 @@ export class CarouselComponent implements OnInit, AfterViewInit, OnDestroy, OnCh
     return this.offsets[i] ?? 0;
   }
 
-  // ===== Hover (pausa opcional) =====
+  // ===== Hover =====
   onMouseEnter(): void { this.hovering = true; }
   onMouseLeave(): void { this.hovering = false; }
 }

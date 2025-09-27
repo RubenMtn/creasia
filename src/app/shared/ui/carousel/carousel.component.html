@@ -1,4 +1,4 @@
-<!-- Carrusel: separador negro como “slide” entre imágenes, sin parada -->
+<!-- Carrusel: separador negro “viaja” entre imágenes, y velos laterales crean fade in/out -->
 <section
   #wrapEl
   class="carousel"
@@ -20,7 +20,7 @@
     [style.height]="height"
     (transitionend)="onTrackTransitionEnd($event)"
   >
-    <!-- Render extendido (con clones). Cada slide tiene su ancho inline -->
+    <!-- Render extendido (con bloques triple base). Cada slide tiene su ancho inline -->
     <ng-container *ngFor="let sl of extSlides; let i = index">
       <!-- Imagen -->
       <div
@@ -51,6 +51,22 @@
       </ng-template>
     </ng-container>
   </div>
+
+  <!-- CAMBIO: velos laterales para fade in/out al entrar/salir -->
+  <div
+    *ngIf="fadeEdges"
+    class="edge-fade left"
+    [style.width.%]="fadeEdgeWidth * 100"
+    [style.background]="'linear-gradient(to right, ' + fadeColor + ', rgba(0,0,0,0))'"
+    aria-hidden="true"
+  ></div>
+  <div
+    *ngIf="fadeEdges"
+    class="edge-fade right"
+    [style.width.%]="fadeEdgeWidth * 100"
+    [style.background]="'linear-gradient(to left, ' + fadeColor + ', rgba(0,0,0,0))'"
+    aria-hidden="true"
+  ></div>
 
   <!-- Flechas -->
   <button

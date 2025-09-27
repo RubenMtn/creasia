@@ -1,4 +1,4 @@
-/* Carrusel con slides de ancho variable (IMG = 100%, SEP = ratio) */
+/* Carrusel con slides de ancho variable (IMG = 100%, SEP = ratio) + fade lateral */
 
 .carousel {
   position: relative;
@@ -15,7 +15,7 @@
 .track {
   display: flex;
   height: 100%;
-  transition: transform 600ms ease-in-out; /* valor por defecto (sobrescrito por [transitionMs]) */
+  transition: transform 600ms ease-in-out; /* valor base; el TS lo sobrescribe si se pasa transitionMs */
   will-change: transform;
 
   &.notransition {
@@ -25,7 +25,7 @@
 
 .slide {
   position: relative;
-  flex: 0 0 auto;   /* ancho fijado inline en px */
+  flex: 0 0 auto;
   height: 100%;
   user-select: none;
   -webkit-user-drag: none;
@@ -49,7 +49,7 @@
   line-height: 1.25;
 }
 
-/* Flechas por encima */
+/* Flechas por encima de velos */
 .nav {
   position: absolute;
   top: 50%;
@@ -63,7 +63,7 @@
   font-size: 20px;
   line-height: 40px;
   cursor: pointer;
-  z-index: 3;
+  z-index: 4; /* encima de velos y track */
 
   &:hover { background: rgba(0,0,0,0.6); }
   &:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
@@ -79,7 +79,7 @@
   bottom: 10px;
   left: 50%;
   transform: translateX(-50%);
-  z-index: 3;
+  z-index: 4;
 }
 
 .dot {
@@ -94,10 +94,23 @@
   &:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
 }
 
-// .sep-slide {
-//   /* la franja negra recibe width y background inline; aquí puedes añadir bordes/efectos si quieres */
-// }
+/* CAMBIO: velos laterales que crean el fade in/out al entrar/salir */
+.edge-fade {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  z-index: 3;           /* por encima del track, por debajo de flechas/indicadores */
+  pointer-events: none; /* no bloquea clics ni gestos */
+  /* background se inyecta inline con linear-gradient desde TS/HTML */
+}
 
+.edge-fade.left  { left: 0; }
+.edge-fade.right { right: 0; }
+
+/* Separador: recibe width y background inline */
+//.sep-slide {}
+
+/* Responsive */
 @media (max-width: 420px) {
   .nav { width: 36px; height: 36px; font-size: 18px; }
   .caption { font-size: 0.9rem; padding: 10px 12px; }
