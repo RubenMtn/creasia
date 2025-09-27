@@ -1,9 +1,15 @@
 <section #wrapEl class="carousel" [style.height]="height" role="region" aria-roledescription="carousel"
   [attr.aria-label]="'Carrusel de imágenes (' + images.length + ' ítems)'" tabindex="0" (mouseenter)="onMouseEnter()"
   (mouseleave)="onMouseLeave()">
-  <!-- Pista -->
-  <div class="viewport" appSwipeGesture [swipeThresholdPx]="56" [maxOffAxisRatio]="0.45" (swipeLeft)="next()"
-    (swipeRight)="prev()" (swiped)="onSwiped()">
+
+  <!-- Viewport + swipe -->
+  <div class="viewport"
+       appSwipeGesture
+       [swipeThresholdPx]="56"
+       [maxOffAxisRatio]="0.45"
+       (swipeLeft)="next()"
+       (swipeRight)="prev()"
+       (swiped)="onSwiped()">
 
     <div #trackEl class="track" [class.notransition]="!enableTransition"
       [style.transform]="'translateX(' + (-translateXPx) + 'px)'"
@@ -13,28 +19,38 @@
       <!-- Render extendido (triple base). Cada slide con su ancho inline -->
       <ng-container *ngFor="let sl of extSlides; let i = index">
 
-        <!-- Imagen (tap + swipe + overlay anchor) -->
-        <div *ngIf="sl.kind === 'img'; else sepTpl" class="slide img-slide" [style.width.px]="slideW[i]"
-          [style.height]="height" role="button" tabindex="0" aria-label="Ir a Galería"
-          (pointerdown)="onSlidePointerDown($event)" (pointerup)="onSlidePointerUp($event)"
-          (pointercancel)="onSlidePointerCancel()" (touchstart)="onSlidePointerDown($event)"
-          (touchend)="onSlidePointerUp($event)" (touchcancel)="onSlidePointerCancel()" (click)="onSlideClick()"
-          (keyup.enter)="goToGaleria()">
+        <!-- Imagen (tap + click + Enter) -->
+        <div *ngIf="sl.kind === 'img'; else sepTpl"
+             class="slide img-slide"
+             [style.width.px]="slideW[i]"
+             [style.height]="height"
+             role="button"
+             tabindex="0"
+             aria-label="Ir a Galería"
+             (pointerdown)="onSlidePointerDown($event)"
+             (pointerup)="onSlidePointerUp($event)"
+             (touchstart)="onSlidePointerDown($event)"
+             (touchend)="onSlidePointerUp($event)"
+             (click)="onSlideClick()"
+             (keyup.enter)="goToGaleria()">
 
-          <img class="slide-img" [src]="sl.data.src" [alt]="sl.data.alt || ''" loading="lazy" draggable="false"
-            (load)="onImgLoad()" />
+          <img class="slide-img"
+               [src]="sl.data.src"
+               [alt]="sl.data.alt || ''"
+               loading="lazy"
+               draggable="false"
+               (load)="onImgLoad()" />
 
           <div *ngIf="sl.data.caption" class="caption">{{ sl.data.caption }}</div>
-
-          <!-- 🔒 Capa anchor overlay: click robusto en Android -->
-          <a class="slide-link-overlay" href="/galeria" (click)="onSlideAnchorClick($event)" aria-hidden="true"
-            tabindex="-1"></a>
         </div>
 
         <!-- Separador negro -->
         <ng-template #sepTpl>
-          <div class="slide sep-slide" [style.width.px]="slideW[i]" [style.height]="height"
-            [style.background]="separatorColor" aria-hidden="true"></div>
+          <div class="slide sep-slide"
+               [style.width.px]="slideW[i]"
+               [style.height]="height"
+               [style.background]="separatorColor"
+               aria-hidden="true"></div>
         </ng-template>
       </ng-container>
     </div>

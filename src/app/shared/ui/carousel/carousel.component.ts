@@ -8,7 +8,7 @@
  */
 //import { SwipeGestureDirective } from 'src/app/shared/directives/swipe-gesture.directive';
 import { SwipeGestureDirective } from './../../directives/swipe-gesture.directive';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import {
   Component,
@@ -40,7 +40,7 @@ type Slide =
 @Component({
   selector: 'app-carousel',
   standalone: true,
-  imports: [CommonModule, SwipeGestureDirective],
+  imports: [CommonModule, SwipeGestureDirective, RouterLink],
   templateUrl: './carousel.component.html',
   styleUrls: ['./carousel.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -93,6 +93,7 @@ export class CarouselComponent implements OnInit, AfterViewInit, OnDestroy, OnCh
   private cdr = inject(ChangeDetectorRef);
   private zone = inject(NgZone);
 
+  isSwiping = false;
   private _justSwiped = false; // flag para inhibir el click tras un swipe
   private _ignoreNextClick = false; // evita “click” fantasma tras navegar en pointerup
   private _tapStart: { x: number; y: number } | null = null;
@@ -354,43 +355,6 @@ export class CarouselComponent implements OnInit, AfterViewInit, OnDestroy, OnCh
     }
   }
 
-  goToGaleria(): void {
-    if (this._justSwiped) return; // ignora clic si viene de swipe
-    this.router.navigateByUrl('/cultura');
-  }
-
-  // Manejo del evento genérico de swipe para setear el flag unos ms
-  onSwiped(): void {
-    this._justSwiped = true;
-    setTimeout(() => (this._justSwiped = false), 180); // ventana corta para evitar el click fantasma
-  }
-
-  onSlidePointerDown(ev: any): void {
-    const x = ev?.clientX ?? ev?.changedTouches?.[0]?.clientX ?? 0;
-    const y = ev?.clientY ?? ev?.changedTouches?.[0]?.clientY ?? 0;
-    this._tapStart = { x, y };
-  }
-
-  onSlidePointerUp(ev: any): void {
-    if (!this._tapStart) return;
-    const x = ev?.clientX ?? ev?.changedTouches?.[0]?.clientX ?? 0;
-    const y = ev?.clientY ?? ev?.changedTouches?.[0]?.clientY ?? 0;
-    const dx = Math.abs(x - this._tapStart.x);
-    const dy = Math.abs(y - this._tapStart.y);
-    this._tapStart = null;
-
-    // Umbral un poco mayor para Android: menos falsos negativos
-    if (dx < 10 && dy < 10) {
-      this._ignoreNextClick = true; // ignora el click fantasma posterior
-      Promise.resolve().then(() => this.router.navigateByUrl('/galeria'));
-    }
-  }
-
-  onSlideClick(): void {
-    if (this._justSwiped || this._ignoreNextClick) { this._ignoreNextClick = false; return; }
-    Promise.resolve().then(() => this.router.navigateByUrl('/galeria'));
-  }
-
   onSlideAnchorClick(ev: Event): void {
     // Si venimos de swipe o ya navegamos en pointerup, NO navegamos por el anchor
     if (this._justSwiped || this._ignoreNextClick) {
@@ -408,6 +372,60 @@ export class CarouselComponent implements OnInit, AfterViewInit, OnDestroy, OnCh
     this._tapStart = null;
     this._ignoreNextClick = true;
     setTimeout(() => (this._ignoreNextClick = false), 150);
+  }
+
+
+  onOverlayClick(ev: Event): void {
+    // Si venimos de swipe o de un pointerup reciente que ya navegó, no navegamos
+    if (this._justSwiped || this._ignoreNextClick) {
+      ev.preventDefault();
+      this._ignoreNextClick = false; // limpia el flag
+      return;
+    }
+
+    // Evita navegación por defecto y usa Router (SPA)
+    ev.preventDefault();
+    Promise.resolve().then(() =>
+      this.router.navigateByUrl('/galeria')
+        .catch(() => { try { window.location.assign('/galeria'); } catch { } })
+    );
+  }
+
+
+  onSlidePointerDown(ev: any): void {
+    const x = ev?.clientX ?? ev?.changedTouches?.[0]?.clientX ?? 0;
+    const y = ev?.clientY ?? ev?.changedTouches?.[0]?.clientY ?? 0;
+    this._tapStart = { x, y };
+  }
+
+  onSlidePointerUp(ev: any): void {
+    if (!this._tapStart) return;
+    const x = ev?.clientX ?? ev?.changedTouches?.[0]?.clientX ?? 0;
+    const y = ev?.clientY ?? ev?.changedTouches?.[0]?.clientY ?? 0;
+    const dx = Math.abs(x - this._tapStart.x);
+    const dy = Math.abs(y - this._tapStart.y);
+    this._tapStart = null;
+
+    // Umbral de TAP: si no hubo arrastre, navegamos
+    if (dx < 10 && dy < 10) {
+      if (this._justSwiped) return; // si justo venimos de swipe, no navegamos
+      Promise.resolve().then(() => this.router.navigateByUrl('/galeria'));
+    }
+  }
+
+  onSlideClick(): void {
+    if (this._justSwiped) return; // evita click fantasma tras swipe
+    Promise.resolve().then(() => this.router.navigateByUrl('/galeria'));
+  }
+
+  onSwiped(): void {
+    this._justSwiped = true;
+    setTimeout(() => (this._justSwiped = false), 180); // ventana breve anti-click fantasma
+  }
+
+  goToGaleria(): void {
+    if (this._justSwiped) return;
+    this.router.navigateByUrl('/galeria');
   }
 
   // ===== Hover =====

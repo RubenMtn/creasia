@@ -178,16 +178,27 @@
     /* tap más inmediato */
   }
 
-  /* Capa anchor que cubre todo el slide (por encima de la imagen) */
+
+  /* Anchor overlay que cubre todo el slide y acepta clics */
   .slide-link-overlay {
+    outline: 2px solid magenta;
     position: absolute;
     inset: 0;
     display: block;
     z-index: 3;
-    /* velos = 3 con pointer-events:none; flechas = 4 */
+    /* flechas = 4; tus botones sobre la foto, si los hay, ponlos a 4+ */
     background: transparent;
+    pointer-events: auto;
+    /* imprescindible */
+    cursor: pointer;
   }
 
+
+
+  /* Durante el swipe, desactiva el anchor para no navegar */
+  .is-swiping .slide-link-overlay {
+    pointer-events: none;
+  }
 
   /* Si en móvil las quieres un pelín más cerca del borde,
      puedes ajustar el gap (acerca hacia dentro valores negativos): */
