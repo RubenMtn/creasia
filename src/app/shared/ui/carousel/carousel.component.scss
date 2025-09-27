@@ -4,7 +4,8 @@
 .carousel {
   position: relative;
   width: 100%;
-  overflow: visible; /* permite que las flechas salgan fuera */
+  overflow: visible;
+  /* permite que las flechas salgan fuera */
   outline: none;
 
   &:focus-visible {
@@ -18,14 +19,16 @@
   position: relative;
   width: 100%;
   height: 100%;
-  overflow: hidden; /* recorta las diapositivas vecinas */
+  overflow: hidden;
+  /* recorta las diapositivas vecinas */
 }
 
 /* ===== Pista y diapositivas ===== */
 .track {
   display: flex;
   height: 100%;
-  transition: transform 600ms ease-in-out; /* valor base; el TS lo puede sobrescribir */
+  transition: transform 600ms ease-in-out;
+  /* valor base; el TS lo puede sobrescribir */
   will-change: transform;
 
   &.notransition {
@@ -66,7 +69,8 @@
 .nav {
   position: absolute;
   top: 50%;
-  z-index: 4; /* encima de velos y track */
+  z-index: 4;
+  /* encima de velos y track */
   border: 0;
   width: 40px;
   height: 40px;
@@ -91,14 +95,16 @@
 .nav.nav-prev {
   left: 0;
   transform: translate(-100%, -50%);
-  margin-left: var(--nav-gap, 8px); /* ajusta separación hacia fuera */
+  margin-left: var(--nav-gap, 8px);
+  /* ajusta separación hacia fuera */
 }
 
 /* Flecha derecha: pegada al borde y desplazada 100% hacia fuera */
 .nav.nav-next {
   right: 0;
   transform: translate(100%, -50%);
-  margin-right: var(--nav-gap, 8px); /* ajusta separación hacia fuera */
+  margin-right: var(--nav-gap, 8px);
+  /* ajusta separación hacia fuera */
 }
 
 /* ===== Indicadores ===== */
@@ -135,13 +141,20 @@
   position: absolute;
   top: 0;
   bottom: 0;
-  z-index: 3;         /* por encima del track, por debajo de flechas/indicadores */
-  pointer-events: none; /* no bloquea clics ni gestos */
+  z-index: 3;
+  /* por encima del track, por debajo de flechas/indicadores */
+  pointer-events: none;
+  /* no bloquea clics ni gestos */
   /* background se inyecta inline con linear-gradient desde TS/HTML */
 }
 
-.edge-fade.left { left: 0; }
-.edge-fade.right { right: 0; }
+.edge-fade.left {
+  left: 0;
+}
+
+.edge-fade.right {
+  right: 0;
+}
 
 /* ===== Responsive ===== */
 @media (max-width: 420px) {
@@ -156,6 +169,15 @@
     font-size: 0.9rem;
     padding: 10px 12px;
   }
+
+  .img-slide .slide-img {
+    -webkit-user-drag: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+    touch-action: manipulation;
+    /* tap más inmediato */
+  }
+
 
   /* Si en móvil las quieres un pelín más cerca del borde,
      puedes ajustar el gap (acerca hacia dentro valores negativos): */

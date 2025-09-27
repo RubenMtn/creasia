@@ -365,23 +365,25 @@ export class CarouselComponent implements OnInit, AfterViewInit, OnDestroy, OnCh
     setTimeout(() => (this._justSwiped = false), 180); // ventana corta para evitar el click fantasma
   }
 
-
-  onSlidePointerDown(ev: PointerEvent): void {
-    this._tapStart = { x: ev.clientX, y: ev.clientY };
+  onSlidePointerDown(ev: any): void {
+    const x = ev?.clientX ?? ev?.changedTouches?.[0]?.clientX ?? 0;
+    const y = ev?.clientY ?? ev?.changedTouches?.[0]?.clientY ?? 0;
+    this._tapStart = { x, y };
   }
 
-  onSlidePointerUp(ev: PointerEvent): void {
+  onSlidePointerUp(ev: any): void {
     if (!this._tapStart) return;
-    const dx = Math.abs(ev.clientX - this._tapStart.x);
-    const dy = Math.abs(ev.clientY - this._tapStart.y);
+    const x = ev?.clientX ?? ev?.changedTouches?.[0]?.clientX ?? 0;
+    const y = ev?.clientY ?? ev?.changedTouches?.[0]?.clientY ?? 0;
+    const dx = Math.abs(x - this._tapStart.x);
+    const dy = Math.abs(y - this._tapStart.y);
     this._tapStart = null;
 
-    // Umbral pequeño: si no hubo arrastre, consideramos TAP -> navegamos
-    if (dx < 6 && dy < 6) {
-      this._ignoreNextClick = true;
-      Promise.resolve().then(() => this.router.navigateByUrl('/galeria')); // o /cultura
+    // Umbral un poco mayor para Android: menos falsos negativos
+    if (dx < 10 && dy < 10) {
+      this._ignoreNextClick = true; // ignora el click fantasma posterior
+      Promise.resolve().then(() => this.router.navigateByUrl('/galeria'));
     }
-
   }
 
   onSlideClick(): void {
@@ -389,7 +391,12 @@ export class CarouselComponent implements OnInit, AfterViewInit, OnDestroy, OnCh
     Promise.resolve().then(() => this.router.navigateByUrl('/galeria'));
   }
 
-
+  onSlidePointerCancel(): void {
+    // Si el SO cancela el gesto, anulamos el tap
+    this._tapStart = null;
+    this._ignoreNextClick = true;
+    setTimeout(() => (this._ignoreNextClick = false), 150);
+  }
 
   // ===== Hover =====
   onMouseEnter(): void { this.hovering = true; }

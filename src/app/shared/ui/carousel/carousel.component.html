@@ -2,7 +2,8 @@
   [attr.aria-label]="'Carrusel de imágenes (' + images.length + ' ítems)'" tabindex="0" (mouseenter)="onMouseEnter()"
   (mouseleave)="onMouseLeave()">
   <!-- Pista -->
-  <div class="viewport" appSwipeGesture (swipeLeft)="next()" (swipeRight)="prev()" (swiped)="onSwiped()">
+  <div class="viewport" appSwipeGesture [swipeThresholdPx]="56" [maxOffAxisRatio]="0.45" (swipeLeft)="next()"
+    (swipeRight)="prev()" (swiped)="onSwiped()">
 
     <div #trackEl class="track" [class.notransition]="!enableTransition"
       [style.transform]="'translateX(' + (-translateXPx) + 'px)'"
@@ -12,24 +13,16 @@
       <ng-container *ngFor="let sl of extSlides; let i = index">
 
         <!-- Imagen (unificado con tap/click) -->
-<div *ngIf="sl.kind === 'img'; else sepTpl"
-     class="slide img-slide"
-     [style.width.px]="slideW[i]"
-     [style.height]="height"
-     role="button"
-     tabindex="0"
-     aria-label="Ir a Galería"
-     (pointerdown)="onSlidePointerDown($event)"
-     (pointerup)="onSlidePointerUp($event)"
-     (click)="onSlideClick()"
-     (keyup.enter)="goToGaleria()">
-  <img class="slide-img"
-       [src]="sl.data.src"
-       [alt]="sl.data.alt || ''"
-       loading="lazy"
-       (load)="onImgLoad()" />
-  <div *ngIf="sl.data.caption" class="caption">{{ sl.data.caption }}</div>
-</div>
+        <div *ngIf="sl.kind === 'img'; else sepTpl" class="slide img-slide" [style.width.px]="slideW[i]"
+          [style.height]="height" role="button" tabindex="0" aria-label="Ir a Galería"
+          (pointerdown)="onSlidePointerDown($event)" (pointerup)="onSlidePointerUp($event)"
+          (touchstart)="onSlidePointerDown($event)" (touchend)="onSlidePointerUp($event)"
+          (pointercancel)="onSlidePointerCancel()" (touchcancel)="onSlidePointerCancel()" (click)="onSlideClick()"
+          (keyup.enter)="goToGaleria()">
+          <img class="slide-img" [src]="sl.data.src" [alt]="sl.data.alt || ''" loading="lazy" draggable="false"
+            (load)="onImgLoad()" />
+          <div *ngIf="sl.data.caption" class="caption">{{ sl.data.caption }}</div>
+        </div>
 
         <!-- Separador negro -->
         <ng-template #sepTpl>
