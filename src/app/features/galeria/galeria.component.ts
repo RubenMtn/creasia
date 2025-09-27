@@ -36,7 +36,17 @@ export class GaleriaComponent {
     this.selectedImage = image;
   }
 
+  openFromTouch(event: Event, image: string): void {
+    event.preventDefault();
+    this.open(image);
+  }
+
   close(): void {
     this.selectedImage = null;
+  }
+
+  closeFromTouch(event: Event): void {
+    event.preventDefault();
+    this.close();
   }
 }
