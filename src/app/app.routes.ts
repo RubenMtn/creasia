@@ -8,7 +8,7 @@ export const routes: Routes = [
     children: [
       { path: '', loadComponent: () => import('./features/home/home.component').then(m => m.HomeComponent), data: { headerKey: 'header.brand' } },
       { path: 'actividades', loadComponent: () => import('./features/actividades/actividades.component').then(m => m.ActividadesComponent), data: { headerKey: 'header.activities' } },
-      { path: 'cultura', loadComponent: () => import('./features/cultura/cultura.component').then(m => m.CulturaComponent), data: { headerKey: 'header.culture' } },
+      { path: 'galeria', loadComponent: () => import('./features/galeria/galeria.component').then(m => m.GaleriaComponent), data: { headerKey: 'header.galeria' } },
       { path: 'socios', loadComponent: () => import('./features/socios/socios.component').then(m => m.SociosComponent), data: { headerKey: 'header.partners' } },
       { path: 'viajes', loadComponent: () => import('./features/viajes/viajes.component').then(m => m.ViajesComponent), data: { headerKey: 'header.trips' } },
       { path: 'consultoria', loadComponent: () => import('./features/consultoria/consultoria.component').then(m => m.ConsultoriaComponent), data: { headerKey: 'header.consulting' } },

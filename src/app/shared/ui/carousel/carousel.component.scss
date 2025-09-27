@@ -1,9 +1,10 @@
 /* Carrusel con slides de ancho variable (IMG = 100%, SEP = ratio) + fade lateral */
 
+/* ===== Contenedor principal ===== */
 .carousel {
   position: relative;
   width: 100%;
-  overflow: hidden;
+  overflow: visible; /* permite que las flechas salgan fuera */
   outline: none;
 
   &:focus-visible {
@@ -12,10 +13,19 @@
   }
 }
 
+/* Viewport que recorta el track */
+.viewport {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden; /* recorta las diapositivas vecinas */
+}
+
+/* ===== Pista y diapositivas ===== */
 .track {
   display: flex;
   height: 100%;
-  transition: transform 600ms ease-in-out; /* valor base; el TS lo sobrescribe si se pasa transitionMs */
+  transition: transform 600ms ease-in-out; /* valor base; el TS lo puede sobrescribir */
   will-change: transform;
 
   &.notransition {
@@ -39,21 +49,24 @@
   background: #000;
 }
 
+/* ===== Pie de foto ===== */
 .caption {
   position: absolute;
-  left: 0; right: 0; bottom: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   padding: 12px 16px;
-  background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,.55) 60%, rgba(0,0,0,.75) 100%);
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, .55) 60%, rgba(0, 0, 0, .75) 100%);
   color: #fff;
   font-size: 0.95rem;
   line-height: 1.25;
 }
 
-/* Flechas por encima de velos */
+/* ===== Flechas de navegación (por fuera del viewport) ===== */
 .nav {
   position: absolute;
   top: 50%;
-  transform: translateY(-50%);
+  z-index: 4; /* encima de velos y track */
   border: 0;
   width: 40px;
   height: 40px;
@@ -63,15 +76,32 @@
   font-size: 20px;
   line-height: 40px;
   cursor: pointer;
-  z-index: 4; /* encima de velos y track */
 
-  &:hover { background: rgba(0,0,0,0.6); }
-  &:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+  &:hover {
+    background: rgba(0, 0, 0, 0.6);
+  }
 
-  &.nav-prev { left: 8px; }
-  &.nav-next { right: 8px; }
+  &:focus-visible {
+    outline: 2px solid #fff;
+    outline-offset: 2px;
+  }
 }
 
+/* Flecha izquierda: pegada al borde y desplazada 100% hacia fuera */
+.nav.nav-prev {
+  left: 0;
+  transform: translate(-100%, -50%);
+  margin-left: var(--nav-gap, 8px); /* ajusta separación hacia fuera */
+}
+
+/* Flecha derecha: pegada al borde y desplazada 100% hacia fuera */
+.nav.nav-next {
+  right: 0;
+  transform: translate(100%, -50%);
+  margin-right: var(--nav-gap, 8px); /* ajusta separación hacia fuera */
+}
+
+/* ===== Indicadores ===== */
 .indicators {
   position: absolute;
   display: flex;
@@ -87,31 +117,47 @@
   height: 10px;
   border-radius: 9999px;
   border: 0;
-  background: rgba(255,255,255,0.5);
+  background: rgba(255, 255, 255, 0.5);
   cursor: pointer;
 
-  &.active { background: #fff; }
-  &:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+  &.active {
+    background: #fff;
+  }
+
+  &:focus-visible {
+    outline: 2px solid #fff;
+    outline-offset: 2px;
+  }
 }
 
-/* CAMBIO: velos laterales que crean el fade in/out al entrar/salir */
+/* ===== Velos laterales (fade) ===== */
 .edge-fade {
   position: absolute;
   top: 0;
   bottom: 0;
-  z-index: 3;           /* por encima del track, por debajo de flechas/indicadores */
+  z-index: 3;         /* por encima del track, por debajo de flechas/indicadores */
   pointer-events: none; /* no bloquea clics ni gestos */
   /* background se inyecta inline con linear-gradient desde TS/HTML */
 }
 
-.edge-fade.left  { left: 0; }
+.edge-fade.left { left: 0; }
 .edge-fade.right { right: 0; }
 
-/* Separador: recibe width y background inline */
-//.sep-slide {}
-
-/* Responsive */
+/* ===== Responsive ===== */
 @media (max-width: 420px) {
-  .nav { width: 36px; height: 36px; font-size: 18px; }
-  .caption { font-size: 0.9rem; padding: 10px 12px; }
+  .nav {
+    width: 36px;
+    height: 36px;
+    font-size: 18px;
+    line-height: 36px;
+  }
+
+  .caption {
+    font-size: 0.9rem;
+    padding: 10px 12px;
+  }
+
+  /* Si en móvil las quieres un pelín más cerca del borde,
+     puedes ajustar el gap (acerca hacia dentro valores negativos): */
+  /* :root { --nav-gap: 0px; } */
 }

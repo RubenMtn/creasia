@@ -6,6 +6,9 @@
  * Mejora: arranque siempre sobre una IMAGEN, sin transición, y mostramos los velos de fade
  * sólo cuando al menos una imagen ha cargado (imagesReady = true).
  */
+//import { SwipeGestureDirective } from 'src/app/shared/directives/swipe-gesture.directive';
+import { SwipeGestureDirective } from './../../directives/swipe-gesture.directive';
+import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import {
   Component,
@@ -37,7 +40,7 @@ type Slide =
 @Component({
   selector: 'app-carousel',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, SwipeGestureDirective],
   templateUrl: './carousel.component.html',
   styleUrls: ['./carousel.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -75,6 +78,8 @@ export class CarouselComponent implements OnInit, AfterViewInit, OnDestroy, OnCh
   private autoplayFrozen = false;
   private initialPositioned = false;
 
+  private router = inject(Router);
+
   /** ✅ Se activa cuando al menos una imagen ha cargado: habilita velos de fade */
   imagesReady = false;
 
@@ -87,6 +92,9 @@ export class CarouselComponent implements OnInit, AfterViewInit, OnDestroy, OnCh
 
   private cdr = inject(ChangeDetectorRef);
   private zone = inject(NgZone);
+
+  private _justSwiped = false; // flag para inhibir el click tras un swipe
+  private _tapStart: { x: number; y: number } | null = null;
 
   // Índice lógico actual (0..n-1) para bullets
   get current(): number {
@@ -118,8 +126,8 @@ export class CarouselComponent implements OnInit, AfterViewInit, OnDestroy, OnCh
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['images'] || changes['separatorRatio'] || changes['loop'] ||
-        changes['autoplayMs'] || changes['transitionMs'] ||
-        changes['fadeEdges'] || changes['fadeEdgeWidth'] || changes['fadeColor']) {
+      changes['autoplayMs'] || changes['transitionMs'] ||
+      changes['fadeEdges'] || changes['fadeEdgeWidth'] || changes['fadeColor']) {
       this.rebuildSlides();
       this.placeInitialPositionNoTransition();
       this.restartAutoplay();
@@ -223,7 +231,7 @@ export class CarouselComponent implements OnInit, AfterViewInit, OnDestroy, OnCh
   }
 
   private forceReflow(): void {
-    try { void this.trackEl?.nativeElement.offsetHeight; } catch {}
+    try { void this.trackEl?.nativeElement.offsetHeight; } catch { }
   }
 
   // ===== Autoplay =====
@@ -342,6 +350,32 @@ export class CarouselComponent implements OnInit, AfterViewInit, OnDestroy, OnCh
     if (!this.imagesReady) {
       this.imagesReady = true;
       this.cdr.markForCheck();
+    }
+  }
+
+  goToGaleria(): void {
+    if (this._justSwiped) return; // ignora clic si viene de swipe
+    this.router.navigateByUrl('/cultura');
+  }
+
+  // Manejo del evento genérico de swipe para setear el flag unos ms
+  onSwiped(): void {
+    this._justSwiped = true;
+    setTimeout(() => (this._justSwiped = false), 180); // ventana corta para evitar el click fantasma
+  }
+
+
+  onSlidePointerDown(ev: PointerEvent): void {
+    this._tapStart = { x: ev.clientX, y: ev.clientY };
+  }
+
+  onSlidePointerUp(ev: PointerEvent): void {
+    if (!this._tapStart) return;
+    const dx = Math.abs(ev.clientX - this._tapStart.x);
+    const dy = Math.abs(ev.clientY - this._tapStart.y);
+    this._tapStart = null;
+    if (dx < 6 && dy < 6) {
+      this.router.navigateByUrl('/galeria'); // cambia aquí la ruta si quieres /cultura
     }
   }
 

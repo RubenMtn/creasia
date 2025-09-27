@@ -1,99 +1,49 @@
-<section
-  #wrapEl
-  class="carousel"
-  [style.height]="height"
-  role="region"
-  aria-roledescription="carousel"
-  [attr.aria-label]="'Carrusel de imágenes (' + images.length + ' ítems)'"
-  tabindex="0"
-  (mouseenter)="onMouseEnter()"
-  (mouseleave)="onMouseLeave()"
->
+<section #wrapEl class="carousel" [style.height]="height" role="region" aria-roledescription="carousel"
+  [attr.aria-label]="'Carrusel de imágenes (' + images.length + ' ítems)'" tabindex="0" (mouseenter)="onMouseEnter()"
+  (mouseleave)="onMouseLeave()">
   <!-- Pista -->
-  <div
-    #trackEl
-    class="track"
-    [class.notransition]="!enableTransition"
-    [style.transform]="'translateX(' + (-translateXPx) + 'px)'"
-    [style.transition]="enableTransition ? 'transform ' + transitionMs + 'ms ease-in-out' : 'none'"
-    [style.height]="height"
-    (transitionend)="onTrackTransitionEnd($event)"
-  >
-    <!-- Render extendido (triple base). Cada slide con su ancho inline -->
-    <ng-container *ngFor="let sl of extSlides; let i = index">
-      <!-- Imagen -->
-      <div
-        *ngIf="sl.kind === 'img'; else sepTpl"
-        class="slide img-slide"
-        [style.width.px]="slideW[i]"
-        [style.height]="height"
-      >
-        <a *ngIf="sl.data.link; else nolink" [href]="sl.data.link" class="slide-link" tabindex="-1" aria-hidden="true">
-          <img class="slide-img" [src]="sl.data.src" [alt]="sl.data.alt || ''" loading="lazy" (load)="onImgLoad()" />
-          <div *ngIf="sl.data.caption" class="caption">{{ sl.data.caption }}</div>
-        </a>
-        <ng-template #nolink>
-          <img class="slide-img" [src]="sl.data.src" [alt]="sl.data.alt || ''" loading="lazy" (load)="onImgLoad()" />
-          <div *ngIf="sl.data.caption" class="caption">{{ sl.data.caption }}</div>
-        </ng-template>
-      </div>
+  <div class="viewport" appSwipeGesture (swipeLeft)="next()" (swipeRight)="prev()" (swiped)="onSwiped()">
 
-      <!-- Separador negro -->
-      <ng-template #sepTpl>
-        <div
-          class="slide sep-slide"
-          [style.width.px]="slideW[i]"
-          [style.height]="height"
-          [style.background]="separatorColor"
-          aria-hidden="true"
-        ></div>
-      </ng-template>
-    </ng-container>
+    <div #trackEl class="track" [class.notransition]="!enableTransition"
+      [style.transform]="'translateX(' + (-translateXPx) + 'px)'"
+      [style.transition]="enableTransition ? 'transform ' + transitionMs + 'ms ease-in-out' : 'none'"
+      [style.height]="height" (transitionend)="onTrackTransitionEnd($event)">
+      <!-- Render extendido (triple base). Cada slide con su ancho inline -->
+      <ng-container *ngFor="let sl of extSlides; let i = index">
+
+        <!-- Imagen (unificado y clicable) -->
+        <div *ngIf="sl.kind === 'img'; else sepTpl" class="slide img-slide" [style.width.px]="slideW[i]"
+          [style.height]="height" role="button" tabindex="0" aria-label="Ir a Galería"
+          (pointerdown)="onSlidePointerDown($event)" (pointerup)="onSlidePointerUp($event)"
+          (keyup.enter)="goToGaleria()">
+          <img class="slide-img" [src]="sl.data.src" [alt]="sl.data.alt || ''" loading="lazy" (load)="onImgLoad()" />
+          <div *ngIf="sl.data.caption" class="caption">{{ sl.data.caption }}</div>
+        </div>
+        <!-- Separador negro -->
+        <ng-template #sepTpl>
+          <div class="slide sep-slide" [style.width.px]="slideW[i]" [style.height]="height"
+            [style.background]="separatorColor" aria-hidden="true"></div>
+        </ng-template>
+      </ng-container>
+    </div>
+
+    <!-- Velos laterales para fade (solo cuando hay imágenes) -->
+    <div *ngIf="fadeEdges && imagesReady" class="edge-fade left" [style.width.%]="fadeEdgeWidth * 100"
+      [style.background]="'linear-gradient(to right, ' + fadeColor + ', rgba(0,0,0,0))'" aria-hidden="true"></div>
+    <div *ngIf="fadeEdges && imagesReady" class="edge-fade right" [style.width.%]="fadeEdgeWidth * 100"
+      [style.background]="'linear-gradient(to left, ' + fadeColor + ', rgba(0,0,0,0))'" aria-hidden="true"></div>
   </div>
 
-  <!-- Velos laterales para fade (solo cuando hay imágenes) -->
-  <div
-    *ngIf="fadeEdges && imagesReady"
-    class="edge-fade left"
-    [style.width.%]="fadeEdgeWidth * 100"
-    [style.background]="'linear-gradient(to right, ' + fadeColor + ', rgba(0,0,0,0))'"
-    aria-hidden="true"
-  ></div>
-  <div
-    *ngIf="fadeEdges && imagesReady"
-    class="edge-fade right"
-    [style.width.%]="fadeEdgeWidth * 100"
-    [style.background]="'linear-gradient(to left, ' + fadeColor + ', rgba(0,0,0,0))'"
-    aria-hidden="true"
-  ></div>
-
   <!-- Flechas -->
-  <button
-    *ngIf="showArrows && images.length > 1"
-    class="nav nav-prev"
-    type="button"
-    aria-label="Anterior"
-    (click)="prev()"
-  >&#10094;</button>
-  <button
-    *ngIf="showArrows && images.length > 1"
-    class="nav nav-next"
-    type="button"
-    aria-label="Siguiente"
-    (click)="next()"
-  >&#10095;</button>
+  <button *ngIf="showArrows && images.length > 1" class="nav nav-prev" type="button" aria-label="Anterior"
+    (click)="prev()">&#10094;</button>
+  <button *ngIf="showArrows && images.length > 1" class="nav nav-next" type="button" aria-label="Siguiente"
+    (click)="next()">&#10095;</button>
 
   <!-- Indicadores -->
   <div *ngIf="showIndicators && images.length > 1" class="indicators" role="tablist" aria-label="Indicadores">
-    <button
-      *ngFor="let _ of images; let i = index"
-      type="button"
-      class="dot"
-      [class.active]="i === current"
-      (click)="goTo(i)"
-      [attr.aria-label]="'Ir a la diapositiva ' + (i + 1)"
-      [attr.aria-selected]="i === current"
-      role="tab"
-    ></button>
+    <button *ngFor="let _ of images; let i = index" type="button" class="dot" [class.active]="i === current"
+      (click)="goTo(i)" [attr.aria-label]="'Ir a la diapositiva ' + (i + 1)" [attr.aria-selected]="i === current"
+      role="tab"></button>
   </div>
 </section>
