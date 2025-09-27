@@ -2,30 +2,27 @@
 /* eslint-disable @typescript-eslint/no-inferrable-types */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /**
- * Carrusel de imágenes sin dependencias externas.
- * - Standalone (no necesita módulo).
- * - Accesible (roles ARIA, teclado, focus).
- * - Autoplay con pausa al pasar el ratón (configurable) o si la pestaña no está visible.
- * - Swipe en móvil (gestos táctiles).
- * - Indicadores (bullets) opcionales.
+ * Carrusel infinito con franja negra entre fotos (sin parada en la franja).
+ * - BASE: [IMG, SEP, IMG, SEP, ...]  (SEP = franja negra de ancho ratio)
+ * - EXTENDIDO: [BASE][BASE][BASE] y arrancamos en el bloque central.
+ * - Avance IMG→IMG (salta SEP), franja sólo visible durante la transición.
+ * - Animación en píxeles (cada slide tiene su ancho).
  *
- * CONTINUIDAD SUAVE (FIX “retroceso”):
- * - Clones: [última] + imágenes + [primera] sólo si loop=true y hay ≥2.
- * - Índice visual (visIndex) arranca en 1 (primera real).
- * - Salto sin transición con forzado de reflow + flag isSnapping.
- * - Autoplay ignora ticks durante el “snap”.
- * - transitionend filtrado por transform y el propio track.
+ * CAMBIOS para eliminar “retroceso” y “movimiento raro” al abrir:
+ * - CAMBIO: Posicionamiento inicial sin transición (disable → set index → detectChanges → reflow → enable).
+ * - CAMBIO: Snap/recentrado sin transición con congelación total del autoplay.
+ * - CAMBIO: Guards extra contra ticks durante snaps y mientras la transición está desactivada.
  */
 import { CommonModule } from '@angular/common';
 import {
   Component,
   Input,
   OnInit,
+  AfterViewInit,
   OnDestroy,
-  HostListener,
-  ChangeDetectionStrategy,
   OnChanges,
   SimpleChanges,
+  ChangeDetectionStrategy,
   ChangeDetectorRef,
   NgZone,
   ViewChild,
@@ -40,6 +37,10 @@ export interface CarouselImage {
   link?: string;
 }
 
+type Slide =
+  | { kind: 'img'; idx: number; data: CarouselImage }
+  | { kind: 'sep' };
+
 @Component({
   selector: 'app-carousel',
   standalone: true,
@@ -48,105 +49,182 @@ export interface CarouselImage {
   styleUrls: ['./carousel.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class CarouselComponent implements OnInit, OnDestroy, OnChanges {
-  // ====== Entradas ======
+export class CarouselComponent implements OnInit, AfterViewInit, OnDestroy, OnChanges {
+  // ===== Inputs =====
   @Input() images: CarouselImage[] = [];
   @Input() height: string = '420px';
-  @Input() autoplayMs: number = 7000;
+  @Input() autoplayMs: number = 5000;
   @Input() loop: boolean = true;
   @Input() showIndicators: boolean = true;
   @Input() showArrows: boolean = true;
   @Input() pauseOnHover: boolean = true;
+  @Input() separatorRatio: number = 0.25;
+  @Input() separatorColor: string = '#000';
+  @Input() transitionMs: number = 600;
 
-  // ====== Estado interno ======
-  /** Índice visual sobre la lista extendida */
+  // ===== Estado =====
+  baseSlides: Slide[] = [];   // [IMG, SEP, IMG, SEP, ...]
+  extSlides: Slide[] = [];    // [BASE][BASE][BASE] si loop=true y 2+ imgs; si no, solo BASE
+
+  containerW = 0;
+  slideW: number[] = [];
+  offsets: number[] = [];
+
   visIndex = 0;
-  /** Controla si aplicamos transición CSS en el track */
   enableTransition = true;
-  /** Estamos realizando un “snap” sin transición */
-  private isSnapping = false;
 
-  private timer: any;
+  // CAMBIO: flags para evitar animaciones “fantasma”
+  private isSnapping = false;      // durante recentrado/snap
+  private autoplayFrozen = false;  // congela ticks del autoplay en operaciones críticas
+  private initialPositioned = false; // ya colocamos posición inicial sin transición
+
+  private timer: any = null;
   private hovering = false;
-  private touchStartX = 0;
-  private touchDeltaX = 0;
+  private resizeObs: ResizeObserver | null = null;
 
+  @ViewChild('wrapEl', { static: false }) private wrapEl?: ElementRef<HTMLElement>;
   @ViewChild('trackEl', { static: false }) private trackEl?: ElementRef<HTMLDivElement>;
 
-  // Inyección (API funcional)
   private cdr = inject(ChangeDetectorRef);
   private zone = inject(NgZone);
 
-  // Índice lógico (0..n-1) para bullets/estado
+  // Índice lógico actual para bullets (0..n-1)
   get current(): number {
-    const n = this.images?.length ?? 0;
-    if (n <= 1) return 0;
-    if (!this.loop) {
-      return Math.max(0, Math.min(this.visIndex, n - 1));
-    }
-    // loop=true con clones
-    if (this.visIndex === 0) return n - 1;       // clone de última
-    if (this.visIndex === n + 1) return 0;       // clone de primera
-    return this.visIndex - 1;                    // 1..n -> 0..n-1
+    const n = this.images.length;
+    if (n === 0) return 0;
+    const baseLen = this.baseSlides.length || 1;
+    const basePos = this.loop && n > 1
+      ? ((this.visIndex % baseLen) + baseLen) % baseLen
+      : this.visIndex;
+    return Math.floor(basePos / 2) % n;
   }
 
-  // Lista extendida con clones sólo si loop
-  get extendedImages(): CarouselImage[] {
-    const arr = this.images ?? [];
-    if (this.loop && arr.length > 1) {
-      const first = arr[0];
-      const last = arr[arr.length - 1];
-      return [last, ...arr, first];
-    }
-    return arr;
-  }
-
-  // Transform CSS del track
-  get trackTranslate(): string {
-    return `translateX(${-(100 * this.visIndex)}%)`;
-  }
-
-  // ====== Ciclo de vida ======
+  // ===== Lifecycle =====
   ngOnInit(): void {
-    this.normalizeIndicesOnImagesChange();
+    this.rebuildSlides();
+  }
+
+  ngAfterViewInit(): void {
+    // CAMBIO: colocar posición inicial SIN transición y sólo entonces arrancar autoplay
+    this.placeInitialPositionNoTransition(); // <- clave para quitar el “movimiento raro” al abrir
     this.startAutoplay();
+    const host = this.wrapEl?.nativeElement;
+    if (host && 'ResizeObserver' in window) {
+      this.resizeObs = new ResizeObserver(() => {
+        // CAMBIO: en resize, re-medir y recolocar sin transición
+        this.placeInitialPositionNoTransition();
+      });
+      this.resizeObs.observe(host);
+    }
     document.addEventListener('visibilitychange', this.onVisibility, false);
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['images'] || changes['autoplayMs'] || changes['loop']) {
-      this.normalizeIndicesOnImagesChange();
-      this.restartAutoplayDefensive();
+    if (changes['images'] || changes['separatorRatio'] || changes['loop'] ||
+        changes['autoplayMs'] || changes['transitionMs']) {
+      this.rebuildSlides();
+      // CAMBIO: tras cambios, recolocar sin transición antes de reactivar autoplay
+      this.placeInitialPositionNoTransition();
+      this.restartAutoplay();
     }
   }
 
   ngOnDestroy(): void {
     this.stopAutoplay();
+    if (this.resizeObs) { this.resizeObs.disconnect(); this.resizeObs = null; }
     document.removeEventListener('visibilitychange', this.onVisibility, false);
   }
 
-  // ====== Helpers ======
-  /** Asegura visIndex correcto al cambiar imágenes o loop */
-  private normalizeIndicesOnImagesChange(): void {
-    const n = this.images?.length ?? 0;
-    if (this.loop && n > 1) {
-      this.visIndex = 1; // primera real
-    } else {
-      this.visIndex = 0; // sin clones
+  // ===== Construcción de secuencias =====
+  private rebuildSlides(): void {
+    const imgs = this.images ?? [];
+    this.baseSlides = [];
+
+    if (imgs.length === 0) {
+      this.extSlides = [];
+      this.visIndex = 0;
+      return;
     }
+
+    // BASE: IMG, SEP, IMG, SEP (si solo 1 imagen, sin SEP)
+    imgs.forEach((im, i) => {
+      this.baseSlides.push({ kind: 'img', idx: i, data: im });
+      if (imgs.length > 1) this.baseSlides.push({ kind: 'sep' });
+    });
+
+    if (this.loop && imgs.length > 1) {
+      // infinito suave: tres bloques BASE y arrancar en el central
+      this.extSlides = [...this.baseSlides, ...this.baseSlides, ...this.baseSlides];
+      this.visIndex = this.baseSlides.length; // centro
+    } else {
+      this.extSlides = [...this.baseSlides];
+      this.visIndex = 0;
+    }
+
     this.enableTransition = true;
     this.isSnapping = false;
+    this.initialPositioned = false; // CAMBIO: forzaremos recolocación sin transición
     this.cdr.markForCheck();
   }
 
-  private forceReflow(): void {
-    try {
-      // Leer un layout prop fuerza el reflow del track
-      void this.trackEl?.nativeElement.offsetHeight;
-    } catch {}
+  // ===== Medidas / layout =====
+  private measureAndLayout(): void {
+    const host = this.wrapEl?.nativeElement;
+    const w = host ? (host.clientWidth || host.getBoundingClientRect().width) : 0;
+
+    if (!w || w < 1) {
+      requestAnimationFrame(() => this.measureAndLayout());
+      return;
+    }
+
+    this.containerW = w;
+    const sepW = Math.max(0, Math.min(1, this.separatorRatio)) * this.containerW;
+
+    this.slideW = this.extSlides.map(sl => sl.kind === 'img' ? this.containerW : sepW);
+
+    this.offsets = new Array(this.slideW.length).fill(0);
+    for (let i = 1; i < this.offsets.length; i++) {
+      this.offsets[i] = this.offsets[i - 1] + this.slideW[i - 1];
+    }
+
+    if (this.visIndex > this.extSlides.length - 1) {
+      this.visIndex = Math.max(0, this.extSlides.length - 1);
+    }
+
+    this.cdr.markForCheck();
   }
 
-  // ====== Autoplay ======
+  // ===== Colocación inicial sin transición (FIX arranque) =====
+  private placeInitialPositionNoTransition(): void {
+    // CAMBIO: desactivar transición, medir, fijar índice de arranque y reflow antes de reactivar
+    this.autoplayFrozen = true;          // congela ticks
+    this.enableTransition = false;       // sin transición
+    this.cdr.detectChanges();            // aplica [class.notransition] / [style.transition]
+
+    this.measureAndLayout();
+
+    // índice de arranque: centro si loop & 2+, si no 0
+    this.visIndex = (this.loop && this.images.length > 1)
+      ? this.baseSlides.length
+      : 0;
+
+    this.cdr.detectChanges();            // aplica nuevo transform (sin transición)
+    this.forceReflow();                  // fija el frame actual
+
+    // reactivar transición en el próximo frame
+    requestAnimationFrame(() => {
+      this.enableTransition = true;
+      this.initialPositioned = true;     // a partir de aquí puede correr el autoplay
+      this.autoplayFrozen = false;       // liberar
+      this.cdr.markForCheck();
+    });
+  }
+
+  private forceReflow(): void {
+    try { void this.trackEl?.nativeElement.offsetHeight; } catch {}
+  }
+
+  // ===== Autoplay =====
   private onVisibility = () => {
     if (document.hidden) this.stopAutoplay();
     else this.startAutoplay();
@@ -154,15 +232,14 @@ export class CarouselComponent implements OnInit, OnDestroy, OnChanges {
 
   private startAutoplay(): void {
     this.stopAutoplay();
-    const n = this.images?.length ?? 0;
+    const n = this.images.length;
     if (this.autoplayMs > 0 && n > 1) {
       this.zone.runOutsideAngular(() => {
         this.timer = setInterval(() => {
           this.zone.run(() => {
-            if (this.isSnapping) return; // no avanzar mientras “saltamos”
-            if (!this.pauseOnHover || !this.hovering) {
-              this.nextInternal();
-            }
+            // CAMBIO: no avanzar si estamos congelados o “snapping”
+            if (this.autoplayFrozen || this.isSnapping) return;
+            if (!this.pauseOnHover || !this.hovering) this.nextInternal();
           });
         }, this.autoplayMs);
       });
@@ -170,119 +247,104 @@ export class CarouselComponent implements OnInit, OnDestroy, OnChanges {
   }
 
   private stopAutoplay(): void {
-    if (this.timer) {
-      clearInterval(this.timer);
-      this.timer = null;
-    }
+    if (this.timer) { clearInterval(this.timer); this.timer = null; }
   }
 
-  private restartAutoplayDefensive(): void {
+  private restartAutoplay(): void {
     this.cdr.markForCheck();
     this.startAutoplay();
   }
 
-  // ====== Navegación ======
-  private prevInternal(): void {
-    const n = this.images?.length ?? 0;
-    if (n <= 1 || this.isSnapping) return;
-
-    this.enableTransition = true;
-    if (this.loop && n > 1) {
-      this.visIndex -= 1;
-    } else {
-      this.visIndex = Math.max(0, this.visIndex - 1);
-    }
-    this.cdr.markForCheck();
+  // ===== Navegación =====
+  private stepSize(): number {
+    return this.images.length > 1 ? 2 : 1; // IMG→IMG saltando SEP
   }
 
   private nextInternal(): void {
-    const n = this.images?.length ?? 0;
-    if (n <= 1 || this.isSnapping) return;
+    if (!this.initialPositioned || this.images.length <= 1) return;
+    if (this.autoplayFrozen || this.isSnapping || !this.enableTransition) return; // CAMBIO: más guards
 
     this.enableTransition = true;
-    if (this.loop && n > 1) {
-      this.visIndex += 1;
+    this.visIndex += this.stepSize();
+    this.cdr.markForCheck();
+  }
+
+  private prevInternal(): void {
+    if (!this.initialPositioned || this.images.length <= 1) return;
+    if (this.autoplayFrozen || this.isSnapping || !this.enableTransition) return; // CAMBIO: más guards
+
+    this.enableTransition = true;
+    this.visIndex -= this.stepSize();
+    this.cdr.markForCheck();
+  }
+
+  private goToInternal(imgIndex: number): void {
+    if (imgIndex < 0 || imgIndex > this.images.length - 1) return;
+    if (this.autoplayFrozen || this.isSnapping) return; // CAMBIO
+
+    this.enableTransition = true;
+    if (!this.loop || this.images.length <= 1) {
+      this.visIndex = this.images.length > 1 ? imgIndex * 2 : 0;
     } else {
-      this.visIndex = Math.min(n - 1, this.visIndex + 1);
+      // colocar en el bloque central
+      this.visIndex = this.baseSlides.length + (imgIndex * 2);
     }
     this.cdr.markForCheck();
   }
 
-  private goToInternal(index: number): void {
-    const n = this.images?.length ?? 0;
-    if (n === 0 || index < 0 || index >= n || this.isSnapping) return;
-
-    this.enableTransition = true;
-    this.visIndex = (this.loop && n > 1) ? (index + 1) : index;
-    this.cdr.markForCheck();
-  }
-
-  // API pública
   prev(): void { this.prevInternal(); }
   next(): void { this.nextInternal(); }
   goTo(i: number): void { this.goToInternal(i); }
 
-  // ====== Snap en clones ======
+  // ===== Fin de transición: recentrado invisible en el bloque central =====
   onTrackTransitionEnd(ev: TransitionEvent): void {
-    // Filtramos: sólo si el evento viene del track y por transform
     if (ev.propertyName !== 'transform') return;
     if (!this.trackEl || ev.target !== this.trackEl.nativeElement) return;
+    if (!(this.loop && this.images.length > 1)) return;
 
-    const n = this.images?.length ?? 0;
-    if (!(this.loop && n > 1)) return;
+    const baseLen = this.baseSlides.length;
 
-    // Si estamos en el clone de la primera (n+1), saltamos a la primera real (1).
-    if (this.visIndex === n + 1) {
-      this.snapWithoutTransition(1);
+    // Si salimos por la derecha (tercer bloque), recentrar restando baseLen.
+    if (this.visIndex >= baseLen * 2) {
+      this.snapWithoutTransition(this.visIndex - baseLen);
       return;
     }
-    // Si estamos en el clone de la última (0), saltamos a la última real (n).
-    if (this.visIndex === 0) {
-      this.snapWithoutTransition(n);
+    // Si salimos por la izquierda (primer bloque), recentrar sumando baseLen.
+    if (this.visIndex < baseLen) {
+      this.snapWithoutTransition(this.visIndex + baseLen);
       return;
     }
   }
 
-  /** Salta a visIndex “target” sin transición y sin permitir ticks durante el salto */
-  private snapWithoutTransition(targetVisIndex: number): void {
-    this.isSnapping = true;           // ⛔ bloquear autoplay/navegación
-    this.enableTransition = false;    // quitar transición
-    this.visIndex = targetVisIndex;   // mover a la real
-    this.cdr.markForCheck();
-    this.forceReflow();               // 🔁 asegurar que el DOM aplica el cambio sin transición
+  private snapWithoutTransition(target: number): void {
+    // CAMBIO: congelar autoplay y bloquear cambios mientras hacemos el snap.
+    this.autoplayFrozen = true;
+    this.isSnapping = true;
 
-    // Rehabilitar transición en el siguiente frame y liberar el snap
+    this.enableTransition = false;   // sin transición
+    this.cdr.detectChanges();        // aplicar “no transition”
+
+    this.visIndex = target;          // mover a la posición equivalente del bloque central
+    this.cdr.detectChanges();        // aplicar transform sin transición
+
+    this.forceReflow();              // fijar el frame sin animación
+
     requestAnimationFrame(() => {
-      this.enableTransition = true;
+      this.enableTransition = true;  // reactivar transición
       this.isSnapping = false;
+      this.autoplayFrozen = false;   // liberar autoplay
       this.cdr.markForCheck();
     });
   }
 
-  // ====== Accesibilidad (teclado) ======
-  @HostListener('keydown', ['$event'])
-  onKey(e: KeyboardEvent): void {
-    if (e.key === 'ArrowLeft') { e.preventDefault(); this.prevInternal(); }
-    if (e.key === 'ArrowRight') { e.preventDefault(); this.nextInternal(); }
+  // ===== Translate actual (px) =====
+  get translateXPx(): number {
+    if (!this.offsets.length) return 0;
+    const i = Math.max(0, Math.min(this.visIndex, this.offsets.length - 1));
+    return this.offsets[i] ?? 0;
   }
 
-  // ====== Hover: pausa el autoplay (en escritorio) ======
-  @HostListener('mouseenter') onEnter(): void { this.hovering = true; }
-  @HostListener('mouseleave') onLeave(): void { this.hovering = false; }
-
-  // ====== Gestos táctiles (swipe) ======
-  onTouchStart(ev: TouchEvent): void {
-    this.touchStartX = ev.touches[0]?.clientX ?? 0;
-    this.touchDeltaX = 0;
-  }
-  onTouchMove(ev: TouchEvent): void {
-    const x = ev.touches[0]?.clientX ?? 0;
-    this.touchDeltaX = x - this.touchStartX;
-  }
-  onTouchEnd(): void {
-    const threshold = 50;
-    if (this.touchDeltaX > threshold) this.prevInternal();
-    else if (this.touchDeltaX < -threshold) this.nextInternal();
-    this.touchDeltaX = 0;
-  }
+  // ===== Hover (pausa opcional) =====
+  onMouseEnter(): void { this.hovering = true; }
+  onMouseLeave(): void { this.hovering = false; }
 }

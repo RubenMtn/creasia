@@ -1,4 +1,4 @@
-<section class="content container">
+﻿<section class="content container">
 
   <div class="intro">
     <h2 class="title typography-section-title">{{ 'socios.title' | t }}</h2>
@@ -9,21 +9,19 @@
   <div class="login-block login-block--active">
 
     <!-- Cabecera de login: solo cuando NO hay okMsg -->
-    <p class="login-caption typography-body-text"
-       *ngIf="!okMsg">
+    <p class="login-caption typography-body-text" *ngIf="!okMsg">
       {{ 'socios.loginCaption' | t }}
     </p>
 
     <!-- Mensaje OK de activación (mantiene el formulario visible) -->
-    <p *ngIf="okMsg === 'socios.activation.ok'"
-       class="intro title typography-section-title"
-       role="status" aria-live="polite" style="white-space: pre-line">
+    <p *ngIf="okMsg === 'socios.activation.ok'" class="intro title typography-section-title" role="status"
+      aria-live="polite" style="white-space: pre-line">
       {{ okMsg | t }}
     </p>
 
     <!-- Formulario de login (visible salvo que haya un okMsg distinto al de activación) -->
     <form class="form form--login" (submit)="onLoginSubmit($event)" novalidate
-          *ngIf="!okMsg || okMsg === 'socios.activation.ok'">
+      *ngIf="!okMsg || okMsg === 'socios.activation.ok'">
       <label class="field">
         <span class="field__label typography-body-text">{{ 'socios.loginForm.email' | t }}</span>
         <input class="field__control" type="email" name="loginEmail" required autocomplete="email" />
@@ -32,12 +30,11 @@
       <label class="field">
         <span class="field__label typography-body-text">{{ 'socios.loginForm.password' | t }}</span>
         <input class="field__control" type="password" name="loginPassword" required minlength="8"
-               autocomplete="current-password" />
+          autocomplete="current-password" />
       </label>
 
       <button class="submit typography-button-text" type="submit" [disabled]="loading"
-              [attr.aria-busy]="loading ? 'true' : null"
-              [attr.aria-disabled]="loading ? 'true' : null">
+        [attr.aria-busy]="loading ? 'true' : null" [attr.aria-disabled]="loading ? 'true' : null">
         {{ loading ? ('general.loading' | t) : ('socios.loginForm.submit' | t) }}
       </button>
     </form>
@@ -48,15 +45,13 @@
     </p>
 
     <!-- Enlace a registro (solo si no hay saludo ni loading) -->
-    <button class="text-link typography-body-text" type="button"
-            (click)="openRegister()" *ngIf="!okMsg && !loading">
+    <button class="text-link typography-body-text" type="button" (click)="openRegister()" *ngIf="!okMsg && !loading">
       {{ 'socios.loginForm.notRegistered' | t }}
     </button>
 
     <!-- Saludo tras login correcto (oculta cabecera y formulario) -->
     <ng-container *ngIf="okMsg && okMsg !== 'socios.activation.ok'">
-      <p class="intro title typography-section-title" role="status"
-         aria-live="polite" style="white-space: pre-line">
+      <p class="intro title typography-section-title" role="status" aria-live="polite" style="white-space: pre-line">
         {{ okMsg | t }}<ng-container *ngIf="greetName"> {{ greetName }}</ng-container>
       </p>
       <p class="typography-body-text" aria-live="polite">
@@ -92,7 +87,7 @@
       <label class="field">
         <span class="field__label typography-body-text">{{ 'socios.registerForm.password' | t }}</span>
         <input class="field__control" type="password" name="registerPassword" required minlength="8"
-               autocomplete="new-password" />
+          autocomplete="new-password" />
       </label>
 
       <label class="opt-in">
@@ -101,8 +96,7 @@
       </label>
 
       <button class="submit typography-button-text" type="submit" [disabled]="loading"
-              [attr.aria-busy]="loading ? 'true' : null"
-              [attr.aria-disabled]="loading ? 'true' : null">
+        [attr.aria-busy]="loading ? 'true' : null" [attr.aria-disabled]="loading ? 'true' : null">
         {{ loading ? ('general.loading' | t) : ('socios.registerForm.submit' | t) }}
       </button>
 
@@ -125,4 +119,9 @@
     }
   </div>
   }
+  &#8203;<br>
+  &#8203;<br>
+  &#8203;<br>
+  &#8203;<br>
+  &#8203;<br>
 </section>

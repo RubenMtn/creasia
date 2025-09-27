@@ -43,11 +43,27 @@
 <p class="title-below typography-section-title">
   {{ 'home.title' | t }}
 </p>
-<br/>
+<br />
+
+<!--   [autoplayMs]="4000"         tiempo que permanece cada foto -->
+<!--   [transitionMs]="700"        velocidad del movimiento -->
+<!--   [separatorRatio]="0.25"     franja al 25% del ancho -->
+<!--   [separatorColor]="'#000'"   color de la franja -->
+<app-carousel
+  style="width:50vw;display:block;margin:0 auto"
+  [images]="homeSlides"
+  [autoplayMs]="7000"        
+  [transitionMs]="2000"       
+  [separatorRatio]="0.55"    
+  [separatorColor]="'#000'"  
+  [pauseOnHover]="false"
+  [height]="'calc(80vw * 7/16)'">
+</app-carousel>
+<!-- 
 <app-carousel style="width:50vw;display:block;margin:0 auto"
               [images]="homeSlides" [autoplayMs]="6000" [height]="'calc(80vw * 7/16)'">
-</app-carousel>
-<br/>
+</app-carousel> -->
+<br />
 
 <p class="caption-below typography-body-text">
   {{ 'home.caption' | t }}

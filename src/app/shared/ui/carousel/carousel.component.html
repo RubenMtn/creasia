@@ -1,40 +1,54 @@
-<!--
-  Carrusel accesible con continuidad (clones).
-  - tabindex="0" para navegación con teclado.
-  - (transitionend) en el track para detectar fin y “saltar” sin transición.
--->
+<!-- Carrusel: separador negro como “slide” entre imágenes, sin parada -->
 <section
+  #wrapEl
   class="carousel"
   [style.height]="height"
   role="region"
   aria-roledescription="carousel"
   [attr.aria-label]="'Carrusel de imágenes (' + images.length + ' ítems)'"
   tabindex="0"
-  (touchstart)="onTouchStart($event)"
-  (touchmove)="onTouchMove($event)"
-  (touchend)="onTouchEnd()"
+  (mouseenter)="onMouseEnter()"
+  (mouseleave)="onMouseLeave()"
 >
-  <!-- Pista -->
+  <!-- Pista que se desplaza en píxeles -->
   <div
     #trackEl
     class="track"
     [class.notransition]="!enableTransition"
-    [style.transform]="trackTranslate"
+    [style.transform]="'translateX(' + (-translateXPx) + 'px)'"
+    [style.transition]="enableTransition ? 'transform ' + transitionMs + 'ms ease-in-out' : 'none'"
     [style.height]="height"
     (transitionend)="onTrackTransitionEnd($event)"
   >
-    <!-- Render extendido: [última] + imágenes + [primera] -->
-    <ng-container *ngFor="let it of extendedImages; let i = index">
-      <div class="slide" [style.height]="height">
-        <a *ngIf="it.link; else noLink" [href]="it.link" class="slide-link" tabindex="-1" aria-hidden="true">
-          <img class="slide-img" [src]="it.src" [alt]="it.alt || ''" loading="lazy" />
-          <div *ngIf="it.caption" class="caption">{{ it.caption }}</div>
+    <!-- Render extendido (con clones). Cada slide tiene su ancho inline -->
+    <ng-container *ngFor="let sl of extSlides; let i = index">
+      <!-- Imagen -->
+      <div
+        *ngIf="sl.kind === 'img'; else sepTpl"
+        class="slide img-slide"
+        [style.width.px]="slideW[i]"
+        [style.height]="height"
+      >
+        <a *ngIf="sl.data.link; else nolink" [href]="sl.data.link" class="slide-link" tabindex="-1" aria-hidden="true">
+          <img class="slide-img" [src]="sl.data.src" [alt]="sl.data.alt || ''" loading="lazy" />
+          <div *ngIf="sl.data.caption" class="caption">{{ sl.data.caption }}</div>
         </a>
-        <ng-template #noLink>
-          <img class="slide-img" [src]="it.src" [alt]="it.alt || ''" loading="lazy" />
-          <div *ngIf="it.caption" class="caption">{{ it.caption }}</div>
+        <ng-template #nolink>
+          <img class="slide-img" [src]="sl.data.src" [alt]="sl.data.alt || ''" loading="lazy" />
+          <div *ngIf="sl.data.caption" class="caption">{{ sl.data.caption }}</div>
         </ng-template>
       </div>
+
+      <!-- Separador negro (slide real, sin dwell) -->
+      <ng-template #sepTpl>
+        <div
+          class="slide sep-slide"
+          [style.width.px]="slideW[i]"
+          [style.height]="height"
+          [style.background]="separatorColor"
+          aria-hidden="true"
+        ></div>
+      </ng-template>
     </ng-container>
   </div>
 
@@ -45,20 +59,16 @@
     type="button"
     aria-label="Anterior"
     (click)="prev()"
-  >
-    &#10094;
-  </button>
+  >&#10094;</button>
   <button
     *ngIf="showArrows && images.length > 1"
     class="nav nav-next"
     type="button"
     aria-label="Siguiente"
     (click)="next()"
-  >
-    &#10095;
-  </button>
+  >&#10095;</button>
 
-  <!-- Indicadores -->
+  <!-- Indicadores (solo por imágenes reales) -->
   <div *ngIf="showIndicators && images.length > 1" class="indicators" role="tablist" aria-label="Indicadores">
     <button
       *ngFor="let _ of images; let i = index"

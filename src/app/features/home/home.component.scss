@@ -105,7 +105,7 @@
   justify-content: center;
   text-align: center;
   padding: 0.2rem 0.4rem;
-  font-size: 0.70rem;
+  font-size: 0.78rem;
   font-weight: 380;
   inline-size: fit-content;
   min-inline-size: 7ch;
@@ -288,6 +288,13 @@
   opacity: 0;
   transform: translateY(6px);
   animation: captionIn 500ms ease 160ms forwards;
+  background: radial-gradient(
+    circle at center,
+    rgba(0, 0, 0, 0.85) 0%,   // negro casi sólido en el centro
+    rgba(0, 0, 0, 0.55) 38%,
+    rgba(0, 0, 0, 0.22) 68%,
+    rgba(0, 0, 0, 0) 100%     // totalmente transparente en las esquinas
+  );
 }
 
 @keyframes captionIn {

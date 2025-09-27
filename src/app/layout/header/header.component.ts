@@ -1,5 +1,4 @@
 ﻿/* eslint no-empty: ["error", { "allowEmptyCatch": true }] */
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Component, ElementRef, HostListener, ViewChild, inject, signal } from '@angular/core';
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { filter } from 'rxjs/operators';
