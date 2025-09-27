@@ -8,7 +8,7 @@
  */
 //import { SwipeGestureDirective } from 'src/app/shared/directives/swipe-gesture.directive';
 import { SwipeGestureDirective } from './../../directives/swipe-gesture.directive';
-import { Router, RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import {
   Component,
@@ -40,7 +40,7 @@ type Slide =
 @Component({
   selector: 'app-carousel',
   standalone: true,
-  imports: [CommonModule, SwipeGestureDirective, RouterLink],
+  imports: [CommonModule, SwipeGestureDirective],
   templateUrl: './carousel.component.html',
   styleUrls: ['./carousel.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
