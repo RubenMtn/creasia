@@ -84,7 +84,7 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
   private pendingConnectorUpdate = false;
   private connectorProgress = 0;
   private animationDone = false;
-  
+
   private readonly hasDOM = typeof window !== 'undefined' && typeof document !== 'undefined';
   private readonly supportsResizeObserver = this.hasDOM && typeof window.ResizeObserver !== 'undefined';
 
@@ -100,14 +100,14 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
   private readonly LINKS_BUFFER = 160;
 
   homeSlides = [
-  { src: 'assets/home/slide1.jpg', alt: 'Proyecto A', caption: '' },
-  { src: 'assets/home/slide2.jpg', alt: 'Proyecto B', caption: '' },
-  { src: 'assets/home/slide3.jpg', alt: 'Proyecto C', caption: '' },
-  { src: 'assets/home/slide4.jpg', alt: 'Proyecto D', caption: '' },
-  { src: 'assets/home/slide5.jpg', alt: 'Proyecto E', caption: '' },
-  { src: 'assets/home/slide6.jpg', alt: 'Proyecto F', caption: '' },
-  { src: 'assets/home/slide7.jpg', alt: 'Proyecto G', caption: '' },
-];
+    { src: 'assets/home/slide1.jpg', alt: 'Proyecto A', caption: '' },
+    { src: 'assets/home/slide2.jpg', alt: 'Proyecto B', caption: '' },
+    { src: 'assets/home/slide3.jpg', alt: 'Proyecto C', caption: '' },
+    { src: 'assets/home/slide4.jpg', alt: 'Proyecto D', caption: '' },
+    { src: 'assets/home/slide5.jpg', alt: 'Proyecto E', caption: '' },
+    { src: 'assets/home/slide6.jpg', alt: 'Proyecto F', caption: '' },
+    { src: 'assets/home/slide7.jpg', alt: 'Proyecto G', caption: '' },
+  ];
 
   fading = false;
   skipToEnd = false;
@@ -115,7 +115,7 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
   showPoints = false;
   showLinks = false;
   showConnectors = false;
-  
+
   displayLinks: LinkItem[] = [];
   baseDelay = 200;
   stagger = 180;
@@ -140,7 +140,7 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
     { key: 'menu.partners', route: '/socios', cls: 'l-bot-left', pointId: 'mouth-left', anchor: 'right' },
     { key: 'menu.trips', route: '/viajes', cls: 'l-bot-right', pointId: 'mouth-right', anchor: 'left' },
   ];
- 
+
   constructor(
     private readonly zone: NgZone,
     private readonly route: ActivatedRoute,
@@ -170,8 +170,11 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
 
   ngAfterViewInit(): void {
     if (!this.hasDOM) {
-      this.connectorsReady = true;
-      this.requestConnectorUpdate(true);
+      // ⬇️ Defer para evitar NG0100 en el primer chequeo
+      Promise.resolve().then(() => {
+        this.connectorsReady = true;
+        this.requestConnectorUpdate(true);
+      });
       return;
     }
 
@@ -189,16 +192,18 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
 
     const skipAnimations = this.route.snapshot.queryParamMap.get('skip') === '1';
     if (skipAnimations) {
-      this.finalizeAnimation(true);
-      void this.router.navigate([], {
-        relativeTo: this.route,
-        queryParams: { skip: null },
-        queryParamsHandling: 'merge',
-        replaceUrl: true
+      // ⬇️ Defer: el finalize + navigate cambian bindings/URL
+      Promise.resolve().then(() => {
+        this.finalizeAnimation(true);
+        void this.router.navigate([], {
+          relativeTo: this.route,
+          queryParams: { skip: null },
+          queryParamsHandling: 'merge',
+          replaceUrl: true
+        });
       });
     }
   }
-
 
   ngOnDestroy(): void {
     if (this.pendingFrame !== -1 && this.hasDOM) {

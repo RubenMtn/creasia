@@ -11,14 +11,26 @@
       <!-- Render extendido (triple base). Cada slide con su ancho inline -->
       <ng-container *ngFor="let sl of extSlides; let i = index">
 
-        <!-- Imagen (unificado y clicable) -->
-        <div *ngIf="sl.kind === 'img'; else sepTpl" class="slide img-slide" [style.width.px]="slideW[i]"
-          [style.height]="height" role="button" tabindex="0" aria-label="Ir a Galería"
-          (pointerdown)="onSlidePointerDown($event)" (pointerup)="onSlidePointerUp($event)"
-          (keyup.enter)="goToGaleria()">
-          <img class="slide-img" [src]="sl.data.src" [alt]="sl.data.alt || ''" loading="lazy" (load)="onImgLoad()" />
-          <div *ngIf="sl.data.caption" class="caption">{{ sl.data.caption }}</div>
-        </div>
+        <!-- Imagen (unificado con tap/click) -->
+<div *ngIf="sl.kind === 'img'; else sepTpl"
+     class="slide img-slide"
+     [style.width.px]="slideW[i]"
+     [style.height]="height"
+     role="button"
+     tabindex="0"
+     aria-label="Ir a Galería"
+     (pointerdown)="onSlidePointerDown($event)"
+     (pointerup)="onSlidePointerUp($event)"
+     (click)="onSlideClick()"
+     (keyup.enter)="goToGaleria()">
+  <img class="slide-img"
+       [src]="sl.data.src"
+       [alt]="sl.data.alt || ''"
+       loading="lazy"
+       (load)="onImgLoad()" />
+  <div *ngIf="sl.data.caption" class="caption">{{ sl.data.caption }}</div>
+</div>
+
         <!-- Separador negro -->
         <ng-template #sepTpl>
           <div class="slide sep-slide" [style.width.px]="slideW[i]" [style.height]="height"

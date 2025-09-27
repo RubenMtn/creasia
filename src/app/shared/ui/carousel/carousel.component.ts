@@ -94,6 +94,7 @@ export class CarouselComponent implements OnInit, AfterViewInit, OnDestroy, OnCh
   private zone = inject(NgZone);
 
   private _justSwiped = false; // flag para inhibir el click tras un swipe
+  private _ignoreNextClick = false; // evita “click” fantasma tras navegar en pointerup
   private _tapStart: { x: number; y: number } | null = null;
 
   // Índice lógico actual (0..n-1) para bullets
@@ -374,10 +375,21 @@ export class CarouselComponent implements OnInit, AfterViewInit, OnDestroy, OnCh
     const dx = Math.abs(ev.clientX - this._tapStart.x);
     const dy = Math.abs(ev.clientY - this._tapStart.y);
     this._tapStart = null;
+
+    // Umbral pequeño: si no hubo arrastre, consideramos TAP -> navegamos
     if (dx < 6 && dy < 6) {
-      this.router.navigateByUrl('/galeria'); // cambia aquí la ruta si quieres /cultura
+      this._ignoreNextClick = true;
+      Promise.resolve().then(() => this.router.navigateByUrl('/galeria')); // o /cultura
     }
+
   }
+
+  onSlideClick(): void {
+    if (this._justSwiped || this._ignoreNextClick) { this._ignoreNextClick = false; return; }
+    Promise.resolve().then(() => this.router.navigateByUrl('/galeria'));
+  }
+
+
 
   // ===== Hover =====
   onMouseEnter(): void { this.hovering = true; }
