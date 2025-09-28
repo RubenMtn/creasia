@@ -1,4 +1,26 @@
-/* Fondo negro global del bloque */
+/* ============================================================
+   Archivo: src/app/features/viajes/viajes-calendario.component.css
+   Calendario Viajes — Alto contraste sobre fondo NEGRO
+   ------------------------------------------------------------
+   🔧 DÓNDE AJUSTAR “casi cuadradas”:
+   Cambia --cell-aspect (1 = cuadrado, 1.08 = 8% más ancha).
+   ============================================================ */
+
+/* === Variables locales del componente === */
+:host {
+  /* Proporción ancho/alto de cada día */
+  --cell-aspect: 1.08; /* ⬅️ AJUSTA AQUÍ (p.ej. 1, 1.06–1.12) */
+
+  /* Altura mínima de seguridad (por si el ancho es muy pequeño) */
+  --cell-size: clamp(44px, 19.5cqw, 54px);
+
+  /* Separación visual entre celdas */
+  --cell-gap: 0.6rem;
+
+  display: block;
+}
+
+/* Contenedor principal */
 .cal-root {
   background: #000;
   color: #fff;
@@ -13,7 +35,8 @@
 }
 
 /* Estados */
-.cal-state, .cal-error {
+.cal-state,
+.cal-error {
   padding: .8rem 1rem;
   border-radius: .6rem;
   border: 1px solid #2b2b2b;
@@ -22,7 +45,7 @@
 }
 .cal-error { border-left: 4px solid #e11d48; }
 
-/* Grid de meses */
+/* === Grid de meses === */
 .cal-grid {
   display: grid;
   gap: 1.1rem;
@@ -35,99 +58,133 @@
   .cal-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
 
-/* Tarjeta de mes */
+/* Tarjeta de mes (activamos container para cqw) */
 .cal-month {
   border: 1px solid #2b2b2b;
   border-radius: 12px;
   background: #000;
   box-shadow: 0 1px 6px rgba(0,0,0,.45);
   padding: .85rem;
+
+  /* Para que 1cqw mida el ancho de la tarjeta, útil para --cell-size */
+  container-type: inline-size;
 }
 .cal-month__header { margin-bottom: .55rem; }
 .cal-month__title {
-  margin: 0; font-size: 1.05rem; font-weight: 750; color: #fff;
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 750;
+  color: #fff;
 }
 
-/* Tabla-calendario */
+/* === Tabla mensual === */
 .cal-table {
   width: 100%;
-  table-layout: fixed;          /* columnas iguales */
-  border-collapse: separate;    /* para usar separación */
-  border-spacing: 0.6rem;       /* separación visible entre celdas */
+  table-layout: fixed;              /* columnas iguales */
+  border-collapse: separate;        /* necesario para border-spacing */
+  border-spacing: var(--cell-gap) var(--cell-gap);
 }
-
-/* Cabecera: días de la semana en blanco roto */
 .cal-table thead th {
   font-weight: 700;
   font-size: .95rem;
   text-align: center;
-  color: #e5e7eb;               /* blanco roto */
+  color: #e5e7eb;                   /* blanco roto */
   padding: .35rem 0;
   border-bottom: 1px solid #2b2b2b;
 }
+.cal-table tbody td {
+  padding: 0;
+  vertical-align: top;              /* evita estirones por contenido */
+}
 
-/* El padding real se gestiona con border-spacing */
-.cal-table tbody td { padding: 0; }
+/* ---------- Estructura de cada día ----------
+  <td [class.is-outside]="...">
+    <div class="cell [tone-0|tone-1|tone-2|tone-3]">
+      <span class="num">…</span>
+      <span class="badge">…</span>
+    </div>
+  </td>
+------------------------------------------------ */
 
-/* Celda (contenedor interior) — tamaño GRANDE */
+/* Wrapper del día (div) — aquí forzamos la proporción */
 .cal-table .cell {
   position: relative;
-  min-height: clamp(64px, 9.5cqw, 84px);  /* más grande */
-  border: 1px solid #333;                 /* borde de celda */
+
+  /* Altura mínima de seguridad (si el ancho fuera muy pequeño) */
+  min-height: var(--cell-size);
+
+  /* Truco robusto: reservamos altura con ::before según la proporción */
+  display: grid;
+  place-items: center;
+
+  border: 1px solid #333;
   border-radius: .7rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   overflow: hidden;
 
-  /* Por defecto: día sin interés → blanco con texto oscuro */
-  background: #ffffff;
-  color: #111;
+  background: #ffffff;  /* día sin interés → blanco */
+  color: #111;          /* texto oscuro */
 }
 
-/* Días con interés → amarillo (independiente de tone-1/2/3) */
-.cal-table .tone-1,
-.cal-table .tone-2,
-.cal-table .tone-3 {
-  background: #ffe466 !important;
-  color: #111 !important;
+/* 🔎 DEBUG: contorno para comprobar que este CSS se aplica */
+.cal-table .cell { outline: 2px dashed goldenrod; } /* ⬅️ quita esto cuando confirmes */
+
+/* Spacer que fuerza alto = ancho / --cell-aspect */
+.cal-table .cell::before {
+  content: "";
+  display: block;
+  width: 100%;
+  padding-top: calc(100% / var(--cell-aspect)); /* ⬅️ AQUÍ SE APLICA LA PROPORCIÓN */
+  grid-area: 1 / 1;
 }
 
-/* Días fuera del mes → gris oscuro */
+/* Contenido superpuesto encima del spacer */
+.cal-table .cell > * {
+  grid-area: 1 / 1;
+}
+
+/* Tonos por nº de interesados */
+.cal-table .tone-0 { background: #ffffff !important; color: #111 !important; }
+.cal-table .tone-1 { background: #fff7cc !important; color: #111 !important; }
+.cal-table .tone-2 { background: #ffe466 !important; color: #111 !important; }
+.cal-table .tone-3 { background: #ffd400 !important; color: #111 !important; }
+
+/* Días fuera del mes */
 .cal-table .is-outside .cell {
   background: #171717 !important;
   color: #9ca3af !important;
   border-style: dashed;
 }
 
-/* Número del día (más grande y con peso) */
+/* Tipografía interna */
 .cal-table .num {
-  font-size: 1.15rem;
+  font-size: 1.15rem;  /* aumenta/disminuye si quieres más presencia */
   line-height: 1;
   font-weight: 800;
+  position: relative;
+  top: 2px; /* o 0.15rem */
 }
-
-/* Contador de interesados: ROJO, sin pastilla de fondo */
 .cal-table .badge {
   position: absolute;
-  right: .5rem;
-  bottom: .5rem;
+  right: .1rem;       /* separación del borde derecho del numero rojo de interesados */
+  /* bottom: .5rem;        cambia a top:.5rem si prefieres arriba */
+  top:.05rem;    /* ⬅ AJUSTA AQUÍ la posición vertical del badge . Numero rojo de interesados */
   min-width: 1.5rem;
   height: 1.5rem;
   padding: 0 .2rem;
-  background: transparent !important;   /* sin fondo */
-  color: #e11d48 !important;            /* rojo vivo */
+  background: transparent !important;
+  color: #e11d48 !important;   /* rojo vivo */
   font-size: 1rem;
   font-weight: 900;
   line-height: 1;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  text-shadow: 0 0 2px #fff;            /* refuerzo sobre amarillo/blanco */
+  text-shadow: 0 0 2px #fff;   /* mejora lectura sobre amarillos */
   border: 0;
+  pointer-events: none;        /* no bloquea clics */
 }
 
-/* Leyenda opcional */
+/* Leyenda */
 .cal-legend {
   display: flex;
   gap: .95rem;
@@ -145,9 +202,9 @@
   vertical-align: -2px;
 }
 .cal-legend .tone-0 { background: #ffffff; }
-.cal-legend .tone-1,
-.cal-legend .tone-2,
-.cal-legend .tone-3 { background: #ffe466; }
+.cal-legend .tone-1 { background: #fff7cc; }
+.cal-legend .tone-2 { background: #ffe466; }
+cal-legend .tone-3 { background: #ffd400; }
 
 /* Accesibilidad: oculto visual pero accesible */
 .sr-only {

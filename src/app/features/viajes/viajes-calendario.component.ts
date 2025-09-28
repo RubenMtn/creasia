@@ -34,13 +34,13 @@ export class ViajesCalendarioComponent {
     readonly error = signal<string | null>(null);
     readonly counts = signal<Record<string, number>>({}); // mapa YYYY-MM-DD -> interesados
 
-    // Ventana de 19 meses: resto del mes actual + 18 meses
+    // Ventana de 18 meses: resto del mes actual + 17 meses
     private readonly today = new Date();
     private readonly start = new Date(this.today); // desde HOY
     private readonly end = (() => {
         const lastOfThisMonth = new Date(this.today.getFullYear(), this.today.getMonth() + 1, 0);
         const end = new Date(lastOfThisMonth);
-        end.setMonth(end.getMonth() + 18);                  // +18 meses
+        end.setMonth(end.getMonth() + 17);                  // +17 meses
         return new Date(end.getFullYear(), end.getMonth() + 1, 0); // último día del mes final
     })();
 
@@ -77,7 +77,7 @@ export class ViajesCalendarioComponent {
     private buildMonthsView(counts: Record<string, number>): MesView[] {
         const out: MesView[] = [];
         const firstMonth = new Date(this.start.getFullYear(), this.start.getMonth(), 1);
-        const totalMonths = 19; // mes actual (resto) + 18 enteros
+        const totalMonths = 18; // mes actual (resto) + 17 enteros
 
         for (let m = 0; m < totalMonths; m++) {
             const monthDate = new Date(firstMonth.getFullYear(), firstMonth.getMonth() + m, 1);
