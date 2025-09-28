@@ -8,93 +8,113 @@
 
 /* === Variables locales del componente === */
 :host {
-  /* Proporción ancho/alto de cada día */
-  --cell-aspect: 1.08; /* ⬅️ AJUSTA AQUÍ (p.ej. 1, 1.06–1.12) */
+    /* Proporción ancho/alto de cada día */
+    --cell-aspect: 1.08;
+    /* ⬅️ AJUSTA AQUÍ (p.ej. 1, 1.06–1.12) */
 
-  /* Altura mínima de seguridad (por si el ancho es muy pequeño) */
-  --cell-size: clamp(44px, 19.5cqw, 54px);
+    /* Altura mínima de seguridad (por si el ancho es muy pequeño) */
+    --cell-size: clamp(44px, 19.5cqw, 54px);
 
-  /* Separación visual entre celdas */
-  --cell-gap: 0.6rem;
+    /* Separación visual entre celdas */
+    --cell-gap: 0.6rem;
 
-  display: block;
+    display: block;
 }
 
 /* Contenedor principal */
 .cal-root {
-  background: #000;
-  color: #fff;
-  padding: .25rem;
+    background: #000;
+    color: #fff;
+    padding: .25rem;
 }
 
 /* Título */
 .cal-title {
-  font-size: 1.3rem;
-  margin: 0 0 1rem;
-  color: #fff;
+    font-size: 1.3rem;
+    margin: 0 0 1rem;
+    color: #fff;
 }
 
 /* Estados */
 .cal-state,
 .cal-error {
-  padding: .8rem 1rem;
-  border-radius: .6rem;
-  border: 1px solid #2b2b2b;
-  background: #0f0f0f;
-  color: #fff;
+    padding: .8rem 1rem;
+    border-radius: .6rem;
+    border: 1px solid #2b2b2b;
+    background: #0f0f0f;
+    color: #fff;
 }
-.cal-error { border-left: 4px solid #e11d48; }
+
+.cal-error {
+    border-left: 4px solid #e11d48;
+}
 
 /* === Grid de meses === */
 .cal-grid {
-  display: grid;
-  gap: 1.1rem;
-  grid-template-columns: 1fr;
+    display: grid;
+    gap: 1.1rem;
+    grid-template-columns: 1fr;
 }
+
 @media (min-width: 640px) {
-  .cal-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .cal-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
 }
+
 @media (min-width: 1024px) {
-  .cal-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .cal-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
 }
 
 /* Tarjeta de mes (activamos container para cqw) */
 .cal-month {
-  border: 1px solid #2b2b2b;
-  border-radius: 12px;
-  background: #000;
-  box-shadow: 0 1px 6px rgba(0,0,0,.45);
-  padding: .85rem;
+    border: 1px solid #2b2b2b;
+    border-radius: 12px;
+    background: #000;
+    box-shadow: 0 1px 6px rgba(0, 0, 0, .45);
+    padding: .85rem;
 
-  /* Para que 1cqw mida el ancho de la tarjeta, útil para --cell-size */
-  container-type: inline-size;
+    /* Para que 1cqw mida el ancho de la tarjeta, útil para --cell-size */
+    container-type: inline-size;
 }
-.cal-month__header { margin-bottom: .55rem; }
+
+.cal-month__header {
+    margin-bottom: .55rem;
+}
+
 .cal-month__title {
-  margin: 0;
-  font-size: 1.05rem;
-  font-weight: 750;
-  color: #fff;
+    margin: 0;
+    font-size: 1.05rem;
+    font-weight: 750;
+    color: #fff;
 }
 
 /* === Tabla mensual === */
 .cal-table {
-  width: 100%;
-  table-layout: fixed;              /* columnas iguales */
-  border-collapse: separate;        /* necesario para border-spacing */
-  border-spacing: var(--cell-gap) var(--cell-gap);
+    width: 100%;
+    table-layout: fixed;
+    /* columnas iguales */
+    border-collapse: separate;
+    /* necesario para border-spacing */
+    border-spacing: var(--cell-gap) var(--cell-gap);
 }
+
 .cal-table thead th {
-  font-weight: 700;
-  font-size: .95rem;
-  text-align: center;
-  color: #e5e7eb;                   /* blanco roto */
-  padding: .35rem 0;
-  border-bottom: 1px solid #2b2b2b;
+    font-weight: 700;
+    font-size: .95rem;
+    text-align: center;
+    color: #e5e7eb;
+    /* blanco roto */
+    padding: .35rem 0;
+    border-bottom: 1px solid #2b2b2b;
 }
+
 .cal-table tbody td {
-  padding: 0;
-  vertical-align: top;              /* evita estirones por contenido */
+    padding: 0;
+    vertical-align: top;
+    /* evita estirones por contenido */
 }
 
 /* ---------- Estructura de cada día ----------
@@ -108,108 +128,169 @@
 
 /* Wrapper del día (div) — aquí forzamos la proporción */
 .cal-table .cell {
-  position: relative;
+    position: relative;
 
-  /* Altura mínima de seguridad (si el ancho fuera muy pequeño) */
-  min-height: var(--cell-size);
+    /* Altura mínima de seguridad (si el ancho fuera muy pequeño) */
+    min-height: var(--cell-size);
 
-  /* Truco robusto: reservamos altura con ::before según la proporción */
-  display: grid;
-  place-items: center;
+    /* Truco robusto: reservamos altura con ::before según la proporción */
+    display: grid;
+    place-items: center;
 
-  border: 1px solid #333;
-  border-radius: .7rem;
-  overflow: hidden;
+    border: 1px solid #333;
+    border-radius: .7rem;
+    overflow: hidden;
 
-  background: #ffffff;  /* día sin interés → blanco */
-  color: #111;          /* texto oscuro */
+    background: #ffffff;
+    /* día sin interés → blanco */
+    color: #111;
+    /* texto oscuro */
 }
 
 /* 🔎 DEBUG: contorno para comprobar que este CSS se aplica */
-.cal-table .cell { outline: 2px dashed goldenrod; } /* ⬅️ quita esto cuando confirmes */
+.cal-table .cell {
+    outline: 2px dashed goldenrod;
+}
+
+/* ⬅️ quita esto cuando confirmes */
 
 /* Spacer que fuerza alto = ancho / --cell-aspect */
 .cal-table .cell::before {
-  content: "";
-  display: block;
-  width: 100%;
-  padding-top: calc(100% / var(--cell-aspect)); /* ⬅️ AQUÍ SE APLICA LA PROPORCIÓN */
-  grid-area: 1 / 1;
+    content: "";
+    display: block;
+    width: 100%;
+    padding-top: calc(100% / var(--cell-aspect));
+    /* ⬅️ AQUÍ SE APLICA LA PROPORCIÓN */
+    grid-area: 1 / 1;
 }
 
 /* Contenido superpuesto encima del spacer */
-.cal-table .cell > * {
-  grid-area: 1 / 1;
+.cal-table .cell>* {
+    grid-area: 1 / 1;
 }
 
 /* Tonos por nº de interesados */
-.cal-table .tone-0 { background: #ffffff !important; color: #111 !important; }
-.cal-table .tone-1 { background: #fff7cc !important; color: #111 !important; }
-.cal-table .tone-2 { background: #ffe466 !important; color: #111 !important; }
-.cal-table .tone-3 { background: #ffd400 !important; color: #111 !important; }
+.cal-table .tone-0 {
+    background: #ffffff !important;
+    color: #111 !important;
+}
+
+.cal-table .tone-1 {
+    background: #ffe466 !important;
+    color: #111 !important;
+}
+
+.cal-table .tone-2 {
+    background: #ffd400 !important;
+    color: #111 !important;
+}
+
+.cal-table .tone-3 {
+    background: goldenrod !important;
+    color: #111 !important;
+}
 
 /* Días fuera del mes */
 .cal-table .is-outside .cell {
-  background: #171717 !important;
-  color: #9ca3af !important;
-  border-style: dashed;
+    background: #171717 !important;
+    color: #9ca3af !important;
+    border-style: dashed;
 }
 
 /* Tipografía interna */
 .cal-table .num {
-  font-size: 1.15rem;  /* aumenta/disminuye si quieres más presencia */
-  line-height: 1;
-  font-weight: 800;
-  position: relative;
-  top: 2px; /* o 0.15rem */
+    font-size: 1.15rem;
+    /* aumenta/disminuye si quieres más presencia */
+    line-height: 1;
+    font-weight: 800;
+    position: relative;
+    top: 2px;
+    /* o 0.15rem */
 }
+
 .cal-table .badge {
-  position: absolute;
-  right: .1rem;       /* separación del borde derecho del numero rojo de interesados */
-  /* bottom: .5rem;        cambia a top:.5rem si prefieres arriba */
-  top:.05rem;    /* ⬅ AJUSTA AQUÍ la posición vertical del badge . Numero rojo de interesados */
-  min-width: 1.5rem;
-  height: 1.5rem;
-  padding: 0 .2rem;
-  background: transparent !important;
-  color: #e11d48 !important;   /* rojo vivo */
-  font-size: 1rem;
-  font-weight: 900;
-  line-height: 1;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  text-shadow: 0 0 2px #fff;   /* mejora lectura sobre amarillos */
-  border: 0;
-  pointer-events: none;        /* no bloquea clics */
+    position: absolute;
+    right: .1rem;
+    /* separación del borde derecho del numero rojo de interesados */
+    /* bottom: .5rem;        cambia a top:.5rem si prefieres arriba */
+    top: .05rem;
+    /* ⬅ AJUSTA AQUÍ la posición vertical del badge . Numero rojo de interesados */
+    min-width: 1.5rem;
+    height: 1.5rem;
+    padding: 0 .2rem;
+    background: transparent !important;
+    /* color: #e11d48 !important;     rojo vivo */
+    color: white !important;
+    font-size: 1rem;
+    font-weight: 900;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    pointer-events: none;
+    /* no bloquea clics */
+    text-shadow: 0 0 2px #fff;
+    /* mejora lectura sobre amarillos */
+
+    /* -webkit-text-stroke: 0.6px #000; */
+    /* borde fino negro (WebKit/Blink) */
 }
 
 /* Leyenda */
 .cal-legend {
-  display: flex;
-  gap: .95rem;
-  align-items: center;
-  margin-top: .9rem;
-  color: #e5e7eb;
-  font-size: .95rem;
+    display: flex;
+    gap: .95rem;
+    align-items: center;
+    margin-top: .9rem;
+    color: #e5e7eb;
+    font-size: .95rem;
 }
+
 .cal-legend .swatch {
-  width: 1.15rem; height: 1.15rem;
-  border-radius: .35rem;
-  border: 1px solid #333;
-  display: inline-block;
-  margin-right: .35rem;
-  vertical-align: -2px;
+    width: 1.15rem;
+    height: 1.15rem;
+    border-radius: .35rem;
+    border: 1px solid #333;
+    display: inline-block;
+    margin-right: .35rem;
+    vertical-align: -2px;
 }
-.cal-legend .tone-0 { background: #ffffff; }
-.cal-legend .tone-1 { background: #fff7cc; }
-.cal-legend .tone-2 { background: #ffe466; }
-cal-legend .tone-3 { background: #ffd400; }
+
+.cal-legend .tone-0 {
+    background: #ffffff;
+}
+
+.cal-legend .tone-1 {
+    background: #ffe466;
+}
+
+.cal-legend .tone-2 {
+    background: #ffd400;
+}
+
+.cal-legend .tone-3 {
+    background: goldenrod;
+}
+
+.cal-legend--top {
+    color: #fff;
+}
+
+.cal-legend--top strong {
+    margin-right: .4rem;
+}
+
 
 /* Accesibilidad: oculto visual pero accesible */
 .sr-only {
-  position: absolute !important;
-  width: 1px; height: 1px;
-  padding: 0; margin: -1px; overflow: hidden;
-  clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+    position: absolute !important;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
 }
