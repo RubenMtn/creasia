@@ -1,11 +1,12 @@
 ﻿import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TPipe } from '../../shared/i18n/t.pipe';
+import { ViajesCalendarioComponent } from './viajes-calendario.component';
 
 @Component({
   selector: 'app-viajes',
   standalone: true,
-  imports: [CommonModule, TPipe],
+  imports: [CommonModule, TPipe, ViajesCalendarioComponent],
   templateUrl: './viajes.component.html',
   styleUrl: './viajes.component.scss'
 })

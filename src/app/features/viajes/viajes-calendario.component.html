@@ -1,0 +1,48 @@
+<!-- archivo: src/app/features/viajes/viajes-calendario.component.html -->
+<section class="cal-root" aria-labelledby="cal-heading">
+  <h3 id="cal-heading" class="cal-title">Disponibilidad para viajar (hoy + 18 meses)</h3>
+
+  @if (loading()) {
+    <p class="cal-state">Cargando disponibilidad…</p>
+  } @else if (error()) {
+    <p class="cal-error" role="alert">{{ error() }}</p>
+  } @else {
+    <div class="cal-grid">
+      @for (mes of months(); track mes.year + '-' + mes.monthIndex) {
+        <article class="cal-month" aria-label="{{ mes.monthName }} de {{ mes.year }}">
+          <header class="cal-month__header">
+            <h4 class="cal-month__title">{{ mes.monthName }} {{ mes.year }}</h4>
+          </header>
+
+          <div class="cal-weekdays" aria-hidden="true">
+            <span>L</span><span>M</span><span>X</span><span>J</span><span>V</span><span>S</span><span>D</span>
+          </div>
+
+          <div class="cal-weeks" role="grid">
+            @for (week of mes.weeks; track week[0].iso) {
+              <div class="cal-week" role="row">
+                @for (day of week; track day.iso) {
+                  <button
+                    class="cal-day"
+                    [class.is-outside]="!day.inMonth"
+                    [attr.aria-label]="
+                      (day.inMonth ? '' : 'Fuera de mes, ') +
+                      (day.date.getDate()) + ' de ' + mes.monthName + ' de ' + mes.year +
+                      '. Interesados: ' + day.count
+                    "
+                    type="button"
+                  >
+                    <span class="cal-day__num">{{ day.date.getDate() }}</span>
+                    @if (day.count > 0) {
+                      <span class="cal-day__badge" aria-hidden="true">{{ day.count }}</span>
+                    }
+                  </button>
+                }
+              </div>
+            }
+          </div>
+        </article>
+      }
+    </div>
+  }
+</section>
