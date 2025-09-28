@@ -1,31 +1,61 @@
 ﻿<!-- Galería de miniaturas -->
 <section class="galeria">
   @if (loading) {
-  <p class="estado-carga">Cargando imágenes…</p>
+    <p class="estado-carga">Cargando imágenes…</p>
   } @else if (!images.length) {
-  <p class="aviso">No se han encontrado imágenes.</p>
+    <p class="aviso">No se han encontrado imágenes.</p>
   } @else {
-  @for (img of images; track $index) {
-  <!-- Miniatura como botón accesible -->
-  <button type="button" class="thumb-btn" (click)="open($index)" (keyup.enter)="open($index)"
-    (keyup.space)="open($index)" aria-label="Ampliar imagen {{ $index + 1 }}">
-    <img class="thumb-img" [src]="img" alt="" />
-  </button>
-  }
+    @for (img of images; track $index) {
+      <!-- Miniatura como botón accesible -->
+      <button
+        type="button"
+        class="thumb-btn"
+        (click)="open($index)"
+        (keyup.enter)="open($index)"
+        (keyup.space)="open($index)"
+        aria-label="Ampliar imagen {{ $index + 1 }}"
+      >
+        <img class="thumb-img" [src]="img" alt="" />
+      </button>
+    }
   }
 </section>
 
-<!-- Lightbox -->
+<!-- Lightbox con soporte de swipe -->
 @if (selectedIndex !== null) {
-<div class="lightbox" aria-modal="true" role="dialog" aria-label="Imagen ampliada">
-  <!-- Botón cerrar (opcional, lo mantenemos como alternativa) -->
-  <button type="button" class="lightbox-close" aria-label="Cerrar" (click)="close()" (keyup.enter)="close()"
-    (keyup.space)="close()">×</button>
+  <div
+    class="lightbox"
+    aria-modal="true"
+    role="dialog"
+    aria-label="Imagen ampliada"
+    (touchstart)="onTouchStart($event)"
+    (touchmove)="onTouchMove($event)"
+    (touchend)="onTouchEnd($event)"
+  >
+    <!-- Botón cerrar (alternativa visual/teclado) -->
+    <button
+      type="button"
+      class="lightbox-close"
+      aria-label="Cerrar"
+      (click)="close()"
+      (keyup.enter)="close()"
+      (keyup.space)="close()"
+    >×</button>
 
-  <!-- Imagen ampliada: ahora cierra al hacer click -->
-  <button type="button" class="lightbox-imgBtn" (click)="close()" (keyup.enter)="close()" (keyup.space)="close()"
-    aria-label="Cerrar la imagen ampliada">
-    <img class="lightbox-img" [src]="images[selectedIndex!]" alt="" />
-  </button>
-</div>
+    <!-- Imagen ampliada: tap = cerrar, swipe = navegar -->
+    <button
+      type="button"
+      class="lightbox-imgBtn"
+      (click)="onImageClick()"
+      (keyup.enter)="onImageClick()"
+      (keyup.space)="onImageClick()"
+      aria-label="Cerrar la imagen ampliada"
+    >
+      <img
+        class="lightbox-img"
+        [src]="images[selectedIndex!]"
+        alt=""
+      />
+    </button>
+  </div>
 }
