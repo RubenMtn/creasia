@@ -1,13 +1,57 @@
 ﻿@if (loading) {
   <div class="estado-carga">Cargando imágenes…</div>
 } @else if (images.length > 0) {
-  <div class="galeria">
-    @for (src of images; track src) {
-      <figure class="item">
-        <img [src]="src" alt="" style="max-width: 180px;" />
+  <div class="galeria" role="list">
+    @for (src of images; let i = $index; track src) {
+      <figure class="item" role="listitem">
+        <button
+          type="button"
+          class="thumb-btn"
+          (click)="open(i)"
+          aria-label="Ampliar imagen {{ i + 1 }}"
+        >
+          <img class="thumb-img" [src]="src" alt="" />
+        </button>
       </figure>
     }
   </div>
+
+  <!-- Lightbox -->
+  @if (selectedIndex !== null) {
+    <div
+      class="lightbox"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Visor de imagen"
+      tabindex="0"
+      (click)="close()"
+      (keydown.enter)="close()"
+      (keydown.space)="close()"
+    >
+      <button
+        type="button"
+        class="lightbox-close"
+        aria-label="Cerrar"
+        (click)="$event.stopPropagation(); close()"
+      >×</button>
+
+      <!-- 🔧 Imagen envuelta en botón accesible para evitar el error del linter -->
+      <button
+        type="button"
+        class="lightbox-imgBtn"
+        aria-label="Imagen ampliada"
+        (click)="$event.stopPropagation()"
+        (keydown.enter)="$event.stopPropagation()"
+        (keydown.space)="$event.stopPropagation()"
+      >
+        <img
+          class="lightbox-img"
+          [src]="images[selectedIndex!]"
+          alt=""
+        />
+      </button>
+    </div>
+  }
 } @else {
   <p class="aviso">No se han encontrado imágenes en /assets/pics.</p>
 }

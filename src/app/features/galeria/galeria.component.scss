@@ -1,82 +1,100 @@
-﻿/* Estilos simples y compatibles (sin dependencias) */
-
-/* Contenedor general */
-.gallery-wrap {
-  padding: clamp(16px, 3vw, 32px);
-}
-
-/* Título */
-.title {
-  margin: 0 0 16px 0;
-  font-size: clamp(1.25rem, 2.5vw, 1.75rem);
-  font-weight: 600;
-}
-
-/* Grid de miniaturas "grandecitas" y responsivo */
-.grid {
+﻿/* Grid: 2 por fila en móvil; expandible en pantallas mayores */
+.galeria {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); /* miniaturas relativamente grandes */
-  gap: 14px;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
 }
 
-/* Botón de miniatura (reseteado) */
-.thumb {
-  appearance: none;
-  border: 0;
-  padding: 0;
-  margin: 0;
-  background: transparent;
-  cursor: pointer;
-  width: 100%;
-  aspect-ratio: 1 / 1;
-  position: relative;
-  overflow: hidden;
-  border-radius: 10px;
-  box-shadow: 0 1px 6px rgba(0,0,0,0.12);
-
-  &:focus-visible {
-    outline: 2px solid #0ea5e9;
-    outline-offset: 3px;
+/* En tablets/escritorio puedes subir columnas si quieres */
+@media (min-width: 768px) {
+  .galeria {
+    grid-template-columns: repeat(3, 1fr);
   }
 }
 
-/* Imagen de miniatura */
-.thumb-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+/* Botón de miniatura: reset visual y foco accesible */
+.thumb-btn {
   display: block;
-
-  -webkit-user-drag: none;
-  user-select: none;
-  -webkit-touch-callout: none;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  border-radius: 12px;
+  outline: none;
+}
+.thumb-btn:focus-visible {
+  box-shadow: 0 0 0 3px rgba(0, 128, 255, 0.35);
 }
 
-/* Lightbox básico */
+/* Miniaturas con tamaño uniforme usando aspect-ratio */
+.thumb-img {
+  width: 100%;
+  aspect-ratio: 3 / 2;     /* ajusta a 1/1 o 4/3 si prefieres */
+  object-fit: cover;       /* recorta para encajar sin deformar */
+  border-radius: 12px;
+  display: block;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+}
+
+/* Lightbox a pantalla completa */
 .lightbox {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.85);
-  display: grid;
-  place-items: center;
-  z-index: 9999;
-  cursor: zoom-out;
-  touch-action: none;
+  background: rgba(5, 7, 12, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  z-index: 1000;
 }
 
-/* Imagen ampliada */
+/* Imagen ampliada con límites de viewport */
 .lightbox-img {
-  max-width: 95vw;
-  max-height: 90vh;
-  object-fit: contain;
+  max-width: 92vw;
+  max-height: 92vh;
+  border-radius: 14px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.35);
   display: block;
-  border-radius: 8px;
-  -webkit-user-drag: none;
-  user-select: none;
 }
 
-/* Aviso de vacío (opcional) */
-.empty-hint {
-  margin: 12px 0 20px;
-  opacity: 0.8;
+/* Contenedor botón para la imagen ampliada (accesible) */
+.lightbox-imgBtn {
+  padding: 0;
+  margin: 0;
+  border: 0;
+  background: none;
+  cursor: default;       /* no queremos cursor de botón aquí */
+  line-height: 0;        /* elimina espacio extra alrededor de la imagen */
+}
+.lightbox-imgBtn:focus-visible {
+  outline: none;
+  box-shadow: none;      /* evita halo; el foco útil está en el overlay */
+}
+
+/* Botón cerrar (esquina superior derecha) */
+.lightbox-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 40px;
+  height: 40px;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.9);
+  cursor: pointer;
+  font-size: 24px;
+  line-height: 40px;
+  text-align: center;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.25);
+}
+.lightbox-close:hover {
+  background: #fff;
+}
+
+/* Estado de carga/aviso (opcional) */
+.estado-carga,
+.aviso {
+  text-align: center;
+  opacity: 0.9;
 }
