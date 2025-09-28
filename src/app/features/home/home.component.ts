@@ -100,13 +100,13 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
   private readonly LINKS_BUFFER = 160;
 
   homeSlides = [
-    { src: 'assets/home/slide1.jpg', alt: 'Proyecto A', caption: '' },
-    { src: 'assets/home/slide2.jpg', alt: 'Proyecto B', caption: '' },
-    { src: 'assets/home/slide3.jpg', alt: 'Proyecto C', caption: '' },
-    { src: 'assets/home/slide4.jpg', alt: 'Proyecto D', caption: '' },
-    { src: 'assets/home/slide5.jpg', alt: 'Proyecto E', caption: '' },
-    { src: 'assets/home/slide6.jpg', alt: 'Proyecto F', caption: '' },
-    { src: 'assets/home/slide7.jpg', alt: 'Proyecto G', caption: '' },
+    { src: 'assets/pics/slide1.jpg', alt: 'Proyecto A', caption: '' },
+    { src: 'assets/pics/slide2.jpg', alt: 'Proyecto B', caption: '' },
+    { src: 'assets/pics/slide3.jpg', alt: 'Proyecto C', caption: '' },
+    { src: 'assets/pics/slide4.jpg', alt: 'Proyecto D', caption: '' },
+    { src: 'assets/pics/slide5.jpg', alt: 'Proyecto E', caption: '' },
+    { src: 'assets/pics/slide6.jpg', alt: 'Proyecto F', caption: '' },
+    { src: 'assets/pics/slide7.jpg', alt: 'Proyecto G', caption: '' },
   ];
 
   fading = false;

@@ -1,12 +1,33 @@
-﻿import { Component } from '@angular/core';
+﻿/* Componente de galería (Angular 20)
+   - Carga imágenes vía servicio
+   - Controla estados de carga y vacío
+   - Comentarios en español */
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { TPipe } from '../../shared/i18n/t.pipe';
+import { GalleryService } from '../../services/gallery.service';
 
 @Component({
-  selector: 'app-networking',
+  selector: 'app-galeria',
   standalone: true,
-  imports: [CommonModule, TPipe],
+  imports: [CommonModule],
   templateUrl: './galeria.component.html',
-  styleUrl: './galeria.component.scss'
 })
-export class GaleriaComponent {}
+export class GaleriaComponent implements OnInit {
+  private gallery = inject(GalleryService);
+
+  loading = true;        // estado de carga
+  images: string[] = []; // inicializado → nunca undefined
+
+  ngOnInit(): void {
+    this.gallery.loadImages().subscribe({
+      next: (list) => {
+        this.images = list ?? [];
+        this.loading = false;
+      },
+      error: () => {
+        this.images = [];
+        this.loading = false;
+      }
+    });
+  }
+}

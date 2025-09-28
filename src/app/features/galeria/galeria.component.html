@@ -1,8 +1,13 @@
-﻿<section class="content container">
-  <div class="intro">
-    <h2 class="title typography-section-title">{{ 'galeria.title' | t }}</h2>
+﻿@if (loading) {
+  <div class="estado-carga">Cargando imágenes…</div>
+} @else if (images.length > 0) {
+  <div class="galeria">
+    @for (src of images; track src) {
+      <figure class="item">
+        <img [src]="src" alt="" style="max-width: 180px;" />
+      </figure>
+    }
   </div>
-<p>
-  HOLAAAAAAAAAAAAA
-</p>
- 
+} @else {
+  <p class="aviso">No se han encontrado imágenes en /assets/pics.</p>
+}
