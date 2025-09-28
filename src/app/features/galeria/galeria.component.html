@@ -1,35 +1,8 @@
-<section class="content container">
+﻿<section class="content container">
   <div class="intro">
     <h2 class="title typography-section-title">{{ 'galeria.title' | t }}</h2>
   </div>
-
-  <article class="galeria-body typography-body-text">
-    <div *ngIf="images.length; else emptyState" class="gallery-grid">
-      <button
-        *ngFor="let image of images"
-        type="button"
-        class="gallery-item"
-        (click)="open(image)"
-        (touchend)="openFromTouch($event, image)"
-      >
-        <img [src]="image" [attr.alt]="'galeria.photoAlt' | t" loading="lazy" />
-      </button>
-    </div>
-    <ng-template #emptyState>
-      <p class="empty-message">{{ 'galeria.empty' | t }}</p>
-    </ng-template>
-  </article>
-
-  <div
-    *ngIf="selectedImage"
-    class="lightbox"
-    role="button"
-    tabindex="0"
-    (click)="close()"
-    (touchend)="closeFromTouch($event)"
-    (keydown.enter)="close()"
-    (keydown.space)="close()"
-  >
-    <img [src]="selectedImage" [attr.alt]="'galeria.photoAlt' | t" />
-  </div>
-</section>
+<p>
+  HOLAAAAAAAAAAAAA
+</p>
+ 
