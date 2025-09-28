@@ -14,35 +14,58 @@
             <h4 class="cal-month__title">{{ mes.monthName }} {{ mes.year }}</h4>
           </header>
 
-          <div class="cal-weekdays" aria-hidden="true">
-            <span>L</span><span>M</span><span>X</span><span>J</span><span>V</span><span>S</span><span>D</span>
-          </div>
-
-          <div class="cal-weeks" role="grid">
-            @for (week of mes.weeks; track week[0].iso) {
-              <div class="cal-week" role="row">
-                @for (day of week; track day.iso) {
-                  <button
-                    class="cal-day"
-                    [class.is-outside]="!day.inMonth"
-                    [attr.aria-label]="
-                      (day.inMonth ? '' : 'Fuera de mes, ') +
-                      (day.date.getDate()) + ' de ' + mes.monthName + ' de ' + mes.year +
-                      '. Interesados: ' + day.count
-                    "
-                    type="button"
-                  >
-                    <span class="cal-day__num">{{ day.date.getDate() }}</span>
-                    @if (day.count > 0) {
-                      <span class="cal-day__badge" aria-hidden="true">{{ day.count }}</span>
-                    }
-                  </button>
-                }
-              </div>
-            }
-          </div>
+          <table class="cal-table" role="grid">
+            <caption class="sr-only">Calendario de {{ mes.monthName }} {{ mes.year }}</caption>
+            <thead>
+              <tr>
+                <th scope="col" abbr="Lunes">L</th>
+                <th scope="col" abbr="Martes">M</th>
+                <th scope="col" abbr="Miércoles">X</th>
+                <th scope="col" abbr="Jueves">J</th>
+                <th scope="col" abbr="Viernes">V</th>
+                <th scope="col" abbr="Sábado">S</th>
+                <th scope="col" abbr="Domingo">D</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (week of mes.weeks; track week[0].iso) {
+                <tr role="row">
+                  @for (day of week; track day.iso) {
+                    <td
+                      [class.is-outside]="!day.inMonth"
+                      [attr.aria-label]="
+                        (day.inMonth ? '' : 'Fuera de mes, ') +
+                        (day.date.getDate()) + ' de ' + mes.monthName + ' de ' + mes.year +
+                        '. Interesados: ' + day.count
+                      "
+                    >
+                      <div
+                        class="cell"
+                        [class.tone-0]="day.count === 0"
+                        [class.tone-1]="day.count === 1"
+                        [class.tone-2]="day.count >= 2 && day.count <= 4"
+                        [class.tone-3]="day.count >= 5"
+                      >
+                        <span class="num">{{ day.date.getDate() }}</span>
+                        @if (day.count > 0) {
+                          <span class="badge" aria-hidden="true">{{ day.count }}</span>
+                        }
+                      </div>
+                    </td>
+                  }
+                </tr>
+              }
+            </tbody>
+          </table>
         </article>
       }
+    </div>
+
+    <div class="cal-legend" aria-hidden="true">
+      <span><i class="swatch tone-0"></i> 0</span>
+      <span><i class="swatch tone-1"></i> 1</span>
+      <span><i class="swatch tone-2"></i> 2–4</span>
+      <span><i class="swatch tone-3"></i> 5+</span>
     </div>
   }
 </section>

@@ -23,7 +23,7 @@ interface MesView {
     standalone: true,
     imports: [CommonModule],
     templateUrl: './viajes-calendario.component.html',
-    styleUrl: './viajes-calendario.component.css',
+    styleUrls: ['./viajes-calendario.component.css'],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ViajesCalendarioComponent {
