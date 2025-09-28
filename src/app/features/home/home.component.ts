@@ -328,14 +328,26 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
     return true;
   }
 
-  private isInteractiveTarget(element: Element | null): boolean {
-    if (!element) {
-      return false;
-    }
+  // private isInteractiveTarget(element: Element | null): boolean {
+  //   if (!element) {
+  //     return false;
+  //   }
+  //   return !!element.closest('a, button, input, textarea, select, [contenteditable]');
+  // }
 
-    return !!element.closest('a, button, input, textarea, select, [contenteditable]');
+  private isInteractiveTarget(element: Element | null): boolean {
+  if (!element) return false;
+
+  // Considera interactivo TODO lo que ocurra dentro del carrusel:
+  if (element.closest('app-carousel, .carousel, .img-slide, .slide-link-overlay, [role="button"]')) {
+    return true;
   }
 
+  // El resto: elementos naturalmente interactivos
+  return !!element.closest('a, button, input, textarea, select, [contenteditable], [role="link"]');
+}
+
+  
   private preparePhases(order: AnimationPhase[]): void {
     this.phaseQueue = [...order];
     this.runningPhase = null;

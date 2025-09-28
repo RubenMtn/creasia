@@ -9,7 +9,6 @@
     "languages": "语言",
     "networking": "人脉拓展",
     "gourmet": "美食通行证",
-    "culture": "文化",
     "consulting": "咨询",
     "galeria": "画廊"
   },
@@ -25,7 +24,6 @@
     "languages": "语言",
     "networking": "人脉拓展",
     "gourmet": "美食通行证",
-    "culture": "文化",
     "consulting": "咨询",
     "galeria": "画廊"
   },
@@ -209,9 +207,7 @@
     "altDining": "享用美食护照的人",
     "altKids": "孩子们分享冰淇淋"
   },
-  "cultura": {
-    "title": "文化"
-  },
+
   "consultoria": {
     "title": "咨询",
     "caption": "为连接中西文化、团队与商业而量身定制的策略方案。",

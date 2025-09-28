@@ -1,5 +1,7 @@
 ﻿import { Routes } from '@angular/router';
 import { ShellComponent } from './layout/shell/shell.component';
+import { GaleriaComponent } from './features/galeria/galeria.component';
+//import { GaleriaComponent } from './pages/galeria/galeria.component'; //  import directo
 
 export const routes: Routes = [
   {
@@ -18,6 +20,7 @@ export const routes: Routes = [
       { path: 'legal', loadComponent: () => import('./features/legal/legal.component').then(m => m.LegalComponent), data: { headerKey: 'header.legal' } }
     ]
   },
+  { path: 'galeria', component: GaleriaComponent },
   { path: '**', redirectTo: '' }
 ];
 

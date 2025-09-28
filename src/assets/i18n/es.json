@@ -9,7 +9,6 @@
     "languages": "IDIOMAS",
     "networking": "NETWORKING",
     "gourmet": "GOURMET PASS",
-    "culture": "CULTURA",
     "consulting": "CONSULTORÍA"
   },
   "menu": {
@@ -23,7 +22,6 @@
     "languages": "IDIOMAS",
     "networking": "NETWORKING",
     "gourmet": "GOURMET PASS",
-    "culture": "CULTURA",
     "consulting": "CONSULTORÍA"
   },
   "home": {
@@ -205,9 +203,6 @@
     "altPassport": "Pasaporte Gourmet Creasia",
     "altDining": "Persona disfrutando del Pasaporte Gourmet",
     "altKids": "Niños compartiendo helado"
-  },
-  "cultura": {
-    "title": "Cultura"
   },
   "consultoria": {
     "title": "Consultoría",
