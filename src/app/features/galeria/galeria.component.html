@@ -1,16 +1,13 @@
-﻿<!-- src/app/features/galeria/galeria.component.html -->
-
-<!-- ===================== LISTA / GRID DE MINIATURAS ===================== -->
+﻿<!-- Rejilla de miniaturas -->
 <section class="galeria">
   @if (loading) {
-    <!-- Estado de carga -->
     <p class="estado-carga">Cargando imágenes…</p>
   } @else if (!images.length) {
-    <!-- No hay imágenes -->
     <p class="aviso">No se han encontrado imágenes.</p>
   } @else {
-    <!-- Miniaturas como botones accesibles (enter/space abren la imagen) -->
     @for (img of images; track $index) {
+      <!-- Miniatura como botón accesible.
+           Abre el VISOR en ventana nueva (no usamos overlay embebido). -->
       <button
         type="button"
         class="thumb-btn"
@@ -19,59 +16,8 @@
         (keyup.space)="open($index)"
         [attr.aria-label]="'Ampliar imagen ' + ($index + 1)"
       >
-        <img
-          class="thumb-img"
-          [src]="img"
-          alt=""
-          decoding="async"
-          loading="lazy"
-          draggable="false"
-        />
+        <img class="thumb-img" [src]="img" alt="" />
       </button>
     }
   }
 </section>
-
-<!-- =========================== LIGHTBOX / OVERLAY =========================== -->
-@if (selectedIndex !== null) {
-  <div
-    class="lightbox"
-    role="dialog"
-    aria-modal="true"
-    aria-label="Imagen ampliada"
-    (touchstart)="onTouchStart($event)"
-    (touchmove)="onTouchMove($event)"
-    (touchend)="onTouchEnd($event)"
-  >
-    <!-- Botón cerrar (visible y accesible) -->
-    <button
-      type="button"
-      class="lightbox-close"
-      aria-label="Cerrar"
-      (click)="close()"
-      (keyup.enter)="close()"
-      (keyup.space)="close()"
-    >
-      ×
-    </button>
-
-    <!-- Contenedor clicable de la imagen:
-         - tap/click → cierra (si no venimos de swipe ni se ha prevenido por zoom)
-         - aquí podrías añadir en el futuro una directiva de zoom (appZoomable) sin romper nada -->
-    <button
-      type="button"
-      class="lightbox-imgBtn"
-      (click)="onImageClick($event)"
-      (keyup.enter)="onImageClick($event)"
-      (keyup.space)="onImageClick($event)"
-      aria-label="Cerrar la imagen ampliada"
-    >
-      <img
-        class="lightbox-img"
-        [src]="images[selectedIndex!]"
-        alt=""
-        draggable="false"
-      />
-    </button>
-  </div>
-}

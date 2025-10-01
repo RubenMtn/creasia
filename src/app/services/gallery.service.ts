@@ -2,20 +2,28 @@
    - Comentarios en español
    - Usa baseURI para que funcione en subcarpetas
    - Logs "PruebaPte" para depurar rápido */
-import { Injectable, inject } from '@angular/core';
+import { Injectable, inject, PLATFORM_ID } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { DOCUMENT } from '@angular/common';
+import { DOCUMENT, isPlatformBrowser } from '@angular/common';
 import { map, catchError, of, tap } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class GalleryService {
   private http = inject(HttpClient);
   private doc = inject(DOCUMENT);
+  private readonly platformId = inject(PLATFORM_ID);
 
   /** Construye la URL final respetando <base href> */
-  private url(path: string): string {
-    const finalUrl = new URL(path, this.doc.baseURI).toString();
-    return finalUrl;
+  url(path: string): string {
+    // En SSR no toques el DOM ni construyas URLs con document/location
+    if (!isPlatformBrowser(this.platformId)) return path;
+
+    try {
+      const base = document.baseURI || location.origin + '/';
+      return new URL(path, base).toString();
+    } catch {
+      return path;
+    }
   }
 
   /** Carga el manifiesto y devuelve rutas absolutas de imágenes */
