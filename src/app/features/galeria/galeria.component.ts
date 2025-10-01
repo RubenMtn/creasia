@@ -1,4 +1,4 @@
-﻿// Componente de galería (Angular 20) con swipe en lightbox
+﻿// Componente de galería (Angular 17+ / 20) con swipe en lightbox
 // - Grid de miniaturas y lightbox accesible
 // - Cierra al clicar la imagen ampliada (tap)
 // - Swipe izquierda/derecha para navegar entre imágenes
@@ -13,35 +13,51 @@ import { GalleryService } from '../../services/gallery.service';
   standalone: true,
   imports: [CommonModule],
   templateUrl: './galeria.component.html',
-  styleUrl: './galeria.component.scss',
+  styleUrls: ['./galeria.component.scss'],
 })
 export class GaleriaComponent implements OnInit {
-  private gallery = inject(GalleryService);
+  /* -------------------- Inyección de dependencias -------------------- */
+  private readonly gallery = inject(GalleryService);
 
+  /* --------------------------- Estado básico ------------------------- */
   loading = true;                      // estado de carga
   images: string[] = [];               // rutas de imágenes
   selectedIndex: number | null = null; // índice de la imagen abierta (lightbox)
 
-  // --- Estado para gestos táctiles ---
+  /* ---------------------- Gestos táctiles (swipe) -------------------- */
   private touchStartX = 0;
   private touchStartY = 0;
   private touchDeltaX = 0;
-  private swiping = false;             // si estamos en gesto de swipe (para no cerrar por click)
-  private readonly SWIPE_THRESHOLD = 40; // px mínimos para considerar swipe
-  private readonly MAX_ANGLE_DEG = 30;   // tolerancia en ángulo (para distinguir de scroll vertical)
+  private swiping = false;                  // evita cerrar por click tras un swipe
+  private readonly SWIPE_THRESHOLD = 40;    // px mínimos para considerar swipe
+  private readonly MAX_ANGLE_DEG = 30;      // tolerancia angular para distinguir scroll vertical
 
+  /* ------------------------------ Ciclo de vida ------------------------------ */
   ngOnInit(): void {
+    // Cargamos imágenes; si tu Observable no completa, podrías añadir take(1)
     this.gallery.loadImages().subscribe({
-      next: (list) => { this.images = list ?? []; this.loading = false; },
-      error: () => { this.images = []; this.loading = false; }
+      next: (list) => {
+        this.images = list ?? [];
+        this.loading = false;
+      },
+      error: () => {
+        this.images = [];
+        this.loading = false;
+      },
     });
   }
 
+  /* ---------------------------- API del lightbox ---------------------------- */
+
   /** Abre el lightbox con la imagen i */
-  open(i: number): void { this.selectedIndex = i; }
+  open(i: number): void {
+    this.selectedIndex = i;
+  }
 
   /** Cierra el lightbox */
-  close(): void { this.selectedIndex = null; }
+  close(): void {
+    this.selectedIndex = null;
+  }
 
   /** Navega a la siguiente imagen (wrap-around) */
   next(): void {
@@ -52,17 +68,22 @@ export class GaleriaComponent implements OnInit {
   /** Navega a la anterior (wrap-around) */
   prev(): void {
     if (this.selectedIndex === null || this.images.length === 0) return;
-    // suma longitud para evitar negativo antes del módulo
+    // sumamos longitud para evitar negativo antes del módulo
     this.selectedIndex = (this.selectedIndex - 1 + this.images.length) % this.images.length;
   }
 
   /** Click en la imagen ampliada (tap) → cierra, salvo si venimos de un swipe */
-  onImageClick(): void {
+  onImageClick(ev?: Event): void {
+    // Si en el futuro añades una directiva de zoom que haga ev.preventDefault() cuando haya zoom,
+    // este check evita cerrar el lightbox por accidente.
+    if (ev?.defaultPrevented) return;
     if (this.swiping) return; // evita cerrar si justo fue un swipe
     this.close();
   }
 
-  /** Permite cerrar con la tecla Escape y navegar con flechas */
+  /* --------------------------- Accesibilidad teclado ------------------------- */
+
+  /** Permite cerrar con Escape y navegar con flechas */
   @HostListener('window:keydown', ['$event'])
   onKeydown(e: KeyboardEvent): void {
     if (this.selectedIndex === null) return;
@@ -71,11 +92,11 @@ export class GaleriaComponent implements OnInit {
     else if (e.key === 'ArrowLeft') this.prev();
   }
 
-  // ---------- Gestos táctiles en el overlay ----------
+  /* -------------------- Gestos táctiles en el overlay ----------------------- */
 
   /** Inicio del gesto táctil */
   onTouchStart(event: TouchEvent): void {
-    if (this.selectedIndex === null) return;
+    if (this.selectedIndex === null || event.touches.length === 0) return;
     const t = event.touches[0];
     this.touchStartX = t.clientX;
     this.touchStartY = t.clientY;
@@ -85,16 +106,19 @@ export class GaleriaComponent implements OnInit {
 
   /** Movimiento táctil: comprobamos que sea predominantemente horizontal */
   onTouchMove(event: TouchEvent): void {
-    if (this.selectedIndex === null) return;
+    if (this.selectedIndex === null || event.touches.length === 0) return;
     const t = event.touches[0];
     const dx = t.clientX - this.touchStartX;
     const dy = t.clientY - this.touchStartY;
 
     // Ángulo en radianes → grados
-    const angleDeg = Math.abs(Math.atan2(dy, dx) * 180 / Math.PI);
+    const angleDeg = Math.abs((Math.atan2(dy, dx) * 180) / Math.PI);
 
     // Si el movimiento es lo bastante horizontal, marcamos swiping y evitamos scroll/click
-    if (Math.abs(dx) > 10 && (angleDeg <= this.MAX_ANGLE_DEG || angleDeg >= 180 - this.MAX_ANGLE_DEG)) {
+    if (
+      Math.abs(dx) > 10 &&
+      (angleDeg <= this.MAX_ANGLE_DEG || angleDeg >= 180 - this.MAX_ANGLE_DEG)
+    ) {
       this.swiping = true;
       this.touchDeltaX = dx;
       event.preventDefault(); // evita scroll/zoom y "click" fantasma

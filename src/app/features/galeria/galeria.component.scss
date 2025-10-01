@@ -98,3 +98,32 @@
   text-align: center;
   opacity: 0.9;
 }
+
+/* ====== ZOOM AISLADO EN LIGHTBOX ====== */
+/* Viewport que aísla la interacción y oculta desbordes */
+.zoom-viewport {
+  position: fixed;       /* ocupa toda la ventana del lightbox */
+  inset: 0;
+  display: grid;
+  place-items: center;
+  overflow: hidden;      /* el zoom no desborda */
+  touch-action: none;    /* permite pinch/drag con Pointer Events */
+  cursor: grab;
+}
+
+.zoom-viewport.is-dragging {
+  cursor: grabbing;
+}
+
+/* Capa transformable: translate + scale */
+.zoom-content {
+  will-change: transform;
+}
+
+/* Imagen grande: limitada cuando scale=1 */
+.lightbox-img {
+  max-width: 90vw;
+  max-height: 90vh;
+  user-select: none;
+  pointer-events: none;  /* la interacción va al viewport */
+}

@@ -1,6 +1,17 @@
 ﻿<!doctype html>
 <html lang="es">
+
 <head>
+  <!-- Android/Chrome: color de la barra del navegador -->
+  <meta name="theme-color" content="#000000">
+  <!-- Tema claro/oscuro (opcional) -->
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#000000">
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff">
+  <!-- iOS al añadir a pantalla de inicio (PWA) -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <!-- Estilos de la barra de estado en PWA: default | black | black-translucent -->
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
   <meta charset="utf-8">
   <title>Creasia | Cultura entre oriente y occidente</title>
   <base href="/">
@@ -12,7 +23,9 @@
   <!-- Fuentes (Inter + Noto Serif JP) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Noto+Serif+JP:wght@500;700&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Noto+Serif+JP:wght@500;700&display=swap"
+    rel="stylesheet">
 
   <!-- 🔹 APLICAR IDIOMA LO ANTES POSIBLE (antes de que Angular inyecte los bundles) -->
   <script>
@@ -30,7 +43,7 @@
           if (supported.indexOf(qlang) !== -1) {
             chosen = qlang;
             // Persistimos para que el TranslationService lo coja como inicial
-            try { localStorage.setItem('creasia:lang', chosen); } catch (e) {}
+            try { localStorage.setItem('creasia:lang', chosen); } catch (e) { }
           }
           // Limpia la URL (opcional, sin recargar)
           url.searchParams.delete('lang');
@@ -44,7 +57,7 @@
             if (saved && supported.indexOf(saved) !== -1) {
               chosen = saved;
             }
-          } catch (e) {}
+          } catch (e) { }
         }
 
         // 3) Si ya sabemos idioma, ponlo en <html lang="..."> antes de pintar nada
@@ -57,7 +70,9 @@
     })();
   </script>
 </head>
+
 <body>
   <app-root></app-root>
 </body>
+
 </html>
