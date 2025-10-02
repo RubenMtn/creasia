@@ -30,8 +30,8 @@ const ES_FALLBACK: Dict = {
   menu: {
     toggle: 'Abrir menú',
     title: 'Menú principal',
-    home: 'Inicio',
-    animation: 'Ver animación',
+    home: 'INCIO',
+    animation: 'VER ANIMACIÓN',
     activities: 'ACTIVIDADES',
     partners: 'SOCIOS',
     gourmet: 'GOURMET PASS',

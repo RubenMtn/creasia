@@ -1,4 +1,5 @@
-﻿/* eslint-disable @angular-eslint/prefer-inject */
+/* eslint-disable @angular-eslint/prefer-inject */
+// [01] Dependencias externas y utilidades que usa el hero de la home.
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
   AfterViewInit,
@@ -18,6 +19,7 @@ import { fromEvent } from 'rxjs';
 import { TPipe } from '../../shared/i18n/t.pipe';
 import { CarouselComponent } from "../../shared/ui/carousel/carousel.component";
 
+// [02] Tipos auxiliares que describen anclas, fases y estructuras de la animaci�n.
 type LinkAnchor = 'top' | 'right' | 'bottom' | 'left';
 type AnimationPhase = 'points' | 'connectors';
 
@@ -50,6 +52,7 @@ interface Connector {
   progress: number;
 }
 
+// [03] Declaraci�n del componente standalone que orquesta el hero animado.
 @Component({
   selector: 'app-home',
   standalone: true,
@@ -141,6 +144,7 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
     { key: 'menu.trips', route: '/viajes', cls: 'l-bot-right', pointId: 'mouth-right', anchor: 'left' },
   ];
 
+  // [04] Constructor: calcula la geometr�a inicial, maneja rutas de retorno y registra eventos globales.
   constructor(
     private readonly zone: NgZone,
     private readonly route: ActivatedRoute,
@@ -168,9 +172,10 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
     }
   }
 
+  // [05] Hook tras el render inicial: conecta observadores y decide si saltar la animaci�n.
   ngAfterViewInit(): void {
     if (!this.hasDOM) {
-      // ⬇️ Defer para evitar NG0100 en el primer chequeo
+      // ?? Defer para evitar NG0100 en el primer chequeo
       Promise.resolve().then(() => {
         this.connectorsReady = true;
         this.requestConnectorUpdate(true);
@@ -192,7 +197,7 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
 
     const skipAnimations = this.route.snapshot.queryParamMap.get('skip') === '1';
     if (skipAnimations) {
-      // ⬇️ Defer: el finalize + navigate cambian bindings/URL
+      // ?? Defer: el finalize + navigate cambian bindings/URL
       Promise.resolve().then(() => {
         this.finalizeAnimation(true);
         void this.router.navigate([], {
@@ -205,6 +210,7 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
     }
   }
 
+  // [06] Limpia timeouts, RAF y observers cuando el componente se destruye.
   ngOnDestroy(): void {
     if (this.pendingFrame !== -1 && this.hasDOM) {
       window.cancelAnimationFrame(this.pendingFrame);
@@ -227,6 +233,7 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
     this.connectorProgress = 0;
   }
 
+  // [07] Ajusta la relaci�n de aspecto y recalcula puntos cuando llega metadata del v�deo.
   onMeta(video: HTMLVideoElement): void {
     if (video.videoWidth && video.videoHeight) {
       this.frameRatio = video.videoWidth / video.videoHeight;
@@ -235,6 +242,7 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
     }
   }
 
+  // [08] Gestiona el desvanecimiento del v�deo y prepara las fases posteriores.
   startFade(video: HTMLVideoElement): void {
     video.pause();
 
@@ -272,6 +280,7 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
     this.skipToEnd = false;
   }
 
+  // [09] Al terminar el fade del v�deo dispara la cadena de fases (l�neas, puntos, enlaces).
   onFadeEnd(event: TransitionEvent): void {
     const element = event.target as HTMLElement | null;
     if (!element || event.propertyName !== 'opacity') {
@@ -328,13 +337,6 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
     return true;
   }
 
-  // private isInteractiveTarget(element: Element | null): boolean {
-  //   if (!element) {
-  //     return false;
-  //   }
-  //   return !!element.closest('a, button, input, textarea, select, [contenteditable]');
-  // }
-
   private isInteractiveTarget(element: Element | null): boolean {
   if (!element) return false;
 
@@ -348,6 +350,7 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
 }
 
   
+  // [11] Administra la cola de fases (conectores/puntos) y asegura su ejecuci�n ordenada.
   private preparePhases(order: AnimationPhase[]): void {
     this.phaseQueue = [...order];
     this.runningPhase = null;
@@ -399,6 +402,7 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
     }, this.POINTS_DELAY);
   }
 
+  // [12] Desordena enlaces, mide distancias y lanza el dibujo gradual de las l�neas.
   private runConnectorsPhase(): void {
     this.displayLinks = [...this.links].sort(() => Math.random() - 0.5);
     this.showLinks = true;
@@ -472,6 +476,7 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
     this.trackingHandle = window.requestAnimationFrame(step);
   }
 
+  // [13] Consolida el estado final: muestra overlays, fija conectores y lanza navegaci�n diferida.
   private finalizeAnimation(force = false): void {
     if (this.animationDone && !force) {
       return;
@@ -537,6 +542,7 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
     this.handleReturnNavigation();
   }
 
+  // [14] Navega a la ruta de retorno almacenada en cuanto la animaci�n ha finalizado.
   private handleReturnNavigation(): void {
     if (!this.returnUrl || this.returnNavigationTriggered || !this.hasDOM) {
       return;
@@ -559,6 +565,7 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
     }
   }
 
+  // [15] Normaliza las coordenadas de los puntos faciales seg�n el tama�o del contenedor.
   private updatePoints(): void {
     const ratio = this.frameRatio / this.imageRatio;
     this.scaledPoints = this.facePoints.map((point) => {
@@ -580,6 +587,7 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
     this.requestConnectorUpdate();
   }
 
+  // [16] Programa un recalculo de conectores evitando hacer trabajo cuando no hay DOM o est� en cola.
   private requestConnectorUpdate(force = false): void {
     if (!this.showLinks) {
       this.pendingConnectorUpdate = true;
@@ -600,6 +608,7 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
     this.scheduleUpdateConnectors();
   }
 
+  // [17] Coordina el recalculo con requestAnimationFrame para alinear el trazo con el repintado.
   private scheduleUpdateConnectors(): void {
     if (!this.hasDOM) {
       this.updateConnectors();
@@ -616,6 +625,7 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
     });
   }
 
+  // [18] Calcula la geometr�a de cada l�nea conectando puntos faciales con enlaces.
   private updateConnectors(): void {
     if (!this.showLinks) {
       this.connectors = [];
@@ -694,6 +704,7 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
     this.connectors = connectors.map(conn => ({ ...conn, progress }));
   }
 
+  // [19] Wrapper sobre setTimeout para reutilizar manejadores y actuar igual en SSR.
   private scheduleTimeout(handle: number | null, callback: () => void, delay: number): number | null {
     if (!this.hasDOM) {
       callback();
@@ -707,6 +718,7 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
     return window.setTimeout(callback, delay);
   }
 
+  // [20] Complemento que cancela timeouts y devuelve null para reasignar el manejador.
   private clearTimeout(handle: number | null): number | null {
     if (handle !== null && this.hasDOM) {
       window.clearTimeout(handle);
