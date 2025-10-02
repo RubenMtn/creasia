@@ -1,0 +1,46 @@
+@use "tokens" as *;
+
+:host {
+  display: block;
+  margin-block: clamp($space-2, 6vw, $space-3 * 1.5);
+}
+
+.scroll-top {
+  display: flex;
+  justify-content: center;
+  padding-block: $space-1;
+}
+
+.scroll-top__button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: 0;
+  background: #000;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+  cursor: pointer;
+  transition: transform 160ms ease;
+}
+
+.scroll-top__button:hover {
+  transform: translateY(-2px);
+}
+
+.scroll-top__button:active {
+  transform: translateY(0);
+}
+
+.scroll-top__button:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.35);
+  outline-offset: 3px;
+}
+
+.scroll-top__icon {
+  display: block;
+  max-width: 60%;
+  height: auto;
+}
+

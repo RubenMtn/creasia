@@ -1,6 +1,7 @@
 @use "styles/tokens" as *;
 @use "styles/breakpoints" as *;
 @use "styles/typography" as typography;
+@use "accessibility";
 
 * {
   box-sizing: border-box;
@@ -67,5 +68,7 @@ textarea {
   user-select: text;
   -webkit-user-select: text;
 }
+
+
 
 

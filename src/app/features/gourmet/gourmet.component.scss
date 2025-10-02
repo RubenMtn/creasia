@@ -1,9 +1,10 @@
-﻿@use "tokens" as *;
+@use "tokens" as *;
 @use "breakpoints" as *;
+@use "feature-shell" as feature;
 
 .content {
   padding-top: $space-1 * 0.5;
-  padding-bottom: $space-2;
+  padding-bottom: $space-2 * 2;
   display: block;
   text-align: justify;
 }
@@ -97,14 +98,11 @@
 }
 
 .gourmet-section__title {
-  font-size: 0.9rem;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: $gold-soft;
-  margin: 0;
+  @include feature.feature-section-title;
+  margin: $space-2 0 $space-1;
   clear: both;
 }
+
 
 @include from-tablet {
   .content {
@@ -155,6 +153,10 @@
     margin-top: $space-2;
   }
 }
+
+
+
+
 
 
 

@@ -1,0 +1,18 @@
+<div class="scroll-top">
+  <button
+    type="button"
+    class="scroll-top__button"
+    (click)="scrollToTop()"
+    [attr.aria-label]="ariaLabel"
+  >
+    <span class="sr-only">{{ ariaLabel }}</span>
+    <img
+      class="scroll-top__icon"
+      [src]="iconSrc"
+      [attr.alt]="iconAlt"
+      width="28"
+      height="28"
+      loading="lazy"
+    />
+  </button>
+</div>
