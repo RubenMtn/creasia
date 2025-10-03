@@ -1,17 +1,16 @@
-﻿/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint no-empty: ["error", { "allowEmptyCatch": true }] */
+﻿/* eslint-disable no-empty */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, ActivatedRoute } from '@angular/router';
-
 import { HttpClient } from '@angular/common/http';
+
 import { TranslationService } from '../../shared/i18n/translation.service';
 import { TPipe } from '../../shared/i18n/t.pipe';
 
 import { SociosService } from '../../services/socios.service';
 import { UserSessionService } from '../../services/user-session.service';
 import { AuthService } from '../../services/auth.service';
-import { ppDebug } from '../../core/prueba-pte-debug.helper';
 
 @Component({
   selector: 'app-socios',
@@ -36,20 +35,20 @@ export class SociosComponent implements OnInit, OnDestroy {
   private session = inject(UserSessionService);
   private auth = inject(AuthService);
 
-  private redirectTimer: any = null;
+  private redirectTimer: number | null = null;
 
   // Base para polling (en dev fuerza host público)
   private readonly apiBase = (() => {
     try {
       const host = window.location.hostname;
       if (host === 'localhost' || host === '127.0.0.1') return 'https://creasia.es';
-      return ''; // en prod usamos ruta relativa /api/...
+      return '';
     } catch {
       return '';
     }
   })();
 
-  // Vista por defecto: login visible
+  // Vista por defecto
   showRegisterForm = false;
   showLoginForm = true;
 
@@ -61,7 +60,7 @@ export class SociosComponent implements OnInit, OnDestroy {
   greetName: string | null = null;
 
   // Polling de activación (para activaciones desde otros dispositivos)
-  private activationTimer: any = null;
+  private activationTimer: number | null = null;
   private activationDeadline = 0;
   private pendingUid: number | null = null;
   private readonly pollEveryMs = 5000;        // cada 5s
@@ -79,10 +78,9 @@ export class SociosComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     if (!this.hasWindow) return;
 
-    // 0) NUEVO: si viene ?code=... (desde el botón del email), activamos desde el front
+    // 0) Si viene ?code=... (desde el botón del email), activamos desde el front
     const qp = this.route.snapshot.queryParams;
     if (qp['code']) {
-      ppDebug('PruebaPte ▶ UI.Activation.queryParams', qp); // ➕ log
       this.activateFromCode(String(qp['code']), String(qp['lang'] ?? 'es'));
       return; // la activación gestionará la UI y la redirección
     }
@@ -133,16 +131,15 @@ export class SociosComponent implements OnInit, OnDestroy {
     }
   }
 
-  // ========= NUEVO: activación desde el front por token =========
+  // ========= Activación desde el front por token =========
   private activateFromCode(code: string, lang: string): void {
     this.clearMessages();
     this.loading = true;
 
-    // Llamada directa al endpoint JSON (misma origin) con cookies
+    // Llamada directa al endpoint JSON (mismo origen) con cookies
     this.http.post<any>('/api/auth/activate_token.php', { code, lang }, { withCredentials: true })
       .subscribe({
         next: async (j) => {
-          ppDebug('PruebaPte ▶ UI.Activation.response', j); // ➕ log
           if (j?.ok && j.socio) {
             const displayName = ((j.socio.nombre ?? '') || j.socio.email || '').trim();
             this.okMsg = 'socios.login.greeting';
@@ -164,12 +161,11 @@ export class SociosComponent implements OnInit, OnDestroy {
             this.persistViewState();
 
             // Redirección “suave” + fallback duro
-            this.redirectTimer = setTimeout(() => {
-              ppDebug('PruebaPte ▶ UI.Redirect.afterActivation', { to: '/' });
+            this.redirectTimer = window.setTimeout(() => {
               void this.router.navigateByUrl('/');
             }, 1200);
 
-            setTimeout(() => {
+            window.setTimeout(() => {
               try { window.location.assign('/'); } catch {}
             }, 2500);
 
@@ -183,8 +179,7 @@ export class SociosComponent implements OnInit, OnDestroy {
             this.persistViewState();
           }
         },
-        error: (e) => {
-          ppDebug('PruebaPte ▶ UI.Activation.error', e);
+        error: () => {
           this.error = 'socios.activation.error';
           this.loading = false;
           this.showLoginForm = true;
@@ -195,7 +190,7 @@ export class SociosComponent implements OnInit, OnDestroy {
       });
   }
 
-  // ——— resto: registro / login / logout / utilidades (SIN CAMBIOS FUNCIONALES) ———
+  // ====== Registro / login / logout / utilidades ======
 
   openRegister(): void {
     this.clearMessages();
@@ -243,7 +238,6 @@ export class SociosComponent implements OnInit, OnDestroy {
     this.loading = true;
     this.socios.register(email, password, nombre, apellido1, apellido2, !!optIn, lang).subscribe({
       next: (res: any) => {
-        ppDebug('UI.Register.response', res); // ➕ log
         if (res.ok) {
           this.okMsg = 'socios.register.successCheckEmail';
           this.greetName = null;
@@ -290,7 +284,6 @@ export class SociosComponent implements OnInit, OnDestroy {
     this.loading = true;
     this.socios.login(email, password).subscribe({
       next: (res: any) => {
-        ppDebug('UI.Login.response', res); // ➕ log
         if (res.ok && res.socio) {
           const nombre = (res.socio.nombre ?? '').trim();
           const displayName = (nombre || res.socio.email || '').trim();
@@ -298,7 +291,7 @@ export class SociosComponent implements OnInit, OnDestroy {
           this.error = '';
           this.greetName = displayName;
 
-          const access = res.access_token || res.access;
+          const access = (res as any).access_token || (res as any).access;
           if (access) this.auth.setAccess(access);
 
           this.session.persistLogin(displayName, { token: '1' });
@@ -310,11 +303,11 @@ export class SociosComponent implements OnInit, OnDestroy {
           try { window.dispatchEvent(new Event('creasia:user-updated')); } catch {}
 
           if (this.redirectTimer) clearTimeout(this.redirectTimer);
-          this.redirectTimer = setTimeout(() => {
-            ppDebug('PruebaPte ▶ UI.Redirect.afterLogin', { to: '/' });
+          this.redirectTimer = window.setTimeout(() => {
             void this.router.navigateByUrl('/');
           }, 1200);
-          setTimeout(() => { try { window.location.assign('/'); } catch {} }, 2500);
+
+          window.setTimeout(() => { try { window.location.assign('/'); } catch {} }, 2500);
 
         } else {
           this.error = res.error || 'socios.errors.invalidCredentials';

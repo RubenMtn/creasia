@@ -1,12 +1,10 @@
-﻿/* eslint no-empty: ["error", { "allowEmptyCatch": true }] */
-import { Injectable, inject } from '@angular/core';
+﻿import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { tap, catchError } from 'rxjs/operators';
+import { catchError } from 'rxjs/operators';
 import { throwError } from 'rxjs';
 
 import { getApiBase } from '../core/api-base';
 import { UserSessionService } from './user-session.service';
-import { ppDebug } from '../core/prueba-pte-debug.helper';
 
 export interface RegisterResponse {
   ok?: boolean;
@@ -29,19 +27,18 @@ export interface LoginResponse {
 
 @Injectable({ providedIn: 'root' })
 export class SociosService {
-  // ——— Inyecciones ———
+  // Inyecciones
   private http = inject(HttpClient);
   private session = inject(UserSessionService);
 
-  // ——— Base de API dinámica ———
-  // En creasia.es -> '/api' (mismo origen, cookies OK)
-  // En localhost -> 'https://creasia.es/api' (evitamos connection refused)
+  // Base de API dinámica:
+  // - En creasia.es -> '/api' (mismo origen, cookies OK)
+  // - En localhost -> 'https://creasia.es/api'
   private readonly API = getApiBase();
 
   /**
-   * Registro de socio
-   * Enviamos el contrato que espera el backend: { email, password, nombre, apellido1, apellido2, optIn, lang }
-   * Dejamos ?debug=1 temporalmente para ver cualquier error del backend en claro.
+   * Registro de socio.
+   * Enviamos el contrato que espera el backend: { email, password, nombre, apellido1, apellido2, optIn, lang }.
    */
   register(
     email: string,
@@ -58,55 +55,44 @@ export class SociosService {
       nombre,
       apellido1,
       apellido2: (apellido2 ?? '').trim(),
-      optIn, // ← el backend espera esta clave, no "quiere_mailing"
+      optIn, // el backend espera esta clave
       lang,
     };
 
-    ppDebug('PruebaPte ▶ SociosService.register body', body);
-
     return this.http
       .post<RegisterResponse>(`${this.API}/socios_register.php`, body, {
-        withCredentials: true, // importante para cookies (sobre todo en prod)
+        withCredentials: true,
       })
       .pipe(
-        tap((res) => ppDebug('PruebaPte ▶ SociosService.register response', res)),
-        catchError((err) => {
-          ppDebug('PruebaPte ▶ SociosService.register error', err);
-          return throwError(() => err);
-        })
+        // Propagamos el error al componente que consuma el servicio
+        catchError((err) => throwError(() => err))
       );
   }
 
   /**
-   * Login clásico (POST) — requiere withCredentials:true
+   * Login clásico (POST) — requiere withCredentials:true para enviar/recibir la cookie de sesión.
    */
   login(email: string, password: string) {
     const body = { email, password };
-    ppDebug('PruebaPte ▶ SociosService.login body', body);
 
     return this.http
       .post<LoginResponse>(`${this.API}/socios_login.php`, body, {
         withCredentials: true,
       })
       .pipe(
-        tap((res) => ppDebug('PruebaPte ▶ SociosService.login response', res)),
-        catchError((err) => {
-          ppDebug('PruebaPte ▶ SociosService.login error', err);
-          return throwError(() => err);
-        })
+        catchError((err) => throwError(() => err))
       );
   }
 
   /**
-   * Limpia estado local (la cookie de PHP se borra en el logout del backend)
+   * Limpia estado local (la cookie de PHP se borra en el logout del backend).
    */
   logout(): void {
     this.session.clearLogin();
-    ppDebug('PruebaPte ▶ SociosService.logout', { cleared: true });
   }
 
   /**
-   * Perfil del socio autenticado
+   * Perfil del socio autenticado.
    */
   me() {
     return this.http
@@ -114,11 +100,7 @@ export class SociosService {
         withCredentials: true,
       })
       .pipe(
-        tap((res) => ppDebug('PruebaPte ▶ SociosService.me response', res)),
-        catchError((err) => {
-          ppDebug('PruebaPte ▶ SociosService.me error', err);
-          return throwError(() => err);
-        })
+        catchError((err) => throwError(() => err))
       );
   }
 }

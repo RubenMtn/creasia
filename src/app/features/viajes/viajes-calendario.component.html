@@ -7,7 +7,7 @@
     } @else if (error()) {
     <p class="cal-error" role="alert">{{ error() }}</p>
     } @else {
-    <!-- Leyenda superior -->
+    <!-- Leyenda superior (se mantiene igual) -->
     <div class="cal-legend cal-legend--top" aria-hidden="true">
         <strong>Número de viajeros interesados:</strong>
         <span><i class="swatch tone-0"></i> 0</span>
@@ -40,14 +40,34 @@
                     @for (week of mes.weeks; track week[0].iso) {
                     <tr role="row">
                         @for (day of week; track day.iso) {
-                        <td [class.is-outside]="!day.inMonth" [attr.aria-label]="
+                        <!--
+                      ⬇️ NUEVO:
+                      - Clases de selección por rango en <td> para estilos (is-selected, is-in-range).
+                      - aria-label se mantiene (fecha + interesados).
+                    -->
+                        <td [class.is-outside]="!day.inMonth" [class.is-selected]="isSelected(day.date)"
+                            [class.is-in-range]="isRangeMiddle(day.date)" [attr.aria-label]="
                         (day.inMonth ? '' : 'Fuera de mes, ') +
                         (day.date.getDate()) + ' de ' + mes.monthName + ' de ' + mes.year +
                         '. Interesados: ' + day.count
                       ">
+                            <!--
+                        ⬇️ NUEVO:
+                        Interacción accesible en el contenedor .cell:
+                        - role="button" + tabindex
+                        - (click) + (keydown.enter) + (keydown.space)
+                        - aria-pressed cuando esté seleccionado
+                        - Las clases tone-* se mantienen; badge igual
+                      -->
                             <div class="cell" [class.tone-0]="day.count === 0" [class.tone-1]="day.count === 1"
-                                [class.tone-2]="day.count >= 2 && day.count <= 4" [class.tone-3]="day.count >= 5">
+                                [class.tone-2]="day.count >= 2 && day.count <= 4" [class.tone-3]="day.count >= 5"
+                                role="button" [attr.tabindex]="day.inMonth ? 0 : null"
+                                [attr.aria-pressed]="isSelected(day.date) ? 'true' : null"
+                                (click)="onDayClick(day.date, monthId(mes.year, mes.monthIndex), day.inMonth)"
+                                (keydown.enter)="onDayClick(day.date, monthId(mes.year, mes.monthIndex), day.inMonth)"
+                                (keydown.space)="onDayClick(day.date, monthId(mes.year, mes.monthIndex), day.inMonth)">
                                 <span class="num">{{ day.date.getDate() }}</span>
+
                                 @if (day.count > 0 && day.inMonth) {
                                 <span class="badge" aria-hidden="true">{{ day.count }}</span>
                                 }
@@ -58,15 +78,47 @@
                     }
                 </tbody>
             </table>
+
+            <!-- AVISO para no logados (igual que tenías) -->
+            <p class="login-hint" *ngIf="!isLoggedIn && loginNoticeMonthId() === monthId(mes.year, mes.monthIndex)">
+                para guardar fechas debe tener un usuario logado
+            </p>
+
+            <!-- ✅ NUEVO: mostrar botón/fechas en todos los meses que INTERSECTAN el rango -->
+            <ng-container *ngIf="selectedRange() as r">
+                <div class="cal-actions" *ngIf="isLoggedIn && isEdgeOfRangeMonth(mes.year, mes.monthIndex)">
+                    <button type="button" class="btn-save" (click)="emitSave()">Guardar fechas</button>
+                    <span class="range-label">
+                        {{ r.from | date:'dd/MM/yyyy' }} - {{ r.to | date:'dd/MM/yyyy' }}
+                    </span>
+                </div>
+            </ng-container>
+
+
         </article>
         }
     </div>
 
+    <!-- Leyenda inferior (se mantiene igual) -->
     <div class="cal-legend" aria-hidden="true">
         <span><i class="swatch tone-0"></i> 0</span>
         <span><i class="swatch tone-1"></i> 1</span>
         <span><i class="swatch tone-2"></i> 2–4</span>
         <span><i class="swatch tone-3"></i> 5+</span>
     </div>
+
+    <!--
+      ⬇️ NUEVO:
+      Acciones globales (solo logado y con rango seleccionado).
+      Muestra el botón Guardar fechas y el rango (YYYY-MM-DD — YYYY-MM-DD).
+    -->
+    <!-- <div class="cal-actions" *ngIf="isLoggedIn && selectedRange() as r">
+        <button type="button" class="btn-save" (click)="emitSave()">
+            Guardar fechas
+        </button>
+        <span class="range-label">
+            {{ r.from | date:'yyyy-MM-dd' }} — {{ r.to | date:'yyyy-MM-dd' }}
+        </span>
+    </div> -->
     }
 </section>

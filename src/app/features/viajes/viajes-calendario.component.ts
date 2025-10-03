@@ -1,7 +1,8 @@
 // archivo: src/app/features/viajes/viajes-calendario.component.ts
-import { ChangeDetectionStrategy, Component, computed, effect, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, signal, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ViajesApi } from './viajes.api';
+// + Añade si no lo tienes:
 
 /** Estructuras auxiliares para render mensual */
 interface DiaCell {
@@ -26,7 +27,7 @@ interface MesView {
     styleUrls: ['./viajes-calendario.component.css'],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ViajesCalendarioComponent {
+export class ViajesCalendarioComponent implements OnChanges {
     private api = inject(ViajesApi);
 
     // Estado
@@ -46,6 +47,41 @@ export class ViajesCalendarioComponent {
 
     // Meses generados a partir de counts
     readonly months = computed<MesView[]>(() => this.buildMonthsView(this.counts()));
+
+    // === Selección por rango y estado de login ===
+    //@Input({ required: false }) isLoggedIn = false; // el padre puede pasar true/false
+    @Input() isLoggedIn = false;
+
+    ngOnChanges(ch: SimpleChanges) {
+        if (ch['isLoggedIn']) {
+            console.debug('[PruebaPte][Cal] isLoggedIn:', ch['isLoggedIn'].previousValue, '->', ch['isLoggedIn'].currentValue);
+            if (ch['isLoggedIn'].currentValue === true) this.loginNoticeMonthId.set(null);
+        }
+    }
+
+
+
+
+
+
+
+
+
+    @Output() saveDates = new EventEmitter<{ from: string; to: string }>(); // emite el rango guardado
+
+    private selectionStart = signal<Date | null>(null);
+    private selectionEnd = signal<Date | null>(null);
+
+    // Mes (YYYY-MM) donde mostrar el aviso de "no logado"
+    loginNoticeMonthId = signal<string | null>(null);
+
+    // Rango seleccionado listo para usar
+    selectedRange = computed(() => {
+        const a = this.selectionStart();
+        const b = this.selectionEnd();
+        if (!a || !b) return null;
+        return a <= b ? { from: a, to: b } : { from: b, to: a };
+    });
 
     constructor() {
         // Carga inicial
@@ -72,6 +108,12 @@ export class ViajesCalendarioComponent {
             // console.log('PruebaPte - months len:', this.months().length);
         });
     }
+
+    // ngOnChanges(changes: SimpleChanges): void {
+    //     if (changes['isLoggedIn']?.currentValue === true) {
+    //         this.loginNoticeMonthId.set(null); // ocultar aviso al logarse
+    //     }
+    // }
 
     /** Construye la matriz de meses con semanas y celdas, aplicando counts. */
     private buildMonthsView(counts: Record<string, number>): MesView[] {
@@ -142,4 +184,189 @@ export class ViajesCalendarioComponent {
             'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'
         ][m];
     }
+
+    /** Convierte Date -> 'YYYY-MM-DD' (zona local, sin UTC) */
+    private toISODate(d: Date): string {
+        const y = d.getFullYear();
+        const m = (d.getMonth() + 1).toString().padStart(2, '0');
+        const dd = d.getDate().toString().padStart(2, '0');
+        return `${y}-${m}-${dd}`;
+    }
+
+    /** Id de mes (YYYY-MM) para anclar avisos bajo cada mes */
+    monthId(year: number, monthIndexZeroBased: number): string {
+        return `${year}-${(monthIndexZeroBased + 1).toString().padStart(2, '0')}`;
+    }
+
+    /** Normaliza fecha a medianoche local para comparar por día */
+    private dayKey(d: Date): number {
+        return +new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    }
+
+    isSelected(date: Date): boolean {
+        const s = this.selectionStart();
+        const e = this.selectionEnd();
+        if (!s && !e) return false;
+        if (s && !e) return this.dayKey(date) === this.dayKey(s);
+        if (!s && e) return this.dayKey(date) === this.dayKey(e);
+        const from = this.selectedRange()!.from;
+        const to = this.selectedRange()!.to;
+        const k = this.dayKey(date);
+        return k >= this.dayKey(from) && k <= this.dayKey(to);
+    }
+
+    /** Para estilos del interior del rango (sin extremos) */
+    isRangeMiddle(date: Date): boolean {
+        const r = this.selectedRange();
+        if (!r) return false;
+        const k = this.dayKey(date);
+        return k > this.dayKey(r.from) && k < this.dayKey(r.to);
+    }
+
+    /** Click en día */
+    onDayClick(day: Date, monthId: string, inCurrentMonth = true): void {
+
+        console.debug('[PruebaPte][Cal] click', { day: day.toDateString?.() ?? day, monthId, inCurrentMonth, isLoggedIn: this.isLoggedIn });
+
+        if (!inCurrentMonth) return; // no interactuar con días fuera de mes
+
+        if (!this.isLoggedIn) {
+            this.loginNoticeMonthId.set(monthId);
+            return;
+        }
+        // ya logado → limpia cualquier aviso previo
+        if (this.loginNoticeMonthId()) this.loginNoticeMonthId.set(null);
+
+
+        if (!this.isLoggedIn) {
+            this.loginNoticeMonthId.set(monthId);
+            console.debug('[PruebaPte] no logado, aviso mes', monthId);
+            return;
+        }
+
+        // ⬇️ Si ya estás logado, asegúrate de limpiar el aviso
+        if (this.loginNoticeMonthId()) {
+            this.loginNoticeMonthId.set(null);
+        }
+
+        if (!this.isLoggedIn) {
+            // Mostrar aviso SOLO en el mes clicado
+            this.loginNoticeMonthId.set(monthId);
+            return;
+        }
+
+        // Modo logado: selección por rango
+        const s = this.selectionStart();
+        const e = this.selectionEnd();
+
+        if (!s) {
+            // primer punto
+            this.selectionStart.set(day);
+            this.selectionEnd.set(null);
+        } else if (!e) {
+            // segundo punto
+            if (this.dayKey(day) < this.dayKey(s)) {
+                this.selectionEnd.set(s);
+                this.selectionStart.set(day);
+            } else {
+                this.selectionEnd.set(day);
+            }
+        } else {
+            // ya había rango completo -> empezar uno nuevo desde el día pulsado
+            this.selectionStart.set(day);
+            this.selectionEnd.set(null);
+        }
+    }
+
+    /** Guardar rango (emite evento al padre; integraremos API más adelante) */
+    emitSave(): void {
+
+        const r = this.selectedRange();
+        if (!r) return;
+        const from = this.toISODate(r.from);
+        const to = this.toISODate(r.to);
+        console.debug('[PruebaPte] Guardar fechas ->', from, to);
+        this.saveDates.emit({ from, to });
+
+        console.debug('[PruebaPte][Cal] emitSave', { from, to });
+    }
+
+    /** Permite limpiar selección si quisieras añadir un botón "Cancelar" */
+    clearSelection(): void {
+        this.selectionStart.set(null);
+        this.selectionEnd.set(null);
+    }
+
+    isUserLoggedIn = /* lo que uses (servicio/selector/signal) */ false;
+
+    onSaveDates(e: { from: string; to: string }) {
+        console.debug('[PruebaPte] Rango recibido en padre:', e);
+        // Aquí llamas a tu API cuando la tengas lista:
+        // this.viajesApi.saveRange(e.from, e.to).subscribe(...)
+    }
+
+    // ⬇️ Inserta en la clase (utilidades de mes/rango)
+    rangeStartsInMonth(year: number, monthIndexZeroBased: number): boolean {
+        const r = this.selectedRange();
+        if (!r) return false;
+        return r.from.getFullYear() === year && r.from.getMonth() === monthIndexZeroBased;
+    }
+
+    rangeLabel(): string | null {
+        const r = this.selectedRange();
+        if (!r) return null;
+        const ymd = (d: Date) =>
+            `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}-${d
+                .getDate()
+                .toString()
+                .padStart(2, '0')}`;
+        return `${ymd(r.from)} — ${ymd(r.to)}`;
+    }
+
+    /** Devuelve true si el rango seleccionado intersecta con ese mes (year, monthIndex 0–11) */
+    rangeIntersectsMonth(year: number, monthIndexZeroBased: number): boolean {
+        const r = this.selectedRange();
+        if (!r) return false;
+
+        // Inicio y fin de ese mes en zona local
+        const monthStart = new Date(year, monthIndexZeroBased, 1);
+        const monthEnd = new Date(year, monthIndexZeroBased + 1, 0); // último día del mes
+
+        const fromKey = this.dayKey(r.from);
+        const toKey = this.dayKey(r.to);
+        return this.dayKey(monthStart) <= toKey && this.dayKey(monthEnd) >= fromKey;
+    }
+
+    // ────────────────────────────────────────────────────────────────────────────
+    // Muestra acciones SOLO en el primer y último mes del rango seleccionado
+    // - Caso rango en un único mes: muestra en ese mes (una sola vez).
+    // - Caso rango cruzando varios meses: muestra en el mes de 'from' y en el mes de 'to'.
+    // ────────────────────────────────────────────────────────────────────────────
+    isEdgeOfRangeMonth(year: number, monthIndex: number): boolean {
+        const r = this.selectedRange?.();
+        if (!r) return false;
+
+        // Normalizamos a “mes” de inicio y fin (año/mes)
+        const firstMonthId = this.monthId(r.from.getFullYear(), r.from.getMonth());
+        const lastMonthId = this.monthId(r.to.getFullYear(), r.to.getMonth());
+
+        const current = this.monthId(year, monthIndex);
+
+        // Si el rango está en un único mes, first == last -> muestra solo en ese mes
+        if (firstMonthId === lastMonthId) {
+            return current === firstMonthId;
+        }
+
+        // Si abarca varios meses -> muestra en extremos
+        return current === firstMonthId || current === lastMonthId;
+    }
+
+
+    /* 🔧 Si aún no la tienes en el componente, añade esta utilidad (≈3 líneas):
+    private dayKey(d: Date): number {
+      return +new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    }
+    */
+
+
 }

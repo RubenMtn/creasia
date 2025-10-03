@@ -4,15 +4,12 @@ import { provideClientHydration, withEventReplay } from '@angular/platform-brows
 import { provideHttpClient, withFetch, withInterceptors } from '@angular/common/http';
 import { authInterceptor } from './interceptors/auth.interceptor';
 import { routes } from './app.routes';
-import { pruebaPteInterceptor } from './core/prueba-pte-interceptor';
-
-
-
+//import { pruebaPteInterceptor } from './core/prueba-pte-interceptor';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideHttpClient(withInterceptors([authInterceptor])),
-    provideHttpClient(withInterceptors([pruebaPteInterceptor])),
+//    provideHttpClient(withInterceptors([pruebaPteInterceptor])),
     provideBrowserGlobalErrorListeners(),
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes),

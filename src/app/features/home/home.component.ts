@@ -1,4 +1,4 @@
-/* eslint-disable @angular-eslint/prefer-inject */
+﻿/* eslint-disable @angular-eslint/prefer-inject */
 // [01] Dependencias externas y utilidades que usa el hero de la home.
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
@@ -18,25 +18,10 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { fromEvent } from 'rxjs';
 import { TPipe } from '../../shared/i18n/t.pipe';
 import { CarouselComponent } from "../../shared/ui/carousel/carousel.component";
+import { AnimationPhase, LinkAnchor, LinkItem, FacePoint, HERO_FRAME_ASPECT, HERO_TIMING, HERO_FACE_POINTS, HERO_LINKS, HERO_SLIDES } from './home-hero.config';
 
-// [02] Tipos auxiliares que describen anclas, fases y estructuras de la animaci�n.
-type LinkAnchor = 'top' | 'right' | 'bottom' | 'left';
-type AnimationPhase = 'points' | 'connectors';
 
-interface LinkItem {
-  key: string;
-  route: string;
-  cls: string;
-  pointId: FacePoint['id'];
-  anchor: LinkAnchor;
-}
-
-interface FacePoint {
-  id: string;
-  x: number;
-  y: number;
-}
-
+// [02] Tipos derivados internos que usan la configuracion importada.
 interface ScaledFacePoint extends FacePoint {
   left: number;
   top: number;
@@ -52,7 +37,7 @@ interface Connector {
   progress: number;
 }
 
-// [03] Declaraci�n del componente standalone que orquesta el hero animado.
+// [03] Declaracion del componente standalone que orquesta el hero animado.
 @Component({
   selector: 'app-home',
   standalone: true,
@@ -73,9 +58,9 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
   @ViewChildren('linkEl')
   private readonly linkRefs!: QueryList<ElementRef<HTMLAnchorElement>>;
 
-  frameAR = '16 / 9';
-  private frameRatio = 16 / 9;
-  private readonly imageRatio = 1600 / 593;
+  frameAR: string = HERO_FRAME_ASPECT.cssAspectRatio;
+  private frameRatio = HERO_FRAME_ASPECT.numericFrameRatio;
+  private readonly imageRatio = HERO_FRAME_ASPECT.referenceImageRatio;
 
   private resizeObserver?: ResizeObserver;
   private pendingFrame = -1;
@@ -94,23 +79,15 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
   private phaseQueue: AnimationPhase[] = [];
   private runningPhase: AnimationPhase | null = null;
 
-  private readonly POINTS_DELAY = 120;
-  private readonly LINES_LEAD = 180;
+  private readonly POINTS_DELAY = HERO_TIMING.POINTS_DELAY;
+  private readonly LINES_LEAD = HERO_TIMING.LINES_LEAD;
   // prueba
   //private readonly LINES_DRAW_DURATION = 540;
-  private readonly LINES_DRAW_DURATION = 140;
-  private readonly LINKS_DURATION = 900;
-  private readonly LINKS_BUFFER = 160;
+  private readonly LINES_DRAW_DURATION = HERO_TIMING.LINES_DRAW_DURATION;
+  private readonly LINKS_DURATION = HERO_TIMING.LINKS_DURATION;
+  private readonly LINKS_BUFFER = HERO_TIMING.LINKS_BUFFER;
 
-  homeSlides = [
-    { src: 'assets/pics/slide1.jpg', alt: 'Proyecto A', caption: '' },
-    { src: 'assets/pics/slide2.jpg', alt: 'Proyecto B', caption: '' },
-    { src: 'assets/pics/slide3.jpg', alt: 'Proyecto C', caption: '' },
-    { src: 'assets/pics/slide4.jpg', alt: 'Proyecto D', caption: '' },
-    { src: 'assets/pics/slide5.jpg', alt: 'Proyecto E', caption: '' },
-    { src: 'assets/pics/slide6.jpg', alt: 'Proyecto F', caption: '' },
-    { src: 'assets/pics/slide7.jpg', alt: 'Proyecto G', caption: '' },
-  ];
+  homeSlides = [...HERO_SLIDES];
 
   fading = false;
   skipToEnd = false;
@@ -120,16 +97,11 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
   showConnectors = false;
 
   displayLinks: LinkItem[] = [];
-  baseDelay = 200;
-  stagger = 180;
+  baseDelay = HERO_TIMING.BASE_DELAY;
+  stagger = HERO_TIMING.STAGGER;
   linksPhaseOffset = 0;
 
-  readonly facePoints: FacePoint[] = [
-    { id: 'eye-left', x: 34.5, y: 31.2 },
-    { id: 'eye-right', x: 67, y: 31.2 },
-    { id: 'mouth-left', x: 42, y: 85 },
-    { id: 'mouth-right', x: 56.4, y: 90 }
-  ];
+  readonly facePoints: FacePoint[] = HERO_FACE_POINTS;
 
   scaledPoints: ScaledFacePoint[] = [];
   connectors: Connector[] = [];
@@ -137,14 +109,9 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
   private returnUrl: string | null = null;
   private returnNavigationTriggered = false;
 
-  private readonly links: LinkItem[] = [
-    { key: 'menu.activities', route: '/actividades', cls: 'l-top-left', pointId: 'eye-left', anchor: 'bottom' },
-    { key: 'menu.gourmet', route: '/gourmet', cls: 'l-top-right', pointId: 'eye-right', anchor: 'bottom' },
-    { key: 'menu.partners', route: '/socios', cls: 'l-bot-left', pointId: 'mouth-left', anchor: 'right' },
-    { key: 'menu.trips', route: '/viajes', cls: 'l-bot-right', pointId: 'mouth-right', anchor: 'left' },
-  ];
+  private readonly links: LinkItem[] = HERO_LINKS;
 
-  // [04] Constructor: calcula la geometr�a inicial, maneja rutas de retorno y registra eventos globales.
+  // [04] Constructor: calcula la geometria inicial, maneja rutas de retorno y registra eventos globales.
   constructor(
     private readonly zone: NgZone,
     private readonly route: ActivatedRoute,
@@ -172,7 +139,7 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
     }
   }
 
-  // [05] Hook tras el render inicial: conecta observadores y decide si saltar la animaci�n.
+  // [05] Hook tras el render inicial: conecta observadores y decide si saltar la animacion.
   ngAfterViewInit(): void {
     if (!this.hasDOM) {
       // ?? Defer para evitar NG0100 en el primer chequeo
@@ -233,7 +200,7 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
     this.connectorProgress = 0;
   }
 
-  // [07] Ajusta la relaci�n de aspecto y recalcula puntos cuando llega metadata del v�deo.
+  // [07] Ajusta la relacion de aspecto y recalcula puntos cuando llega metadata del video.
   onMeta(video: HTMLVideoElement): void {
     if (video.videoWidth && video.videoHeight) {
       this.frameRatio = video.videoWidth / video.videoHeight;
@@ -242,7 +209,7 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
     }
   }
 
-  // [08] Gestiona el desvanecimiento del v�deo y prepara las fases posteriores.
+  // [08] Gestiona el desvanecimiento del video y prepara las fases posteriores.
   startFade(video: HTMLVideoElement): void {
     video.pause();
 
@@ -280,7 +247,7 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
     this.skipToEnd = false;
   }
 
-  // [09] Al terminar el fade del v�deo dispara la cadena de fases (l�neas, puntos, enlaces).
+  // [09] Al terminar el fade del video dispara la cadena de fases (lineas, puntos, enlaces).
   onFadeEnd(event: TransitionEvent): void {
     const element = event.target as HTMLElement | null;
     if (!element || event.propertyName !== 'opacity') {
@@ -350,7 +317,7 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
 }
 
   
-  // [11] Administra la cola de fases (conectores/puntos) y asegura su ejecuci�n ordenada.
+  // [11] Administra la cola de fases (conectores/puntos) y asegura su ejecucion ordenada.
   private preparePhases(order: AnimationPhase[]): void {
     this.phaseQueue = [...order];
     this.runningPhase = null;
@@ -402,7 +369,7 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
     }, this.POINTS_DELAY);
   }
 
-  // [12] Desordena enlaces, mide distancias y lanza el dibujo gradual de las l�neas.
+  // [12] Desordena enlaces, mide distancias y lanza el dibujo gradual de las lineas.
   private runConnectorsPhase(): void {
     this.displayLinks = [...this.links].sort(() => Math.random() - 0.5);
     this.showLinks = true;
@@ -476,7 +443,7 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
     this.trackingHandle = window.requestAnimationFrame(step);
   }
 
-  // [13] Consolida el estado final: muestra overlays, fija conectores y lanza navegaci�n diferida.
+  // [13] Consolida el estado final: muestra overlays, fija conectores y lanza navegacion diferida.
   private finalizeAnimation(force = false): void {
     if (this.animationDone && !force) {
       return;
@@ -542,7 +509,7 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
     this.handleReturnNavigation();
   }
 
-  // [14] Navega a la ruta de retorno almacenada en cuanto la animaci�n ha finalizado.
+  // [14] Navega a la ruta de retorno almacenada en cuanto la animacion ha finalizado.
   private handleReturnNavigation(): void {
     if (!this.returnUrl || this.returnNavigationTriggered || !this.hasDOM) {
       return;
@@ -565,7 +532,7 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
     }
   }
 
-  // [15] Normaliza las coordenadas de los puntos faciales seg�n el tama�o del contenedor.
+  // [15] Normaliza las coordenadas de los puntos faciales segun el tamano del contenedor.
   private updatePoints(): void {
     const ratio = this.frameRatio / this.imageRatio;
     this.scaledPoints = this.facePoints.map((point) => {
@@ -587,7 +554,7 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
     this.requestConnectorUpdate();
   }
 
-  // [16] Programa un recalculo de conectores evitando hacer trabajo cuando no hay DOM o est� en cola.
+  // [16] Programa un recalculo de conectores evitando hacer trabajo cuando no hay DOM o esta en cola.
   private requestConnectorUpdate(force = false): void {
     if (!this.showLinks) {
       this.pendingConnectorUpdate = true;
@@ -625,7 +592,7 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
     });
   }
 
-  // [18] Calcula la geometr�a de cada l�nea conectando puntos faciales con enlaces.
+  // [18] Calcula la geometria de cada linea conectando puntos faciales con enlaces.
   private updateConnectors(): void {
     if (!this.showLinks) {
       this.connectors = [];
@@ -726,16 +693,3 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
     return null;
   }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
