@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // archivo: src/app/features/viajes/viajes.component.ts
 
-import { Component, inject, effect, ViewChild } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, inject, effect, ViewChild, PLATFORM_ID } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { TPipe } from '../../shared/i18n/t.pipe';
 import { ViajesCalendarioComponent } from './viajes-calendario.component';
 import { ScrollTopButtonComponent } from '../../shared/ui/scroll-top-button/scroll-top-button.component';
@@ -20,6 +20,11 @@ type SaveState = 'idle' | 'ok' | 'deleted' | 'error';
   styleUrl: './viajes.component.scss'
 })
 export class ViajesComponent {
+
+  // Detectar si estamos en navegador (no SSR/prerender)
+  private platformId = inject(PLATFORM_ID);
+  private readonly isBrowser = isPlatformBrowser(this.platformId);
+
   private viajesApi = inject(ViajesApi);
   private session = inject(UserSessionService);
 
@@ -46,17 +51,18 @@ export class ViajesComponent {
   // opcional, info del último guardado/eliminado
   lastSavedRange: { from: string; to: string } | null = null;
 
-  constructor() {
-    // Cargar mis rangos al entrar
+constructor() {
+  if (this.isBrowser) {
     this.loadMyRanges();
 
-    /* PruebaPte: reactividad a login */
+    /* PruebaPte: reactividad a login SOLO en navegador */
     effect(() => {
       const logged = this.isLoggedInSig();
       if (logged) this.loadMyRanges();
       else this.myRanges = [];
     });
   }
+}
 
   /**
    * Recibe el rango del calendario y decide:
@@ -88,9 +94,9 @@ export class ViajesComponent {
       // 2) definimos la misma ventana que usas en loadMyRanges()
       const now = new Date();
       const from = new Date(now.getFullYear(), now.getMonth(), 1);
-      const to   = new Date(from.getFullYear(), from.getMonth() + 18, 0);
+      const to = new Date(from.getFullYear(), from.getMonth() + 18, 0);
       const ymd = (d: Date) =>
-        `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+        `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 
       // 3) refrescamos en paralelo y SOLO entonces re-habilitamos la UI
       forkJoin({
@@ -142,15 +148,15 @@ export class ViajesComponent {
 
     // normaliza a [min,max] en milisegundos (medianoche local)
     const f = +new Date(from + 'T00:00:00');
-    const t = +new Date(to   + 'T00:00:00');
+    const t = +new Date(to + 'T00:00:00');
     const selFrom = Math.min(f, t);
-    const selTo   = Math.max(f, t);
+    const selTo = Math.max(f, t);
 
     // merge de mis rangos (ordenados y unidos)
     const merged = this.mergeRanges(
       this.myRanges.map(r => {
         const a = +new Date(r.from + 'T00:00:00');
-        const b = +new Date(r.to   + 'T00:00:00');
+        const b = +new Date(r.to + 'T00:00:00');
         return { from: Math.min(a, b), to: Math.max(a, b) };
       })
     );
@@ -184,7 +190,7 @@ export class ViajesComponent {
   private loadMyRanges() {
     const now = new Date();
     const from = new Date(now.getFullYear(), now.getMonth(), 1);
-    const to   = new Date(from.getFullYear(), from.getMonth() + 18, 0);
+    const to = new Date(from.getFullYear(), from.getMonth() + 18, 0);
     const ymd = (d: Date) =>
       `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 

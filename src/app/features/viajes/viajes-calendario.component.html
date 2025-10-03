@@ -1,3 +1,16 @@
+<!-- Intro del calendario: cambia según login -->
+<div class="cal-intro" role="note" aria-live="polite">
+  <ng-container *ngIf="!isLoggedIn; else loggedIntro">
+    <p>En este calendario compartido, puedes ver las próximas fechas en las que ya hay interesados en viajar a China con
+      nuestro grupo y tienen disponibilidad. Si quieres poder añadir o modificar fechas de tu preferencia accede al
+      login de tu usuario.</p>
+  </ng-container>
+  <ng-template #loggedIntro>
+    <p>Para añadir o modificar fechas de tu preferencia, selecciona rangos de 2 o más días en el calendario pulsando,
+      indistintamente, un día de inicio y uno de final. A continuación, elige Guardar o Eliminar según necesites:</p>
+  </ng-template>
+</div>
+<br/>
 <div class="cal-grid">
   @for (mes of months(); track $index) {
   <article class="cal-month" aria-label="{{ mes.monthName }} de {{ mes.year }}">

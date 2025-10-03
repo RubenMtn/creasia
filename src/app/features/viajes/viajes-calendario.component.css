@@ -420,15 +420,14 @@
 td.is-mine,
 .day.is-mine,
 .cell.is-mine {
-  outline: 3px solid #ffd000;
+  /* outline: 3px solid #ffd000; */
+  /* outline: 3px solid #ccff00;  amarillo lima*/
+  outline: 3px solid red;
   outline-offset: -2px;
   box-shadow: 0 0 0 2px #ffd000 inset;
 }
-/* Borde para días propios */
-.cal-day.is-mine {
-  outline: 3px solid #ffbf00;   /* amarillo fuerte */
-  outline-offset: -2px;
-  border-radius: 6px;
-}
 
 .save-result.deleted { border-color:#d97706; color:#d97706; }
+
+.cal-intro { margin: 12px 0 16px; line-height: 1.4; }
+.cal-intro p { margin: 0; }

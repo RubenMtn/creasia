@@ -11,8 +11,9 @@ import {
   EventEmitter,
   OnChanges,
   SimpleChanges,
+  PLATFORM_ID,
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { ViajesApi } from './viajes.api';
 
 /** Estructuras auxiliares para render mensual */
@@ -38,6 +39,10 @@ interface MesView {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ViajesCalendarioComponent implements OnChanges {
+
+  private platformId = inject(PLATFORM_ID);
+  private readonly isBrowser = isPlatformBrowser(this.platformId);
+
   private api = inject(ViajesApi);
 
   // ── Estado ───────────────────────────────────────────────────────────────────
@@ -327,14 +332,12 @@ export class ViajesCalendarioComponent implements OnChanges {
     return current === firstMonthId || current === lastMonthId;
   }
 
-
-
-
   // ── Relectura de counts (relleno y nº interesados) ───────────────────────────
   private reloadCounts(): void {
     const fromISO = this.toISO(this.start);
     const toISO = this.toISO(this.end);
     this.loading.set(true);
+    if (!this.isBrowser) return; // Evita llamadas HTTP en SSR/prerender
     this.api.getCounts(fromISO, toISO).subscribe({
       next: (res) => {
         if (!res.ok) {
