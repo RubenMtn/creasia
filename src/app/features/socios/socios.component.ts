@@ -150,24 +150,23 @@ export class SociosComponent implements OnInit, OnDestroy {
               localStorage.setItem('creasia:isLoggedIn', '1');
               localStorage.setItem('creasia:userEmail', (j.socio.email || '').trim());
               localStorage.setItem(SociosComponent.ACTIVATION_KEY, 'ok'); // para otras tabs
-            } catch {}
+            } catch { }
 
             this.session.persistLogin(displayName, { token: '1' });
-            try { window.dispatchEvent(new Event('creasia:user-updated')); } catch {}
+            try { window.dispatchEvent(new Event('creasia:user-updated')); } catch { }
 
             // Forzamos vista login (el saludo tapa el form)
             this.showLoginForm = true;
             this.showRegisterForm = false;
             this.persistViewState();
 
-            // Redirección “suave” + fallback duro
+
+            // Redirección suave (una sola vez)
+            if (this.redirectTimer) { clearTimeout(this.redirectTimer); this.redirectTimer = null; }
             this.redirectTimer = window.setTimeout(() => {
-              void this.router.navigateByUrl('/');
+              void this.router.navigateByUrl('/', { replaceUrl: true });
             }, 1200);
 
-            window.setTimeout(() => {
-              try { window.location.assign('/'); } catch {}
-            }, 2500);
 
           } else {
             // Token inválido/expirado → mostramos mensaje y dejamos el login
@@ -245,7 +244,7 @@ export class SociosComponent implements OnInit, OnDestroy {
           const uidVal = res?.uid;
           if (typeof uidVal === 'number' && uidVal > 0) {
             this.pendingUid = uidVal;
-            try { window.localStorage.setItem(SociosComponent.PENDING_UID_KEY, String(uidVal)); } catch {}
+            try { window.localStorage.setItem(SociosComponent.PENDING_UID_KEY, String(uidVal)); } catch { }
             this.startActivationPolling();
           }
 
@@ -298,16 +297,14 @@ export class SociosComponent implements OnInit, OnDestroy {
           try {
             localStorage.setItem('creasia:isLoggedIn', '1');
             localStorage.setItem('creasia:userEmail', (res.socio.email || '').trim());
-          } catch {}
+          } catch { }
 
-          try { window.dispatchEvent(new Event('creasia:user-updated')); } catch {}
+          try { window.dispatchEvent(new Event('creasia:user-updated')); } catch { }
 
-          if (this.redirectTimer) clearTimeout(this.redirectTimer);
+          if (this.redirectTimer) { clearTimeout(this.redirectTimer); this.redirectTimer = null; }
           this.redirectTimer = window.setTimeout(() => {
-            void this.router.navigateByUrl('/');
+            void this.router.navigateByUrl('/', { replaceUrl: true });
           }, 1200);
-
-          window.setTimeout(() => { try { window.location.assign('/'); } catch {} }, 2500);
 
         } else {
           this.error = res.error || 'socios.errors.invalidCredentials';
@@ -333,7 +330,7 @@ export class SociosComponent implements OnInit, OnDestroy {
     try {
       localStorage.setItem('creasia:isLoggedIn', '0');
       localStorage.removeItem('creasia:userEmail');
-    } catch {}
+    } catch { }
   }
 
   private persistViewState(): void {
@@ -356,7 +353,7 @@ export class SociosComponent implements OnInit, OnDestroy {
     const langParam = url.searchParams.get('lang');
     if (langParam) {
       const lang2 = (langParam.slice(0, 2).toLowerCase() as 'es' | 'en' | 'zh');
-      try { localStorage.setItem('creasia:lang', lang2); } catch {}
+      try { localStorage.setItem('creasia:lang', lang2); } catch { }
       void this.i18n.setLang(lang2);
     }
 
@@ -395,17 +392,17 @@ export class SociosComponent implements OnInit, OnDestroy {
             try {
               localStorage.setItem('creasia:isLoggedIn', '1');
               localStorage.setItem('creasia:userEmail', (j.socio.email || '').trim());
-            } catch {}
+            } catch { }
             this.session.persistLogin(displayName, { token: '1' });
 
-            try { window.dispatchEvent(new Event('creasia:user-updated')); } catch {}
+            try { window.dispatchEvent(new Event('creasia:user-updated')); } catch { }
 
             this.showLoginForm = true;
             this.showRegisterForm = false;
             this.persistViewState();
 
-            setTimeout(() => { void this.router.navigateByUrl('/'); }, 1200);
-            setTimeout(() => { try { window.location.assign('/'); } catch {} }, 2500);
+            setTimeout(() => { void this.router.navigateByUrl('/', { replaceUrl: true }); }, 1200);
+
           } else {
             this.okMsg = 'socios.activation.ok';
             this.error = '';
