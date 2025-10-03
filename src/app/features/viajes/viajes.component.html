@@ -11,9 +11,7 @@
     </section>
 
     <!-- IMPORTANTE: Pasar el login real de la señal compartida -->
-    <app-viajes-calendario
-      [isLoggedIn]="isLoggedInSig()"
-      (saveDates)="onSaveDates($event)">
+    <app-viajes-calendario [isLoggedIn]="isLoggedInSig()" [saveState]="saveState" (saveDates)="onSaveDates($event)">
     </app-viajes-calendario>
 
     <section class="viajes-section" aria-labelledby="travel-wonders">

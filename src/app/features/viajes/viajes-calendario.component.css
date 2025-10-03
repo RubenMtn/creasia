@@ -332,3 +332,6 @@
     opacity: 0.85;
   }
 }
+.save-result { font-size: .875rem; margin-right: .5rem; }
+.save-result.ok { color: #16a34a; }   /* verde */
+.save-result.err { color: #dc2626; }  /* rojo */

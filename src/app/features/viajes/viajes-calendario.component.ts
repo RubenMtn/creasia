@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 // archivo: src/app/features/viajes/viajes-calendario.component.ts
 import { ChangeDetectionStrategy, Component, computed, effect, inject, signal, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -48,23 +49,23 @@ export class ViajesCalendarioComponent implements OnChanges {
     // Meses generados a partir de counts
     readonly months = computed<MesView[]>(() => this.buildMonthsView(this.counts()));
 
-    // === Selección por rango y estado de login ===
-    //@Input({ required: false }) isLoggedIn = false; // el padre puede pasar true/false
-    @Input() isLoggedIn = false;
+
+    // Recibe si el usuario está logado (ya lo tenías)
+@Input() isLoggedIn = false;
+
+// Recibe estado del guardado para mostrar mensaje
+@Input() saveState: 'ok' | 'error' | 'idle' = 'idle';
+
+// Recibe si se está guardando para deshabilitar el botón
+@Input() saving = false;
+
 
     ngOnChanges(ch: SimpleChanges) {
         if (ch['isLoggedIn']) {
-            console.debug('[PruebaPte][Cal] isLoggedIn:', ch['isLoggedIn'].previousValue, '->', ch['isLoggedIn'].currentValue);
+            //console.debug('[PruebaPte][Cal] isLoggedIn:', ch['isLoggedIn'].previousValue, '->', ch['isLoggedIn'].currentValue);
             if (ch['isLoggedIn'].currentValue === true) this.loginNoticeMonthId.set(null);
         }
     }
-
-
-
-
-
-
-
 
 
     @Output() saveDates = new EventEmitter<{ from: string; to: string }>(); // emite el rango guardado
@@ -226,7 +227,7 @@ export class ViajesCalendarioComponent implements OnChanges {
     /** Click en día */
     onDayClick(day: Date, monthId: string, inCurrentMonth = true): void {
 
-        console.debug('[PruebaPte][Cal] click', { day: day.toDateString?.() ?? day, monthId, inCurrentMonth, isLoggedIn: this.isLoggedIn });
+       // console.debug('[PruebaPte][Cal] click', { day: day.toDateString?.() ?? day, monthId, inCurrentMonth, isLoggedIn: this.isLoggedIn });
 
         if (!inCurrentMonth) return; // no interactuar con días fuera de mes
 
@@ -240,7 +241,7 @@ export class ViajesCalendarioComponent implements OnChanges {
 
         if (!this.isLoggedIn) {
             this.loginNoticeMonthId.set(monthId);
-            console.debug('[PruebaPte] no logado, aviso mes', monthId);
+           // console.debug('[PruebaPte] no logado, aviso mes', monthId);
             return;
         }
 
@@ -285,10 +286,10 @@ export class ViajesCalendarioComponent implements OnChanges {
         if (!r) return;
         const from = this.toISODate(r.from);
         const to = this.toISODate(r.to);
-        console.debug('[PruebaPte] Guardar fechas ->', from, to);
+      //  console.debug('[PruebaPte] Guardar fechas ->', from, to);
         this.saveDates.emit({ from, to });
 
-        console.debug('[PruebaPte][Cal] emitSave', { from, to });
+       // console.debug('[PruebaPte][Cal] emitSave', { from, to });
     }
 
     /** Permite limpiar selección si quisieras añadir un botón "Cancelar" */
@@ -300,7 +301,7 @@ export class ViajesCalendarioComponent implements OnChanges {
     isUserLoggedIn = /* lo que uses (servicio/selector/signal) */ false;
 
     onSaveDates(e: { from: string; to: string }) {
-        console.debug('[PruebaPte] Rango recibido en padre:', e);
+       // console.debug('[PruebaPte] Rango recibido en padre:', e);
         // Aquí llamas a tu API cuando la tengas lista:
         // this.viajesApi.saveRange(e.from, e.to).subscribe(...)
     }

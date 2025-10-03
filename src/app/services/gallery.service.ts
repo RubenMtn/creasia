@@ -30,7 +30,7 @@ export class GalleryService {
   loadImages() {
     const manifestPath = 'assets/pics/manifest.json'; // ¡sin slash inicial!
     const manifestUrl = this.url(manifestPath);
-    console.log('PruebaPte[GalleryService] manifestUrl:', manifestUrl);
+   // console.log('PruebaPte[GalleryService] manifestUrl:', manifestUrl);
 
     return this.http.get<string[]>(manifestUrl).pipe(
       tap({
