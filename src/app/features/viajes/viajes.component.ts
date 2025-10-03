@@ -1,13 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // archivo: src/app/features/viajes/viajes.component.ts
 
-import { Component, inject, effect } from '@angular/core';
+import { Component, inject, effect, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TPipe } from '../../shared/i18n/t.pipe';
 import { ViajesCalendarioComponent } from './viajes-calendario.component';
 import { ScrollTopButtonComponent } from '../../shared/ui/scroll-top-button/scroll-top-button.component';
 import { ViajesApi, SaveRangePayload } from './viajes.api';
 import { UserSessionService } from '../../services/user-session.service';
+import { forkJoin } from 'rxjs';
 
 type SaveState = 'idle' | 'ok' | 'deleted' | 'error';
 
@@ -21,6 +22,9 @@ type SaveState = 'idle' | 'ok' | 'deleted' | 'error';
 export class ViajesComponent {
   private viajesApi = inject(ViajesApi);
   private session = inject(UserSessionService);
+
+  // REFERENCIA AL HIJO (debe ir DENTRO de la clase)
+  @ViewChild(ViajesCalendarioComponent) cal?: ViajesCalendarioComponent;
 
   // Estado de login compartido (signal)
   readonly isLoggedInSig = this.session.isLoggedIn;
@@ -45,14 +49,13 @@ export class ViajesComponent {
   constructor() {
     // Cargar mis rangos al entrar
     this.loadMyRanges();
-    
-    /* PruebaPte: reactividad a login */
-effect(() => {
-  const logged = this.isLoggedInSig();
-  if (logged) this.loadMyRanges();
-  else this.myRanges = [];
-});
 
+    /* PruebaPte: reactividad a login */
+    effect(() => {
+      const logged = this.isLoggedInSig();
+      if (logged) this.loadMyRanges();
+      else this.myRanges = [];
+    });
   }
 
   /**
@@ -79,16 +82,35 @@ effect(() => {
       this.setSaveState(state);
       this.lastSavedRange = { from: e.from, to: e.to };
 
-      // 1) limpiar selección en el hijo (el botón NO debe reaparecer)
+      // 1) limpiamos selección del hijo
       this.clearSelectionTick++;
 
-      // 2) recargar counts (relleno + números)
-      this.reloadCountsTick++;
+      // 2) definimos la misma ventana que usas en loadMyRanges()
+      const now = new Date();
+      const from = new Date(now.getFullYear(), now.getMonth(), 1);
+      const to   = new Date(from.getFullYear(), from.getMonth() + 18, 0);
+      const ymd = (d: Date) =>
+        `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 
-      // 3) recargar mis rangos (borde amarillo)
-      this.loadMyRanges();
-
-      this.isSaving = false;
+      // 3) refrescamos en paralelo y SOLO entonces re-habilitamos la UI
+      forkJoin({
+        mine: this.viajesApi.getMyRanges(ymd(from), ymd(to)),
+        cnts: this.viajesApi.getCounts(ymd(from), ymd(to)),
+      }).subscribe({
+        next: (r) => {
+          // Mis rangos → Input del hijo
+          this.myRanges = (r.mine?.ok && Array.isArray(r.mine.ranges)) ? r.mine.ranges : [];
+          // Counts → setter público del hijo (evita depender del tick)
+          this.cal?.setCountsFromParent(r.cnts?.counts ?? {});
+        },
+        error: () => {
+          // Degradado: si falla la recarga, lo marcamos como error visual
+          this.setSaveState('error');
+        },
+        complete: () => {
+          this.isSaving = false;
+        }
+      });
     };
 
     const afterError = () => {

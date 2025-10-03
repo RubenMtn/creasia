@@ -42,7 +42,7 @@
       <div class="cal-actions" *ngIf="isLoggedIn && isEdgeOfRangeMonth(mes.year, mes.monthIndex)">
         <ng-container *ngIf="saveState === 'idle'; else savedMsg">
           <button type="button" class="btn-save" (click)="emitSave()" [disabled]="saving">
-            {{ saving ? 'Guardando…' : 'Guardar fechas' }}
+            {{ saving ? 'Guardando…' : (selectionFullyMine() ? 'Eliminar fechas' : 'Guardar fechas') }}
           </button>
         </ng-container>
         <ng-template #savedMsg>

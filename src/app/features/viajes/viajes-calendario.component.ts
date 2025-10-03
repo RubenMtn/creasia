@@ -61,7 +61,7 @@ export class ViajesCalendarioComponent implements OnChanges {
   // ── Inputs del padre ─────────────────────────────────────────────────────────
   @Input() isLoggedIn = false;
   @Input() saveState: 'ok' | 'error' | 'idle' | 'deleted' = 'idle';
-  
+
   @Input() myRanges: { from: string; to: string }[] = []; // rangos propios (borde amarillo)
   @Input() saving = false;
 
@@ -307,20 +307,25 @@ export class ViajesCalendarioComponent implements OnChanges {
     const k = this.dayKey(d);
     return this.myRangesNorm.some((r) => k >= r.from && k <= r.to);
   }
-
+  /** ¿La selección actual está totalmente cubierta por mis rangos? */
+  selectionFullyMine(): boolean {
+    const r = this.selectedRange(); if (!r || !this.myRangesNorm.length) return false;
+    const a = this.dayKey(r.from), b = this.dayKey(r.to), lo = Math.min(a, b), hi = Math.max(a, b);
+    return this.myRangesNorm.some(iv => iv.from <= lo && iv.to >= hi);
+  }
 
   // ⇩⇩ dentro de export class ViajesCalendarioComponent { ... }
-isEdgeOfRangeMonth(year: number, monthIndex: number): boolean {
-  const r = this.selectedRange?.();
-  if (!r) return false;
+  isEdgeOfRangeMonth(year: number, monthIndex: number): boolean {
+    const r = this.selectedRange?.();
+    if (!r) return false;
 
-  const firstMonthId = this.monthId(r.from.getFullYear(), r.from.getMonth());
-  const lastMonthId  = this.monthId(r.to.getFullYear(),   r.to.getMonth());
-  const current      = this.monthId(year, monthIndex);
+    const firstMonthId = this.monthId(r.from.getFullYear(), r.from.getMonth());
+    const lastMonthId = this.monthId(r.to.getFullYear(), r.to.getMonth());
+    const current = this.monthId(year, monthIndex);
 
-  if (firstMonthId === lastMonthId) return current === firstMonthId;
-  return current === firstMonthId || current === lastMonthId;
-}
+    if (firstMonthId === lastMonthId) return current === firstMonthId;
+    return current === firstMonthId || current === lastMonthId;
+  }
 
 
 
