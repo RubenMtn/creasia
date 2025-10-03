@@ -430,3 +430,5 @@ td.is-mine,
   outline-offset: -2px;
   border-radius: 6px;
 }
+
+.save-result.deleted { border-color:#d97706; color:#d97706; }

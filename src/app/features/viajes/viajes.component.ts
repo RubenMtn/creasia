@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // archivo: src/app/features/viajes/viajes.component.ts
 
-import { Component, inject } from '@angular/core';
+import { Component, inject, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TPipe } from '../../shared/i18n/t.pipe';
 import { ViajesCalendarioComponent } from './viajes-calendario.component';
@@ -9,7 +9,7 @@ import { ScrollTopButtonComponent } from '../../shared/ui/scroll-top-button/scro
 import { ViajesApi, SaveRangePayload } from './viajes.api';
 import { UserSessionService } from '../../services/user-session.service';
 
-type SaveState = 'idle' | 'ok' | 'error';
+type SaveState = 'idle' | 'ok' | 'deleted' | 'error';
 
 @Component({
   selector: 'app-viajes',
@@ -25,30 +25,40 @@ export class ViajesComponent {
   // Estado de login compartido (signal)
   readonly isLoggedInSig = this.session.isLoggedIn;
 
-  // Estado de guardado (para mostrar mensaje en el hijo)
+  // Estado de guardado (para mensaje en el hijo)
   saveState: SaveState = 'idle';
   private saveMsgTimer: any = null;
 
-  // Flag de guardado (para deshabilitar botón y evitar que reaparezca)
+  // Flag de guardado (para deshabilitar botón y evitar reaparición)
   isSaving = false;
 
-  // Rangos propios del socio logado (pintan borde amarillo)
+  // Rangos propios del socio logado (borde amarillo)
   myRanges: { from: string; to: string }[] = [];
 
-  // “Ticks” que el padre pasa al hijo para forzar acciones concretas
-  clearSelectionTick = 0;  // limpiar selección en el hijo
-  reloadCountsTick = 0;    // recargar counts (relleno + números)
-  lastSavedRange: { from: string; to: string } | null = null; // opcional, por si deseas usarlo
+  // Ticks para comunicar acciones explícitas al hijo
+  clearSelectionTick = 0;
+  reloadCountsTick = 0;
+
+  // opcional, info del último guardado/eliminado
+  lastSavedRange: { from: string; to: string } | null = null;
 
   constructor() {
-    // Cargamos rangos propios al entrar
+    // Cargar mis rangos al entrar
     this.loadMyRanges();
+    
+    /* PruebaPte: reactividad a login */
+effect(() => {
+  const logged = this.isLoggedInSig();
+  if (logged) this.loadMyRanges();
+  else this.myRanges = [];
+});
+
   }
 
   /**
-   * Recibe el rango del hijo y guarda en API.
-   * Mapea { from, to } -> contrato backend { fecha_inicio, fecha_fin }.
-   * Tras guardar: muestra OK, limpia selección, recarga counts y refresca myRanges.
+   * Recibe el rango del calendario y decide:
+   *  - Si YA está totalmente cubierto por mis rangos -> ELIMINAR
+   *  - Si NO está cubierto -> AÑADIR/MERGE
    */
   onSaveDates(e: { from: string; to: string }) {
     if (!e?.from || !e?.to) return;
@@ -63,43 +73,96 @@ export class ViajesComponent {
       tipo: null,
     };
 
-    this.viajesApi.saveRange(payload).subscribe({
-      next: (res) => {
-        if (res?.ok) {
-          this.setSaveState('ok');
+    const isCovered = this.isFullyCoveredByMine(e.from, e.to);
 
-          // Marca último guardado (si lo quieres para algo)
-          this.lastSavedRange = { from: e.from, to: e.to };
+    const afterOk = (state: SaveState) => {
+      this.setSaveState(state);
+      this.lastSavedRange = { from: e.from, to: e.to };
 
-          // 1) Limpia selección en el hijo (evita que vuelva a salir el botón)
-          this.clearSelectionTick++;
+      // 1) limpiar selección en el hijo (el botón NO debe reaparecer)
+      this.clearSelectionTick++;
 
-          // 2) Recarga de counts para reflejar relleno + número de interesados
-          this.reloadCountsTick++;
+      // 2) recargar counts (relleno + números)
+      this.reloadCountsTick++;
 
-          // 3) Refresca mis rangos (borde amarillo) desde el backend
-          this.loadMyRanges();
-        } else {
-          this.setSaveState('error');
-        }
-        this.isSaving = false;
-      },
-      error: () => {
-        this.setSaveState('error');
-        this.isSaving = false;
-      },
-    });
+      // 3) recargar mis rangos (borde amarillo)
+      this.loadMyRanges();
+
+      this.isSaving = false;
+    };
+
+    const afterError = () => {
+      this.setSaveState('error');
+      this.isSaving = false;
+    };
+
+    if (isCovered) {
+      // → BORRADO
+      this.viajesApi.deleteRange(payload).subscribe({
+        next: (res) => res?.ok ? afterOk('deleted') : afterError(),
+        error: afterError,
+      });
+    } else {
+      // → ALTA/MERGE
+      this.viajesApi.saveRange(payload).subscribe({
+        next: (res) => res?.ok ? afterOk('ok') : afterError(),
+        error: afterError,
+      });
+    }
   }
 
   /**
-   * Descarga los rangos del socio logado en la ventana del calendario
-   * (mes actual hasta +18 meses).
+   * Devuelve true si [from,to] está COMPLETAMENTE cubierto por la unión de myRanges.
+   * (Incluye días con frontera; compara a medianoche local)
    */
+  private isFullyCoveredByMine(from: string, to: string): boolean {
+    if (!this.myRanges?.length) return false;
+
+    // normaliza a [min,max] en milisegundos (medianoche local)
+    const f = +new Date(from + 'T00:00:00');
+    const t = +new Date(to   + 'T00:00:00');
+    const selFrom = Math.min(f, t);
+    const selTo   = Math.max(f, t);
+
+    // merge de mis rangos (ordenados y unidos)
+    const merged = this.mergeRanges(
+      this.myRanges.map(r => {
+        const a = +new Date(r.from + 'T00:00:00');
+        const b = +new Date(r.to   + 'T00:00:00');
+        return { from: Math.min(a, b), to: Math.max(a, b) };
+      })
+    );
+
+    // ¿algún intervalo unido cubre completamente [selFrom, selTo]?
+    return merged.some(iv => iv.from <= selFrom && iv.to >= selTo);
+  }
+
+  /** Une rangos solapados/adyacentes (por día) */
+  private mergeRanges(ranges: { from: number; to: number }[]) {
+    if (!ranges.length) return ranges;
+    const dayMs = 24 * 60 * 60 * 1000;
+    const sorted = [...ranges].sort((a, b) => (a.from - b.from) || (a.to - b.to));
+    const out: { from: number; to: number }[] = [];
+    let cur = { ...sorted[0] };
+    for (let i = 1; i < sorted.length; i++) {
+      const r = sorted[i];
+      // unimos si hay solape o continuidad de 1 día
+      if (r.from <= cur.to + dayMs) {
+        cur.to = Math.max(cur.to, r.to);
+      } else {
+        out.push(cur);
+        cur = { ...r };
+      }
+    }
+    out.push(cur);
+    return out;
+  }
+
+  /** Descarga mis rangos en la misma ventana del calendario (mes actual + 18 meses) */
   private loadMyRanges() {
     const now = new Date();
     const from = new Date(now.getFullYear(), now.getMonth(), 1);
     const to   = new Date(from.getFullYear(), from.getMonth() + 18, 0);
-
     const ymd = (d: Date) =>
       `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 
@@ -108,14 +171,12 @@ export class ViajesComponent {
         this.myRanges = (res?.ok && Array.isArray(res.ranges)) ? res.ranges : [];
       },
       error: () => {
-        this.myRanges = []; // si no hay sesión o fallo, no pintamos nada propio
+        this.myRanges = []; // si no hay sesión/fallo, no pintamos
       },
     });
   }
 
-  /**
-   * Cambia el estado de guardado y lo limpia automáticamente tras 4s.
-   */
+  /** Maneja el estado del mensaje y lo limpia tras 4s */
   private setSaveState(state: SaveState) {
     this.saveState = state;
 
@@ -123,7 +184,6 @@ export class ViajesComponent {
       clearTimeout(this.saveMsgTimer);
       this.saveMsgTimer = null;
     }
-
     if (state !== 'idle') {
       this.saveMsgTimer = setTimeout(() => {
         this.saveState = 'idle';

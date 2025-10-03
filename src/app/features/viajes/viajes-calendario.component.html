@@ -1,118 +1,74 @@
-<!-- archivo: src/app/features/viajes/viajes-calendario.component.html -->
-<section class="cal-root" aria-labelledby="cal-heading">
-    <h3 id="cal-heading" class="cal-title">Disponibilidad para viajar en el próximo año y medio:</h3>
+<div class="cal-grid">
+  @for (mes of months(); track $index) {
+    <article class="cal-month" aria-label="{{ mes.monthName }} de {{ mes.year }}">
+      <header class="cal-month__header">
+        <h4 class="cal-month__title">{{ mes.monthName }} {{ mes.year }}</h4>
+      </header>
 
-    @if (loading()) {
-    <p class="cal-state">Cargando disponibilidad…</p>
-    } @else if (error()) {
-    <p class="cal-error" role="alert">{{ error() }}</p>
-    } @else {
-    <!-- Leyenda superior -->
-    <div class="cal-legend cal-legend--top" aria-hidden="true">
-        <strong>Número de viajeros interesados:</strong>
-        <span><i class="swatch tone-0"></i> 0</span>
-        <span><i class="swatch tone-1"></i> 1</span>
-        <span><i class="swatch tone-2"></i> 2–4</span>
-        <span><i class="swatch tone-3"></i> 5+</span>
-    </div>
+      <table class="cal-table" role="grid">
+        <thead>
+          <tr>
+            <th scope="col" abbr="Lunes">L</th>
+            <th scope="col" abbr="Martes">M</th>
+            <th scope="col" abbr="Miércoles">X</th>
+            <th scope="col" abbr="Jueves">J</th>
+            <th scope="col" abbr="Viernes">V</th>
+            <th scope="col" abbr="Sábado">S</th>
+            <th scope="col" abbr="Domingo">D</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (week of mes.weeks; track week[0].iso) {
+            <tr role="row">
+              @for (day of week; track day.iso) {
+                <td [class.is-outside]="!day.inMonth"
+                    [class.is-selected]="isSelected(day.date)"
+                    [class.is-in-range]="isRangeMiddle(day.date)">
+                  <div class="cell"
+                       [class.tone-0]="day.count === 0"
+                       [class.tone-1]="day.count === 1"
+                       [class.tone-2]="day.count >= 2 && day.count <= 4"
+                       [class.tone-3]="day.count >= 5"
+                       [class.is-mine]="isLoggedIn && isOwnDay(day.date)"
+                       role="button"
+                       [attr.tabindex]="day.inMonth ? 0 : null"
+                       (click)="onDayClick(day.date, monthId(mes.year, mes.monthIndex), day.inMonth)">
+                    <span class="num">{{ day.date.getDate() }}</span>
+                    @if (day.count > 0 && day.inMonth) { <span class="badge">{{ day.count }}</span> }
+                  </div>
+                </td>
+              }
+            </tr>
+          }
+        </tbody>
+      </table>
 
-    <div class="cal-grid">
-        @for (mes of months(); track mes.year + '-' + mes.monthIndex) {
-        <article class="cal-month" aria-label="{{ mes.monthName }} de {{ mes.year }}">
-            <header class="cal-month__header">
-                <h4 class="cal-month__title">{{ mes.monthName }} {{ mes.year }}</h4>
-            </header>
-
-            <table class="cal-table" role="grid">
-                <caption class="sr-only">Calendario de {{ mes.monthName }} {{ mes.year }}</caption>
-                <thead>
-                    <tr>
-                        <th scope="col" abbr="Lunes">L</th>
-                        <th scope="col" abbr="Martes">M</th>
-                        <th scope="col" abbr="Miércoles">X</th>
-                        <th scope="col" abbr="Jueves">J</th>
-                        <th scope="col" abbr="Viernes">V</th>
-                        <th scope="col" abbr="Sábado">S</th>
-                        <th scope="col" abbr="Domingo">D</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @for (week of mes.weeks; track week[0].iso) {
-                    <tr role="row">
-                        @for (day of week; track day.iso) {
-                        <td [class.is-outside]="!day.inMonth" [class.is-selected]="isSelected(day.date)"
-                            [class.is-in-range]="isRangeMiddle(day.date)" [attr.aria-label]="
-    (day.inMonth ? '' : 'Fuera de mes, ') +
-    (day.date.getDate()) + ' de ' + mes.monthName + ' de ' + mes.year +
-    '. Interesados: ' + day.count">
-                            <div class="cell" [class.tone-0]="day.count === 0" [class.tone-1]="day.count === 1"
-                                [class.tone-2]="day.count >= 2 && day.count <= 4" [class.tone-3]="day.count >= 5"
-                                [class.is-mine]="isLoggedIn && isOwnDay(day.date)" role="button"
-                                [attr.tabindex]="day.inMonth ? 0 : null"
-                                [attr.aria-pressed]="isSelected(day.date) ? 'true' : null"
-                                (click)="onDayClick(day.date, monthId(mes.year, mes.monthIndex), day.inMonth)"
-                                (keydown.enter)="onDayClick(day.date, monthId(mes.year, mes.monthIndex), day.inMonth)"
-                                (keydown.space)="onDayClick(day.date, monthId(mes.year, mes.monthIndex), day.inMonth)">
-                                <span class="num">{{ day.date.getDate() }}</span>
-                                @if (day.count > 0 && day.inMonth) {
-                                <span class="badge" aria-hidden="true">{{ day.count }}</span>
-                                }
-                            </div>
-                        </td>
-
-                        }
-                    </tr>
-                    }
-                </tbody>
-            </table>
-
-            <!-- AVISO para no logados -->
-            <p class="login-hint" *ngIf="!isLoggedIn && loginNoticeMonthId() === monthId(mes.year, mes.monthIndex)">
-                para añadir fechas debe tener un usuario logado
-            </p>
-
-            <!-- Acciones (mostrar sólo en primer/último mes del rango) -->
-            <ng-container *ngIf="selectedRange() as r">
-                <div class="cal-actions" *ngIf="isLoggedIn && isEdgeOfRangeMonth(mes.year, mes.monthIndex)">
-                    <ng-container *ngIf="saveState === 'idle'; else savedMsg">
-                        <button type="button" class="btn-save" (click)="emitSave()" [disabled]="saving">
-                            {{ saving ? 'Guardando…' : 'Guardar fechas' }}
-                        </button>
-                    </ng-container>
-                    <ng-template #savedMsg>
-                        <span class="save-result" role="status" [class.ok]="saveState==='ok'"
-                            [class.err]="saveState==='error'">
-                            {{ saveState==='ok' ? 'GUARDADO' : 'ERROR. CONTÁCTENOS' }}
-                        </span>
-                    </ng-template>
-
-                    <span class="range-label">
-                        {{ r.from | date:'dd/MM/yyyy' }} - {{ r.to | date:'dd/MM/yyyy' }}
-                    </span>
-                </div>
-
-
-
-            </ng-container>
-
-
-        </article>
-        }
-    </div>
-
-    <!-- ✅ Mensaje GLOBAL de resultado (una sola vez, fuera del for)  pte revisar si quitar y traducir-->
-    <p class="cal-state" [class.cal-error]="saveState === 'error'" role="status" *ngIf="saveState !== 'idle'">
-        {{ saveState === 'ok'
-        ? 'GUARDADO'
-        : 'ERROR. CONTÁCTENOS PARA MÁS INFO' }}
-    </p>
-
-    <!-- Leyenda inferior -->
-    <div class="cal-legend" aria-hidden="true">
-        <span><i class="swatch tone-0"></i> 0</span>
-        <span><i class="swatch tone-1"></i> 1</span>
-        <span><i class="swatch tone-2"></i> 2–4</span>
-        <span><i class="swatch tone-3"></i> 5+</span>
-    </div>
-    }
-</section>
+      <!-- Acciones: DENTRO del article del mes -->
+      <ng-container *ngIf="selectedRange() as r">
+        <div class="cal-actions" *ngIf="isLoggedIn && isEdgeOfRangeMonth(mes.year, mes.monthIndex)">
+          <ng-container *ngIf="saveState === 'idle'; else savedMsg">
+            <button type="button" class="btn-save" (click)="emitSave()" [disabled]="saving">
+              {{ saving ? 'Guardando…' : 'Guardar fechas' }}
+            </button>
+          </ng-container>
+          <ng-template #savedMsg>
+            <span class="save-result"
+                  role="status"
+                  [class.ok]="saveState==='ok'"
+                  [class.err]="saveState==='error'"
+                  [class.deleted]="saveState==='deleted'">
+              {{
+                saveState==='ok' ? 'GUARDADO'
+                : saveState==='deleted' ? 'ELIMINADO'
+                : 'ERROR. CONTÁCTENOS'
+              }}
+            </span>
+          </ng-template>
+          <span class="range-label">
+            {{ r.from | date:'dd/MM/yyyy' }} - {{ r.to | date:'dd/MM/yyyy' }}
+          </span>
+        </div>
+      </ng-container>
+    </article>
+  }
+</div>

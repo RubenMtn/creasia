@@ -1,79 +1,50 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-// archivo: src/app/features/viajes/viajes.api.ts
-// Servicio de acceso a la API de Viajes (conteo por día + rangos del usuario + guardar rango)
-
-import { inject, Injectable } from '@angular/core';
+// src/app/features/viajes/viajes.api.ts
+import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { getApiBase } from '../../core/api-base';
-
-export interface ViajesCountsResponse {
-  ok: boolean;
-  from: string; // YYYY-MM-DD
-  to: string;   // YYYY-MM-DD
-  counts: Record<string, number>;
-}
-
-export interface DateRange {
-  from: string; // YYYY-MM-DD
-  to: string;   // YYYY-MM-DD
-}
-
+import { Observable } from 'rxjs';
 
 export interface SaveRangePayload {
-  fecha_inicio: string; // YYYY-MM-DD
-  fecha_fin: string;    // YYYY-MM-DD
-  nota?: string | null;
-  tipo?: string | null; // 'flexible' | 'fijo' | ...
+  fecha_inicio: string;
+  fecha_fin: string;
+  nota: string | null;
+  tipo: string | null;
 }
-
-export interface SaveRangeResponse {
-  ok: boolean;
-  id?: number;
-  error?: string;
-}
+export interface SaveRangeResponse { ok: boolean; error?: string; }
+export interface CountsResponse { ok: boolean; counts?: Record<string, number>; }
+export interface MyRangesResponse { ok: boolean; ranges?: { from: string; to: string }[]; }
 
 @Injectable({ providedIn: 'root' })
 export class ViajesApi {
   private http = inject(HttpClient);
 
-  // En prod: '/api', en dev: 'https://creasia.es/api'
-  private readonly API_BASE = getApiBase();
-  // Prefijo del módulo "viajes"
-  private readonly BASE = `${this.API_BASE}/viajes`;
+  private readonly API =
+    location.hostname === 'localhost' || location.hostname === '127.0.0.1'
+      ? 'https://creasia.es/api'
+      : '/api';
 
-  /** Obtiene conteos por día en la ventana indicada (fechas ISO). */
-  getCounts(fromISO?: string, toISO?: string) {
-    const params: Record<string, string> = {};
-    if (fromISO) params['from'] = fromISO;
-    if (toISO) params['to'] = toISO;
-
-    // ✅ Ojo: SIN duplicar "/viajes"
-    return this.http.get<ViajesCountsResponse>(`${this.BASE}/fechas_counts.php`, {
-      params,
-      withCredentials: true,
+  getCounts(from: string, to: string): Observable<CountsResponse> {
+    return this.http.get<CountsResponse>(`${this.API}/viajes/fechas_counts.php`, {
+      params: { from, to },
+      withCredentials: true,               // ← coherencia
     });
   }
 
-  /** Obtiene los rangos guardados por el usuario logado dentro de una ventana. */
-  getMyRanges(fromISO: string, toISO: string) {
-    const params = { from: fromISO, to: toISO };
-
-    // ✅ Ojo: SIN duplicar "/viajes"
-    return this.http.get<{ ok: boolean; ranges: DateRange[] }>(
-      `${this.BASE}/fechas_my_ranges.php`,
-      { params, withCredentials: true }
-    );
+  getMyRanges(from: string, to: string): Observable<MyRangesResponse> {
+    return this.http.get<MyRangesResponse>(`${this.API}/viajes/fechas_my_ranges.php`, {
+      params: { from, to },
+      withCredentials: true,               // ← importante
+    });
   }
 
-  /**
-   * Guarda un rango de fechas del usuario (requiere sesión).
-   * Envía: { fecha_inicio, fecha_fin, nota?, tipo? }
-   */
-  saveRange(payload: SaveRangePayload) {
-    return this.http.post<SaveRangeResponse>(
-      `${this.BASE}/fechas_save_range.php`,
-      payload,
-      { withCredentials: true }
-    );
+  saveRange(body: SaveRangePayload): Observable<SaveRangeResponse> {
+    return this.http.post<SaveRangeResponse>(`${this.API}/viajes/fechas_save_range.php`, body, {
+      withCredentials: true,               // ← IMPRESCINDIBLE
+    });
+  }
+
+  deleteRange(body: SaveRangePayload): Observable<SaveRangeResponse> {
+    return this.http.post<SaveRangeResponse>(`${this.API}/viajes/fechas_delete_range.php`, body, {
+      withCredentials: true,               // ← IMPRESCINDIBLE
+    });
   }
 }

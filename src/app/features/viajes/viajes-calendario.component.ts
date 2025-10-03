@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 // archivo: src/app/features/viajes/viajes-calendario.component.ts
 import {
   ChangeDetectionStrategy,
@@ -61,7 +60,8 @@ export class ViajesCalendarioComponent implements OnChanges {
 
   // ── Inputs del padre ─────────────────────────────────────────────────────────
   @Input() isLoggedIn = false;
-  @Input() saveState: 'ok' | 'error' | 'idle' = 'idle';
+  @Input() saveState: 'ok' | 'error' | 'idle' | 'deleted' = 'idle';
+  
   @Input() myRanges: { from: string; to: string }[] = []; // rangos propios (borde amarillo)
   @Input() saving = false;
 
@@ -311,17 +311,17 @@ export class ViajesCalendarioComponent implements OnChanges {
 
   // ⇩⇩ dentro de export class ViajesCalendarioComponent { ... }
 isEdgeOfRangeMonth(year: number, monthIndex: number): boolean {
-  const r = this.selectedRange();
+  const r = this.selectedRange?.();
   if (!r) return false;
 
-  const first = this.monthId(r.from.getFullYear(), r.from.getMonth());
-  const last  = this.monthId(r.to.getFullYear(), r.to.getMonth());
-  const current = this.monthId(year, monthIndex);
+  const firstMonthId = this.monthId(r.from.getFullYear(), r.from.getMonth());
+  const lastMonthId  = this.monthId(r.to.getFullYear(),   r.to.getMonth());
+  const current      = this.monthId(year, monthIndex);
 
-  // Si el rango está en un único mes, muestra solo en ese mes;
-  // si abarca varios, muestra en el primer y en el último mes.
-  return (first === last) ? (current === first) : (current === first || current === last);
+  if (firstMonthId === lastMonthId) return current === firstMonthId;
+  return current === firstMonthId || current === lastMonthId;
 }
+
 
 
 
