@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // archivo: src/app/features/viajes/viajes.component.ts
 
-import { Component, inject, OnDestroy } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TPipe } from '../../shared/i18n/t.pipe';
 import { ViajesCalendarioComponent } from './viajes-calendario.component';
@@ -18,34 +18,44 @@ type SaveState = 'idle' | 'ok' | 'error';
   templateUrl: './viajes.component.html',
   styleUrl: './viajes.component.scss'
 })
-export class ViajesComponent implements OnDestroy {
-  // ——— Inyecciones ———
+export class ViajesComponent {
   private viajesApi = inject(ViajesApi);
   private session = inject(UserSessionService);
 
-  // ——— Estado de login compartido (signal) ———
+  // Estado de login compartido (signal)
   readonly isLoggedInSig = this.session.isLoggedIn;
 
-  // ——— Estado UI de guardado (para mostrar el mensaje OK/KO en el hijo) ———
+  // Estado de guardado (para mostrar mensaje en el hijo)
   saveState: SaveState = 'idle';
   private saveMsgTimer: any = null;
 
-  // ——— Flag para deshabilitar el botón mientras se guarda ———
-  saving = false;
+  // Flag de guardado (para deshabilitar botón y evitar que reaparezca)
+  isSaving = false;
+
+  // Rangos propios del socio logado (pintan borde amarillo)
+  myRanges: { from: string; to: string }[] = [];
+
+  // “Ticks” que el padre pasa al hijo para forzar acciones concretas
+  clearSelectionTick = 0;  // limpiar selección en el hijo
+  reloadCountsTick = 0;    // recargar counts (relleno + números)
+  lastSavedRange: { from: string; to: string } | null = null; // opcional, por si deseas usarlo
+
+  constructor() {
+    // Cargamos rangos propios al entrar
+    this.loadMyRanges();
+  }
 
   /**
-   * Maneja el evento del hijo, guarda en la API y actualiza el estado de UI.
-   * - Mapea { from, to } -> { fecha_inicio, fecha_fin } que espera el backend.
-   * - Controla "saving" para deshabilitar el botón.
-   * - Fija saveState a 'ok' | 'error' y lo limpia a los 4s.
+   * Recibe el rango del hijo y guarda en API.
+   * Mapea { from, to } -> contrato backend { fecha_inicio, fecha_fin }.
+   * Tras guardar: muestra OK, limpia selección, recarga counts y refresca myRanges.
    */
   onSaveDates(e: { from: string; to: string }) {
     if (!e?.from || !e?.to) return;
 
-    // Limpia mensajes previos
     this.setSaveState('idle');
+    this.isSaving = true;
 
-    // Prepara payload backend
     const payload: SaveRangePayload = {
       fecha_inicio: e.from,
       fecha_fin: e.to,
@@ -53,52 +63,72 @@ export class ViajesComponent implements OnDestroy {
       tipo: null,
     };
 
-    // Marca guardando
-    this.saving = true;
-
-    // Llamada a API
     this.viajesApi.saveRange(payload).subscribe({
       next: (res) => {
-        this.setSaveState(res?.ok ? 'ok' : 'error');
+        if (res?.ok) {
+          this.setSaveState('ok');
+
+          // Marca último guardado (si lo quieres para algo)
+          this.lastSavedRange = { from: e.from, to: e.to };
+
+          // 1) Limpia selección en el hijo (evita que vuelva a salir el botón)
+          this.clearSelectionTick++;
+
+          // 2) Recarga de counts para reflejar relleno + número de interesados
+          this.reloadCountsTick++;
+
+          // 3) Refresca mis rangos (borde amarillo) desde el backend
+          this.loadMyRanges();
+        } else {
+          this.setSaveState('error');
+        }
+        this.isSaving = false;
       },
       error: () => {
         this.setSaveState('error');
-      },
-      complete: () => {
-        // Rehabilita el botón
-        this.saving = false;
+        this.isSaving = false;
       },
     });
   }
 
   /**
-   * Cambia el estado de guardado y lo limpia automáticamente tras unos segundos.
+   * Descarga los rangos del socio logado en la ventana del calendario
+   * (mes actual hasta +18 meses).
+   */
+  private loadMyRanges() {
+    const now = new Date();
+    const from = new Date(now.getFullYear(), now.getMonth(), 1);
+    const to   = new Date(from.getFullYear(), from.getMonth() + 18, 0);
+
+    const ymd = (d: Date) =>
+      `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+
+    this.viajesApi.getMyRanges(ymd(from), ymd(to)).subscribe({
+      next: (res: any) => {
+        this.myRanges = (res?.ok && Array.isArray(res.ranges)) ? res.ranges : [];
+      },
+      error: () => {
+        this.myRanges = []; // si no hay sesión o fallo, no pintamos nada propio
+      },
+    });
+  }
+
+  /**
+   * Cambia el estado de guardado y lo limpia automáticamente tras 4s.
    */
   private setSaveState(state: SaveState) {
     this.saveState = state;
 
-    // Cancelar temporizador previo si existiera
     if (this.saveMsgTimer) {
       clearTimeout(this.saveMsgTimer);
       this.saveMsgTimer = null;
     }
 
-    // Ocultar mensaje tras 4s (si no está en 'idle')
     if (state !== 'idle') {
       this.saveMsgTimer = setTimeout(() => {
         this.saveState = 'idle';
         this.saveMsgTimer = null;
       }, 4000);
-    }
-  }
-
-  /**
-   * Limpieza del temporizador para evitar fugas al destruir el componente.
-   */
-  ngOnDestroy(): void {
-    if (this.saveMsgTimer) {
-      clearTimeout(this.saveMsgTimer);
-      this.saveMsgTimer = null;
     }
   }
 }

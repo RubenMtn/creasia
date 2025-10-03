@@ -42,13 +42,13 @@
                         @for (day of week; track day.iso) {
                         <td [class.is-outside]="!day.inMonth" [class.is-selected]="isSelected(day.date)"
                             [class.is-in-range]="isRangeMiddle(day.date)" [attr.aria-label]="
-                            (day.inMonth ? '' : 'Fuera de mes, ') +
-                            (day.date.getDate()) + ' de ' + mes.monthName + ' de ' + mes.year +
-                            '. Interesados: ' + day.count
-                          ">
+    (day.inMonth ? '' : 'Fuera de mes, ') +
+    (day.date.getDate()) + ' de ' + mes.monthName + ' de ' + mes.year +
+    '. Interesados: ' + day.count">
                             <div class="cell" [class.tone-0]="day.count === 0" [class.tone-1]="day.count === 1"
                                 [class.tone-2]="day.count >= 2 && day.count <= 4" [class.tone-3]="day.count >= 5"
-                                role="button" [attr.tabindex]="day.inMonth ? 0 : null"
+                                [class.is-mine]="isLoggedIn && isOwnDay(day.date)" role="button"
+                                [attr.tabindex]="day.inMonth ? 0 : null"
                                 [attr.aria-pressed]="isSelected(day.date) ? 'true' : null"
                                 (click)="onDayClick(day.date, monthId(mes.year, mes.monthIndex), day.inMonth)"
                                 (keydown.enter)="onDayClick(day.date, monthId(mes.year, mes.monthIndex), day.inMonth)"
@@ -59,6 +59,7 @@
                                 }
                             </div>
                         </td>
+
                         }
                     </tr>
                     }
@@ -67,30 +68,31 @@
 
             <!-- AVISO para no logados -->
             <p class="login-hint" *ngIf="!isLoggedIn && loginNoticeMonthId() === monthId(mes.year, mes.monthIndex)">
-                para guardar fechas debe tener un usuario logado
+                para añadir fechas debe tener un usuario logado
             </p>
 
             <!-- Acciones (mostrar sólo en primer/último mes del rango) -->
             <ng-container *ngIf="selectedRange() as r">
                 <div class="cal-actions" *ngIf="isLoggedIn && isEdgeOfRangeMonth(mes.year, mes.monthIndex)">
-  <ng-container *ngIf="saveState === 'idle'; else savedMsg">
-    <button type="button" class="btn-save" (click)="emitSave()" [disabled]="saving">
-      {{ saving ? 'Guardando…' : 'Guardar fechas' }}
-    </button>
-  </ng-container>
-  <ng-template #savedMsg>
-    <span class="save-result" role="status" [class.ok]="saveState==='ok'" [class.err]="saveState==='error'">
-      {{ saveState==='ok' ? 'GUARDADO' : 'ERROR. CONTÁCTENOS' }}
-    </span>
-  </ng-template>
+                    <ng-container *ngIf="saveState === 'idle'; else savedMsg">
+                        <button type="button" class="btn-save" (click)="emitSave()" [disabled]="saving">
+                            {{ saving ? 'Guardando…' : 'Guardar fechas' }}
+                        </button>
+                    </ng-container>
+                    <ng-template #savedMsg>
+                        <span class="save-result" role="status" [class.ok]="saveState==='ok'"
+                            [class.err]="saveState==='error'">
+                            {{ saveState==='ok' ? 'GUARDADO' : 'ERROR. CONTÁCTENOS' }}
+                        </span>
+                    </ng-template>
 
-  <span class="range-label">
-    {{ r.from | date:'dd/MM/yyyy' }} - {{ r.to | date:'dd/MM/yyyy' }}
-  </span>
-</div>
+                    <span class="range-label">
+                        {{ r.from | date:'dd/MM/yyyy' }} - {{ r.to | date:'dd/MM/yyyy' }}
+                    </span>
+                </div>
 
 
- 
+
             </ng-container>
 
 

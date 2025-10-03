@@ -10,9 +10,18 @@
       <p>{{ 'viajes.section1.body1' | t }}</p>
     </section>
 
-    <!-- IMPORTANTE: Pasar el login real de la señal compartida -->
-    <app-viajes-calendario [isLoggedIn]="isLoggedInSig()" [saveState]="saveState" (saveDates)="onSaveDates($event)">
-    </app-viajes-calendario>
+<app-viajes-calendario
+  [isLoggedIn]="isLoggedInSig()"
+  [saveState]="saveState"
+  [saving]="isSaving"
+  [myRanges]="myRanges"
+  [lastSavedRange]="lastSavedRange"
+  [clearSelectionTick]="clearSelectionTick"
+  [reloadCountsTick]="reloadCountsTick"
+  (saveDates)="onSaveDates($event)">
+</app-viajes-calendario>
+
+
 
     <section class="viajes-section" aria-labelledby="travel-wonders">
       <h3 class="viajes-section__title" id="travel-wonders">{{ 'viajes.section2.title' | t }}</h3>
