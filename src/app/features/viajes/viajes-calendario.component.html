@@ -36,8 +36,14 @@
           @for (day of week; track day.iso) {
           <td [class.is-outside]="!day.inMonth" [class.is-selected]="isSelected(day.date)"
             [class.is-in-range]="isRangeMiddle(day.date)">
-            <div class="cell" [class.tone-0]="day.count === 0" [class.tone-1]="day.count === 1"
-              [class.tone-2]="day.count >= 2 && day.count <= 4" [class.tone-3]="day.count >= 5"
+            <div class="cell" [class.tone-0]="day.count === 0" 
+              [class.tone-1]="day.count === 1"
+              [class.tone-2]="day.count === 2"
+              [class.tone-3]="day.count === 3"
+              [class.tone-4]="day.count === 4"
+              [class.tone-5]="day.count === 5"
+              [class.tone-6]="day.count >= 6 && day.count <= 9" 
+              [class.tone-7]="day.count >= 10"
               [class.is-mine]="isLoggedIn && isOwnDay(day.date)" role="button" [attr.tabindex]="day.inMonth ? 0 : null"
               (click)="onDayClick(day.date, monthId(mes.year, mes.monthIndex), day.inMonth)">
               <span class="num">{{ day.date.getDate() }}</span>

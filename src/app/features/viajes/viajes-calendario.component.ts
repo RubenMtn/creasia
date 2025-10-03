@@ -12,6 +12,7 @@ import {
   OnChanges,
   SimpleChanges,
   PLATFORM_ID,
+  HostListener,
 } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { ViajesApi } from './viajes.api';
@@ -80,6 +81,10 @@ export class ViajesCalendarioComponent implements OnChanges {
   // ── Salidas ──────────────────────────────────────────────────────────────────
   @Output() saveDates = new EventEmitter<{ from: string; to: string }>();
 
+
+  // Hay selección en curso (aunque sea solo el día inicial)
+  private hasAnySelection = false; // ← NUEVO
+
   // Selección actual
   private selectionStart = signal<Date | null>(null);
   private selectionEnd = signal<Date | null>(null);
@@ -136,11 +141,30 @@ export class ViajesCalendarioComponent implements OnChanges {
     }
   }
 
+  /** Limpia la selección si se hace clic fuera de la tabla/calendario (no en botones) */
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(ev: MouseEvent) {
+    if (!this.isLoggedIn) return;
+    const el = ev.target as HTMLElement | null;
+    // No limpiar si haces clic dentro del grid o en las acciones (botón Guardar/Eliminar)
+    if (el && (el.closest('.cal-table') || el.closest('.cal-actions'))) return;
+
+    if (this.hasAnySelection) this.clearSelection();
+  }
+
+  @HostListener('document:keydown.escape')
+  onEsc() {
+    if (this.isLoggedIn && this.hasAnySelection) this.clearSelection();
+  }
+
+
+
   // ── API pública para el padre (optimismo / consolidación) ────────────────────
   /** Limpia la selección actual (para que no vuelva a salir el botón) */
   public clearSelection(): void {
     this.selectionStart.set(null);
     this.selectionEnd.set(null);
+    this.hasAnySelection = false;
   }
 
   /** Sustituye los conteos desde el padre (tras relectura del servidor) */
@@ -282,6 +306,10 @@ export class ViajesCalendarioComponent implements OnChanges {
 
     const s = this.selectionStart();
     const e = this.selectionEnd();
+
+    // Tras establecer el inicio o actualizar el rango:
+    this.hasAnySelection = true; // ← NUEVO
+
     if (!s) {
       this.selectionStart.set(day);
       this.selectionEnd.set(null);

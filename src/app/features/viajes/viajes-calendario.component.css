@@ -180,19 +180,32 @@
   background: #ffffff !important;
   color: #111 !important;
 }
-
 .cal-table .tone-1 {
   background: #ffe466 !important;
   color: #111 !important;
 }
-
 .cal-table .tone-2 {
-  background: #ffd400 !important;
+  background: #EFCF52 !important;
   color: #111 !important;
 }
-
 .cal-table .tone-3 {
+  background: #DFBA3E !important;
+  color: #111 !important;
+}
+.cal-table .tone-4 {
   background: goldenrod !important;
+  color: #111 !important;
+}
+.cal-table .tone-5 {
+  background: #C89B1F !important;
+  color: #111 !important;
+}
+.cal-table .tone-6 {
+  background: #C09015 !important;
+  color: #111 !important;
+}
+.cal-table .tone-7 {
+  background: darkgoldenrod !important;
   color: #111 !important;
 }
 
@@ -266,11 +279,27 @@
 }
 
 .cal-legend .tone-2 {
-  background: #ffd400;
+  background: #EFCF52;
 }
 
 .cal-legend .tone-3 {
+  background: #DFBA3E;
+}
+
+.cal-legend .tone-4 {
+  background: #C89B1F;
+}
+
+.cal-legend .tone-5 {
   background: goldenrod;
+}
+
+.cal-legend .tone-6 {
+  background: #C09015;
+}
+
+.cal-legend .tone-7 {
+  background: darkgoldenrod;
 }
 
 .cal-legend--top {
