@@ -12,14 +12,16 @@ import {
   QueryList,
   ViewChild,
   ViewChildren,
-  HostListener
+  HostListener,
+  OnInit,
+  PLATFORM_ID
 } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { fromEvent } from 'rxjs';
 import { TPipe } from '../../shared/i18n/t.pipe';
 import { CarouselComponent } from "../../shared/ui/carousel/carousel.component";
 import { AnimationPhase, LinkAnchor, LinkItem, FacePoint, HERO_FRAME_ASPECT, HERO_TIMING, HERO_FACE_POINTS, HERO_LINKS, HERO_SLIDES } from './home-hero.config';
-
+import { isPlatformBrowser } from '@angular/common';
 
 // [02] Tipos derivados internos que usan la configuracion importada.
 interface ScaledFacePoint extends FacePoint {
@@ -45,7 +47,16 @@ interface Connector {
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss'
 })
-export class HomeComponent implements AfterViewInit, OnDestroy {
+export class HomeComponent implements AfterViewInit, OnDestroy, OnInit {
+
+  // PTE, QUITAR:
+  private platformId = inject(PLATFORM_ID);
+  ngOnInit(): void {
+    if (isPlatformBrowser(this.platformId)) {
+      window.alert('👋 Página en construcción. En breve estaremos operativos!');
+    }
+  }
+
   @ViewChild('mediaWrap', { static: true })
   private readonly mediaWrapRef!: ElementRef<HTMLDivElement>;
 
@@ -305,18 +316,18 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
   }
 
   private isInteractiveTarget(element: Element | null): boolean {
-  if (!element) return false;
+    if (!element) return false;
 
-  // Considera interactivo TODO lo que ocurra dentro del carrusel:
-  if (element.closest('app-carousel, .carousel, .img-slide, .slide-link-overlay, [role="button"]')) {
-    return true;
+    // Considera interactivo TODO lo que ocurra dentro del carrusel:
+    if (element.closest('app-carousel, .carousel, .img-slide, .slide-link-overlay, [role="button"]')) {
+      return true;
+    }
+
+    // El resto: elementos naturalmente interactivos
+    return !!element.closest('a, button, input, textarea, select, [contenteditable], [role="link"]');
   }
 
-  // El resto: elementos naturalmente interactivos
-  return !!element.closest('a, button, input, textarea, select, [contenteditable], [role="link"]');
-}
 
-  
   // [11] Administra la cola de fases (conectores/puntos) y asegura su ejecucion ordenada.
   private preparePhases(order: AnimationPhase[]): void {
     this.phaseQueue = [...order];
