@@ -1,6 +1,8 @@
+// archivo: src/main.ts
+// Arranque de la app. NOTA: el interceptor ya se registra en app.config.ts.
+// Aquí NO lo volvemos a registrar para evitar duplicidades.
+
 import { bootstrapApplication } from '@angular/platform-browser';
-import { provideHttpClient, withInterceptors } from '@angular/common/http';
-import { authInterceptor } from './app/interceptors/auth.interceptor';
 import { App } from './app/app.component';
 import { appConfig } from './app/app.config';
 
@@ -8,6 +10,6 @@ bootstrapApplication(App, {
   ...appConfig,
   providers: [
     ...(appConfig.providers ?? []),
-    provideHttpClient(withInterceptors([authInterceptor])),
+    // Importante: ya NO añadimos provideHttpClient(withInterceptors(...)) aquí
   ],
 });

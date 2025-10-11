@@ -7,6 +7,8 @@ import { LangSwitcherComponent } from '../../shared/i18n/lang-switcher.component
 import { TPipe } from '../../shared/i18n/t.pipe';
 import { UserSessionService } from '../../services/user-session.service';
 import { SociosService } from '../../services/socios.service';
+import { HttpClient } from '@angular/common/http';
+
 
 interface MenuItem {
   labelKey: string;
@@ -34,6 +36,7 @@ export class HeaderComponent {
 
   private readonly session = inject(UserSessionService);
   private readonly socios = inject(SociosService);
+  private readonly http = inject(HttpClient);
 
   readonly userName = this.session.userName;
   readonly userInitials = this.session.userInitials;
@@ -43,7 +46,6 @@ export class HeaderComponent {
   private langSwitcher?: LangSwitcherComponent;
 
   readonly userMenuOpen = signal(false);
-
   readonly headerKey = signal('header.brand');
   readonly isHome = signal(true);
   readonly menuOpen = signal(false);
@@ -134,7 +136,7 @@ export class HeaderComponent {
     if (option === '1') {
       this.goToProfile();
     } else if (option === '2') {
-      this.socios.logout();
+      this.http.post('https://creasia.es/api/auth/logout.php', {}, { withCredentials: true }).subscribe({ next: () => this.session.clearLogin(), error: () => this.session.clearLogin() });
     }
   }
 
@@ -342,7 +344,6 @@ export class HeaderComponent {
       if (element instanceof HTMLInputElement && (element.type === 'checkbox' || element.type === 'radio')) {
         entry.checked = element.checked;
       }
-
       return entry;
     });
   }
@@ -382,23 +383,3 @@ export class HeaderComponent {
     }
   }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
