@@ -12,6 +12,7 @@ type AuthTokenPersistence = 'session' | 'both' | 'none';
 @Injectable({ providedIn: 'root' })
 export class UserSessionService implements OnDestroy {
   private static readonly USER_NAME_KEY = 'creasia:userName';
+  private static readonly USER_MAIL_KEY = 'creasia:userEmail';
   private static readonly LOGIN_FLAG_KEY = 'creasia:isLoggedIn';
   private static readonly AUTH_TOKEN_KEY = 'authToken';
 
@@ -139,6 +140,9 @@ export class UserSessionService implements OnDestroy {
       } catch {}
       try {
         localStorage.removeItem(UserSessionService.LOGIN_FLAG_KEY);
+      } catch {}
+      try {
+        localStorage.removeItem(UserSessionService.USER_MAIL_KEY);
       } catch {}
     }
 

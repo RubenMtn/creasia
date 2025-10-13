@@ -1,4 +1,5 @@
-﻿/* eslint no-empty: ["error", { "allowEmptyCatch": true }] */
+﻿/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint no-empty: ["error", { "allowEmptyCatch": true }] */
 import { Component, ElementRef, HostListener, ViewChild, inject, signal } from '@angular/core';
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { filter } from 'rxjs/operators';
@@ -271,28 +272,18 @@ export class HeaderComponent {
     this.menuOffsets.set({ top, bottom });
   }
 
-  private restartAnimation(): void {
-    if (typeof window === 'undefined') return;
-
-    const currentUrl = this.router.url;
-    const isOnHome = this.isHome();
-
-    if (!isOnHome) {
-      this.storeReturnState(currentUrl);
-
-      const queryParams: Record<string, string> = {};
-      if (currentUrl && currentUrl !== '/') {
-        queryParams['returnUrl'] = encodeURIComponent(currentUrl);
-      }
-
-      const tree = this.router.createUrlTree(['/'], { queryParams });
-      window.location.href = this.router.serializeUrl(tree);
-      return;
-    }
-
-    const tree = this.router.createUrlTree(['/']);
-    window.location.href = this.router.serializeUrl(tree);
+private restartAnimation(): void {
+  if (typeof window === 'undefined') return;
+  try { sessionStorage.setItem('creasia:forceIntro', '1'); } catch {}
+  const currentUrl = this.router.url;
+  const queryParams: any = { intro: '1' };
+  if (!this.isHome() && currentUrl && currentUrl !== '/') {
+    this.storeReturnState(currentUrl);
+    queryParams.returnUrl = encodeURIComponent(currentUrl);
   }
+  void this.router.navigate(['/'], { queryParams });
+}
+
 
   private storeReturnState(originUrl: string): void {
     if (typeof window === 'undefined') return;
