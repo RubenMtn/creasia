@@ -16,6 +16,7 @@ interface WhoAmI {
   mail?: string;
   user?: { name?: string; email?: string } | null;
   session_vars?: { email?: string; nombre?: string; name?: string } | null;
+  session_id?: string; // solo informativo (no determina login)
 }
 
 interface MeSocio {
@@ -73,7 +74,7 @@ async function safeJson(res: Response): Promise<unknown | null> {
   return null;
 }
 
-/** Parsers tipados para usar realmente las interfaces (evita "unused") */
+/** Parsers tipados */
 function parseWhoAmI(input: unknown): WhoAmI | null {
   if (!isRecord(input)) return null;
 
@@ -104,6 +105,7 @@ function parseWhoAmI(input: unknown): WhoAmI | null {
           name: toStringOrNull(sessRec['name']) ?? undefined,
         }
       : null,
+    session_id: toStringOrNull(input['session_id']) ?? undefined, // informativo
   };
 
   return who;
@@ -112,7 +114,6 @@ function parseWhoAmI(input: unknown): WhoAmI | null {
 function parseMeResponse(input: unknown): MeResponse | null {
   if (!isRecord(input)) return null;
 
-  // Preferimos .socio o .data; si no existen, intentamos el propio objeto como socio
   const socioRec = isRecord(input['socio'])
     ? (input['socio'] as Record<string, unknown>)
     : isRecord(input['data'])
@@ -140,6 +141,7 @@ async function bootstrapSession(): Promise<void> {
   if (typeof window === 'undefined') return;
 
   const api = getApiBase();
+
   let logged = false;
   let name: string | null = null;
   let email: string | null = null;
@@ -156,11 +158,16 @@ async function bootstrapSession(): Promise<void> {
       const raw = await safeJson(res);
 
       if (typeof raw === 'string') {
+        // Si el backend devolviera un string simple, lo interpretamos de forma laxa
         logged = toBooleanLoose(raw);
       } else {
         const who = parseWhoAmI(raw);
         if (who) {
-          const hasUid = typeof who.uid === 'number' || (typeof who.uid === 'string' && who.uid.trim().length > 0);
+          const hasUid =
+            typeof who.uid === 'number' ||
+            (typeof who.uid === 'string' && who.uid.trim().length > 0);
+
+          // ✅ SOLO consideramos login si el servidor lo indica o hay uid:
           logged =
             toBooleanLoose(who.ok) ||
             toBooleanLoose(who.logged) ||
@@ -202,11 +209,15 @@ async function bootstrapSession(): Promise<void> {
         const me = parseMeResponse(meRaw);
 
         if (me) {
-          const fullName = [
-            me.socio?.nombre ?? me.socio?.name ?? null,
-            me.socio?.apellido1 ?? null,
-            me.socio?.apellido2 ?? null
-          ].filter(Boolean).join(' ').trim() || null;
+          const fullName =
+            [
+              me.socio?.nombre ?? me.socio?.name ?? null,
+              me.socio?.apellido1 ?? null,
+              me.socio?.apellido2 ?? null,
+            ]
+              .filter(Boolean)
+              .join(' ')
+              .trim() || null;
 
           if (!name)  name  = fullName;
           if (!email) email = me.socio?.email ?? null;
@@ -223,20 +234,23 @@ async function bootstrapSession(): Promise<void> {
       if (email) localStorage.setItem('creasia:userEmail', email);
     } else {
       localStorage.removeItem('creasia:isLoggedIn');
-      // el resto se limpia en logout explícito
+      // userName/userEmail se limpian en logout explícito
     }
   } catch { /* ignorado */ }
 
   // 4) Evento global para UserSessionService
   try {
-    window.dispatchEvent(new CustomEvent<{ logged: boolean; name: string | null; email: string | null }>('creasia:user-updated', {
-      detail: { logged, name, email }
-    }));
+    window.dispatchEvent(
+      new CustomEvent<{ logged: boolean; name: string | null; email: string | null }>(
+        'creasia:user-updated',
+        { detail: { logged, name, email } }
+      )
+    );
   } catch { /* ignorado */ }
 }
 
 export const sessionInitProvider: Provider = {
   provide: APP_INITIALIZER,
   multi: true,
-  useFactory: () => () => bootstrapSession()
+  useFactory: () => () => bootstrapSession(),
 };

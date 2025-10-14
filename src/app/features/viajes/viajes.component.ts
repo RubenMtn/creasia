@@ -51,18 +51,18 @@ export class ViajesComponent {
   // opcional, info del último guardado/eliminado
   lastSavedRange: { from: string; to: string } | null = null;
 
-constructor() {
-  if (this.isBrowser) {
-    this.loadMyRanges();
+  constructor() {
+    if (this.isBrowser) {
+      this.loadMyRanges();
 
-    /* PruebaPte: reactividad a login SOLO en navegador */
-    effect(() => {
-      const logged = this.isLoggedInSig();
-      if (logged) this.loadMyRanges();
-      else this.myRanges = [];
-    });
+      /* PruebaPte: reactividad a login SOLO en navegador */
+      effect(() => {
+        const logged = this.isLoggedInSig();
+        if (logged) this.loadMyRanges();
+        else this.myRanges = [];
+      });
+    }
   }
-}
 
   /**
    * Recibe el rango del calendario y decide:
@@ -193,6 +193,16 @@ constructor() {
     const to = new Date(from.getFullYear(), from.getMonth() + 18, 0);
     const ymd = (d: Date) =>
       `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+
+    // ⬇️ INSERTAR AL INICIO DE loadMyRanges()
+    if (!this.session.isLoggedIn || (typeof this.session.isLoggedIn === 'function' && !this.session.isLoggedIn())) {
+      // Sin login → no llamamos al API; reseteamos borde rojo / mis rangos
+      // Si usas señales:
+      if ((this as any).myRanges?.set) { (this as any).myRanges.set([]); }
+      // Si usas propiedad normal:
+      if ((this as any).myRanges && Array.isArray((this as any).myRanges)) { (this as any).myRanges = []; }
+      return;
+    }
 
     this.viajesApi.getMyRanges(ymd(from), ymd(to)).subscribe({
       next: (res: any) => {

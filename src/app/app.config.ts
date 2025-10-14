@@ -13,19 +13,21 @@ import { sessionInitProvider } from './core/session-init.provider';
 
 export const appConfig: ApplicationConfig = {
   providers: [
-    // Interceptor de auth (Bearer/JWT). Lo mantenemos aquí como ÚNICO registro.
-    provideHttpClient(withInterceptors([authInterceptor])),
-
-    // Backend de fetch (se puede combinar con el interceptor)
-    provideHttpClient(withFetch()),
-
-    // Listeners globales y router
+    // Listeners globales y rendimiento
     provideBrowserGlobalErrorListeners(),
     provideZoneChangeDetection({ eventCoalescing: true }),
+
+    // Router + Hydration
     provideRouter(routes),
     provideClientHydration(withEventReplay()),
 
-    // Nuevo: sincronización inicial de sesión (diagnóstico + preparación de UI)
+    // HttpClient: una ÚNICA provisión combinada (fetch + interceptor)
+    provideHttpClient(
+      withFetch(),
+      withInterceptors([authInterceptor]),
+    ),
+
+    // Sincronización inicial de sesión (diagnóstico + preparación de UI)
     sessionInitProvider,
   ],
 };

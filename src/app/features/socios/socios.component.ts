@@ -263,67 +263,88 @@ export class SociosComponent implements OnInit, OnDestroy {
     });
   }
 
-  onLoginSubmit(event: Event): void {
-    event.preventDefault();
-    this.clearMessages();
+onLoginSubmit(event: Event): void {
+  event.preventDefault();
+  this.clearMessages();
 
-    const form = event.target as HTMLFormElement;
-    const email = (form.elements.namedItem('loginEmail') as HTMLInputElement)?.value.trim();
-    const password = (form.elements.namedItem('loginPassword') as HTMLInputElement)?.value;
+  const form = event.target as HTMLFormElement;
+  const email = (form.elements.namedItem('loginEmail') as HTMLInputElement)?.value.trim();
+  const password = (form.elements.namedItem('loginPassword') as HTMLInputElement)?.value;
 
-    if (!email || !password) { this.error = 'socios.errors.emailAndPasswordRequired'; return; }
-
-    const isLogged = localStorage.getItem('creasia:isLoggedIn') === '1';
-    const storedEmail = (localStorage.getItem('creasia:userEmail') || '').trim().toLowerCase();
-    if (isLogged && storedEmail && email.trim().toLowerCase() === storedEmail) {
-      this.error = 'socios.errors.alreadyLoggedIn';
-      return;
-    }
-
-    this.loading = true;
-    this.socios.login(email, password).subscribe({
-      next: (res: any) => {
-        if (res.ok && res.socio) {
-          const nombre = (res.socio.nombre ?? '').trim();
-          const displayName = (nombre || res.socio.email || '').trim();
-          this.okMsg = 'socios.login.greeting';
-          this.error = '';
-          this.greetName = displayName;
-
-          const access = (res as any).access_token || (res as any).access;
-          if (access) this.auth.setAccess(access);
-
-          this.session.persistLogin(displayName, { token: '1' });
-          try {
-            localStorage.setItem('creasia:isLoggedIn', '1');
-            localStorage.setItem('creasia:userEmail', (res.socio.email || '').trim());
-          } catch { }
-
-          try { window.dispatchEvent(new Event('creasia:user-updated')); } catch { }
-
-          if (this.redirectTimer) { clearTimeout(this.redirectTimer); this.redirectTimer = null; }
-          this.redirectTimer = window.setTimeout(() => {
-            void this.router.navigateByUrl('/', { replaceUrl: true });
-          }, 1200);
-
-        } else {
-          this.error = res.error || 'socios.errors.invalidCredentials';
-          this.greetName = null;
-          this.session.clearLogin();
-        }
-      },
-      error: (e) => {
-        this.error =
-          e.status === 401 ? 'socios.errors.invalidCredentials'
-            : e.status === 422 ? 'socios.errors.emailOrPasswordRequired'
-              : e.status === 403 ? 'socios.errors.mustActivate'
-                : 'socios.errors.server';
-        this.loading = false;
-        this.session.clearLogin();
-      },
-      complete: () => (this.loading = false)
-    });
+  if (!email || !password) {
+    this.error = 'socios.errors.emailAndPasswordRequired';
+    return;
   }
+
+  // Evita “ya estás logado con ese mismo email”
+  const isLogged = localStorage.getItem('creasia:isLoggedIn') === '1';
+  const storedEmail = (localStorage.getItem('creasia:userEmail') || '').trim().toLowerCase();
+  if (isLogged && storedEmail && email.toLowerCase() === storedEmail) {
+    this.error = 'socios.errors.alreadyLoggedIn';
+    return;
+  }
+
+  this.loading = true;
+
+  this.socios.login(email, password).subscribe({
+    next: (res: any) => {
+      // Acepta varias formas de “ok”
+      const ok =
+        !!(res?.ok || res?.success || res?.logged || res?.isLogged || (typeof res?.uid === 'number' && res.uid > 0));
+
+      // Normaliza “socio-like”: puede venir como res.socio o como res.user
+      const socio = res?.socio ?? res?.user ?? null;
+      const socioEmail: string | null =
+        (socio?.email ?? res?.email ?? null) ? String(socio?.email ?? res?.email).trim() : null;
+      const socioName =
+        ((socio?.nombre ?? socio?.name ?? '') as string).trim();
+
+      if (ok && (socioEmail || socioName)) {
+        const displayName = (socioName || socioEmail || '').trim();
+
+        // Mensajes UI
+        this.okMsg = 'socios.login.greeting';
+        this.error = '';
+        this.greetName = displayName;
+
+        // Si el backend devolviera access/access_token, lo guardamos
+        const access = (res as any).access_token || (res as any).access;
+        if (access) this.auth.setAccess(access);
+
+        // Estado de sesión unificado (servicio + localStorage)
+        this.session.persistLogin(displayName, { token: '1' });
+        try {
+          localStorage.setItem('creasia:isLoggedIn', '1');
+          if (socioEmail) localStorage.setItem('creasia:userEmail', socioEmail);
+          if (displayName) localStorage.setItem('creasia:userName', displayName);
+        } catch {}
+
+        // Notifica a quien escuche
+        try { window.dispatchEvent(new Event('creasia:user-updated')); } catch {}
+
+        // Redirección suave
+        if (this.redirectTimer) { clearTimeout(this.redirectTimer); this.redirectTimer = null; }
+        this.redirectTimer = window.setTimeout(() => {
+          void this.router.navigateByUrl('/', { replaceUrl: true });
+        }, 1200);
+      } else {
+        this.error = res?.error || 'socios.errors.invalidCredentials';
+        this.greetName = null;
+        this.session.clearLogin();
+      }
+    },
+    error: (e) => {
+      this.error =
+        e.status === 401 ? 'socios.errors.invalidCredentials' :
+        e.status === 422 ? 'socios.errors.emailOrPasswordRequired' :
+        e.status === 403 ? 'socios.errors.mustActivate' :
+        'socios.errors.server';
+      this.loading = false;
+      this.session.clearLogin();
+    },
+    complete: () => (this.loading = false),
+  });
+}
 
   logout(): void {
     this.session.clearLogin();
