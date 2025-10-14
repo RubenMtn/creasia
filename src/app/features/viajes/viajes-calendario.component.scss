@@ -1,5 +1,5 @@
 /* ============================================================
-   Archivo: src/app/features/viajes/viajes-calendario.component.css
+   Archivo: src/app/features/viajes/viajes-calendario.component.scss
    Calendario Viajes — Alto contraste sobre fondo NEGRO
    ------------------------------------------------------------
    ✅ Celdas cuadradas garantizadas (1:1) en todos los tamaños.
@@ -460,3 +460,18 @@ td.is-mine,
 
 .cal-intro { margin: 12px 0 16px; line-height: 1.4; }
 .cal-intro p { margin: 0; }
+
+//.day.is-today .num { font-weight: 700; font-size: 1.1em; }
+/* Pasado: fondo gris claro y sin interacción (mata tonos/selección) */
+.cal-table td.is-past .cell {
+  //background: #e5e7eb !important; /* fuerza sobre .tone-* */
+  background:rgb(53, 53, 53) !important; /* fuerza sobre .tone-* */
+  color: #111 !important;
+  box-shadow: none !important;     /* mata contornos de selección / "mine" */
+  outline: 0 !important;
+  opacity: .95;
+  pointer-events: none;            /* sin clic */
+}
+
+/* “Hoy”: número más grande y negrita */
+td.is-today .num { font-weight: 700; font-size: 1.1em; }

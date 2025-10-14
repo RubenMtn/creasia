@@ -23,6 +23,8 @@ interface DiaCell {
   iso: string;       // YYYY-MM-DD
   inMonth: boolean;  // pertenece al mes visible
   count: number;     // interesados
+  isPast: boolean;
+  isToday: boolean;
 }
 interface MesView {
   year: number;
@@ -36,7 +38,7 @@ interface MesView {
   standalone: true,
   imports: [CommonModule],
   templateUrl: './viajes-calendario.component.html',
-  styleUrls: ['./viajes-calendario.component.css'],
+  styleUrls: ['./viajes-calendario.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ViajesCalendarioComponent implements OnChanges {
@@ -63,6 +65,15 @@ export class ViajesCalendarioComponent implements OnChanges {
 
   // Meses generados a partir de counts
   readonly months = computed<MesView[]>(() => this.buildMonthsView(this.counts()));
+
+  // Helpers de fecha en zona Europe/Madrid (ISO yyyy-mm-dd sin UTC shift)
+  private toISO(d: Date): string {
+    return d.toLocaleDateString('sv-SE', { timeZone: 'Europe/Madrid' }); // "YYYY-MM-DD"
+  }
+  private todayISO(): string {
+    return new Date().toLocaleDateString('sv-SE', { timeZone: 'Europe/Madrid' });
+  }
+
 
   // ── Inputs del padre ─────────────────────────────────────────────────────────
   @Input() isLoggedIn = false;
@@ -195,6 +206,7 @@ export class ViajesCalendarioComponent implements OnChanges {
   // ── Render mensual ───────────────────────────────────────────────────────────
   /** Construye la matriz de meses */
   private buildMonthsView(counts: Record<string, number>): MesView[] {
+    const todayISO = this.toISO(new Date()); // Europe/Madrid, formato ISO estable
     const out: MesView[] = [];
     const firstMonth = new Date(this.start.getFullYear(), this.start.getMonth(), 1);
     const totalMonths = 18;
@@ -217,6 +229,8 @@ export class ViajesCalendarioComponent implements OnChanges {
         for (let i = 0; i < 7; i++) {
           const iso = this.toISO(cursor);
           week.push({
+            isPast: iso < todayISO,
+            isToday: iso === todayISO,
             date: new Date(cursor),
             iso,
             inMonth: cursor.getMonth() === month,
@@ -245,18 +259,11 @@ export class ViajesCalendarioComponent implements OnChanges {
     tmp.setDate(tmp.getDate() + (6 - day));
     return tmp;
   }
-  private toISO(d: Date): string {
-    const y = d.getFullYear();
-    const m = String(d.getMonth() + 1).padStart(2, '0');
-    const day = String(d.getDate()).padStart(2, '0');
-    return `${y}-${m}-${day}`;
-  }
+
   private toISODate(d: Date): string {
-    const y = d.getFullYear();
-    const m = (d.getMonth() + 1).toString().padStart(2, '0');
-    const dd = d.getDate().toString().padStart(2, '0');
-    return `${y}-${m}-${dd}`;
+    return this.toISO(d);
   }
+
   private parseISO(yyyyMmDd: string): Date | null {
     const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(yyyyMmDd);
     if (!m) return null;
