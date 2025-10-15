@@ -21,6 +21,17 @@
   --cell-gap-x: 0.45rem;
   --cell-gap-y: 0.45rem;
 
+  /* === Selección por rango (variables) === */
+  --sel-bg: rgba(37, 99, 235, 0.16);
+  /* azul suave */
+  --sel-bg-strong: rgba(37, 99, 235, 0.22);
+  --sel-outline: rgba(37, 99, 235, 0.7);
+  /* azul accesible */
+
+  /* Días “propios” */
+  --mine-outline: #fbbf24;
+  /* amber-400 aprox. */
+
   display: block;
 }
 
@@ -180,40 +191,77 @@
   background: #ffffff !important;
   color: #111 !important;
 }
+
 .cal-table .tone-1 {
   background: #ffe466 !important;
   color: #111 !important;
 }
+
 .cal-table .tone-2 {
   background: #EFCF52 !important;
   color: #111 !important;
 }
+
 .cal-table .tone-3 {
   background: #DFBA3E !important;
   color: #111 !important;
 }
+
 .cal-table .tone-4 {
   background: goldenrod !important;
   color: #111 !important;
 }
+
 .cal-table .tone-5 {
   background: #C89B1F !important;
   color: #111 !important;
 }
+
 .cal-table .tone-6 {
   background: #C09015 !important;
   color: #111 !important;
 }
+
 .cal-table .tone-7 {
   background: darkgoldenrod !important;
   color: #111 !important;
 }
 
 /* Días fuera del mes */
-.cal-table .is-outside .cell {
+.cal-table td.is-outside .cell {
   background: #171717 !important;
   color: #9ca3af !important;
   border-style: dashed;
+  /* blindamos interacción visual */
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* ⛔️ Bloquear cualquier marca de selección/borde en fuera de mes */
+.cal-table td.is-outside,
+.cal-table td.is-outside .cell {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.cal-table td.is-outside.is-selected,
+.cal-table td.is-outside.is-in-range,
+.cal-table td.is-outside.is-selected .cell,
+.cal-table td.is-outside.is-in-range .cell {
+  background: #171717 !important;
+  /* mantener fondo “casi negro” */
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* Quitar resaltado “mis días” fuera de mes */
+.cal-table td.is-outside.is-mine .cell,
+.cal-table td.is-outside .cell.is-mine,
+.cal-day.is-outside.is-mine,
+td.is-outside.is-mine,
+.day.is-outside.is-mine {
+  outline: none !important;
+  box-shadow: none !important;
 }
 
 /* Tipografía interna */
@@ -310,28 +358,48 @@
   margin-right: .4rem;
 }
 
-
-/* === Selección por rango (azules suaves) === */
-:host {
-  --sel-bg: rgba(37, 99, 235, 0.16);
-  /* azul suave */
-  --sel-bg-strong: rgba(37, 99, 235, 0.22);
-  --sel-outline: rgba(37, 99, 235, 0.55);
-}
-
-/* Celda inicio/fin o selección única */
-.cal-table td.is-selected,
-.cal-table td.is-selected .cell {
+/* === Selección por rango (fondos azules suaves — SOLO en mes actual) === */
+.cal-table td.is-selected:not(.is-outside),
+.cal-table td.is-selected:not(.is-outside) .cell {
   background: var(--sel-bg-strong);
   outline: 2px solid var(--sel-outline);
   outline-offset: -2px;
   /* que quede dentro */
 }
 
-/* Celdas intermedias del rango */
-.cal-table td.is-in-range,
-.cal-table td.is-in-range .cell {
+.cal-table td.is-in-range:not(.is-outside),
+.cal-table td.is-in-range:not(.is-outside) .cell {
   background: var(--sel-bg);
+}
+
+/* === Selección por rango con contorno (sin cubrir tonos) === */
+.cal-table td.is-selected:not(.is-outside) .cell {
+  /* extremos del rango o selección única */
+  box-shadow: inset 0 0 0 2px var(--sel-outline);
+  border-radius: 0.4rem;
+}
+
+.cal-table td.is-in-range:not(.is-outside) .cell {
+  /* interior del rango (contorno más sutil) */
+  box-shadow: inset 0 0 0 1px var(--sel-outline);
+  border-radius: 0.35rem;
+}
+
+/* === Días del propio usuario (borde amarillo fuerte) === */
+.cal-table td.is-mine .cell {
+  box-shadow: inset 0 0 0 2px var(--mine-outline);
+  border-radius: 0.4rem;
+}
+
+/* (Regla amplia heredada en proyecto) — mantenida pero anulada en fuera de mes */
+.cal-day.is-mine,
+td.is-mine,
+.day.is-mine,
+.cell.is-mine {
+  outline: 3px solid red;
+  /* borde rojo “propio” (pedías anularlo fuera de mes: hecho arriba) */
+  outline-offset: -2px;
+  box-shadow: 0 0 0 2px #ffd000 inset;
 }
 
 /* Aviso de login por mes */
@@ -365,37 +433,10 @@
 }
 
 .range-label {
-  opacity: 0.9;
-}
-
-/* === Selección por rango con contorno (sin cubrir tonos) === */
-:host {
-  --sel-outline: rgba(37, 99, 235, 0.7);
-  /* azul accesible */
-}
-
-.cal-table td.is-selected .cell {
-  /* extremos del rango o selección única */
-  box-shadow: inset 0 0 0 2px var(--sel-outline);
-  border-radius: 0.4rem;
-}
-
-.cal-table td.is-in-range .cell {
-  /* interior del rango (contorno más sutil) */
-  box-shadow: inset 0 0 0 1px var(--sel-outline);
-  border-radius: 0.35rem;
-}
-
-/* ===========================
-   Tamaño de la etiqueta fechas
-   - Móvil: base (heredada)
-   - Tablet/PC: un poco más pequeña
-   =========================== */
-
-.range-label {
   /* base móvil; si ya tienes tamaño, respétalo */
   font-size: 0.95rem;
   /* opcional, ajusta a tu escala */
+  opacity: 0.9;
 }
 
 /* Tablet en adelante */
@@ -404,7 +445,6 @@
     font-size: 0.85rem;
     /* un paso más pequeña */
     opacity: 0.9;
-    /* sutilmente más discreta */
   }
 }
 
@@ -432,56 +472,61 @@
 }
 
 /* rojo */
-
-/* === Días del propio usuario (borde amarillo fuerte) === */
-:host {
-  --mine-outline: #fbbf24;
+.save-result.deleted {
+  border-color: #d97706;
+  color: #d97706;
 }
 
-/* amber-400 aprox. */
-.cal-table td.is-mine .cell {
-  box-shadow: inset 0 0 0 2px var(--mine-outline);
-  border-radius: 0.4rem;
+.cal-intro {
+  margin: 12px 0 16px;
+  line-height: 1.4;
 }
 
-/* borde amarillo fuerte en días propios */
-.cal-day.is-mine,
-td.is-mine,
-.day.is-mine,
-.cell.is-mine {
-  /* outline: 3px solid #ffd000; */
-  /* outline: 3px solid #ccff00;  amarillo lima*/
-  outline: 3px solid red;
-  outline-offset: -2px;
-  box-shadow: 0 0 0 2px #ffd000 inset;
+.cal-intro p {
+  margin: 0;
 }
 
-.save-result.deleted { border-color:#d97706; color:#d97706; }
-
-.cal-intro { margin: 12px 0 16px; line-height: 1.4; }
-.cal-intro p { margin: 0; }
-
-//.day.is-today .num { font-weight: 700; font-size: 1.1em; }
-/* Pasado: fondo gris claro y sin interacción (mata tonos/selección) */
+/* Pasado: fondo gris oscuro y sin interacción (mata tonos/selección) */
 .cal-table td.is-past .cell {
-  //background: #e5e7eb !important; /* fuerza sobre .tone-* */
-  background:rgb(53, 53, 53) !important; /* fuerza sobre .tone-* */
+  background: rgb(53, 53, 53) !important;
+  /* fuerza sobre .tone-* */
   color: #111 !important;
-  box-shadow: none !important;     /* mata contornos de selección / "mine" */
+  box-shadow: none !important;
+  /* mata contornos de selección / "mine" */
   outline: 0 !important;
   opacity: .95;
-  pointer-events: none;            /* sin clic */
+  pointer-events: none;
+  /* sin clic */
 }
 
-/* “Hoy”: número más grande y negrita */
-//td.is-today .num { font-weight: 700; font-size: 1.1em; }
-td.is-today .num { font-weight: 120%; font-size:120%; color: #1d4ed8; }
+/* Hoy: más grande y consistente (relativo al .num, no al contenedor) */
+td.is-today .num {
+  font-size: 1.2em;
+  /* 20% sobre el 1.15rem de .num → ~1.38rem */
+  font-weight: 900;
+  /* valor válido y contundente */
+  color: #1d4ed8;
+  transform: translateY(-1px);
+  /* compensa el top de .num y mejora la lectura */
+}
+
+@media (max-width: 480px) {
+  td.is-today .num {
+    font-size: 1.3em;
+  }
+
+  /* ~1.495rem: se nota sin romper la malla */
+}
 
 /* Ancho del separador fin de semana (ajustable) */
-:host { --weekend-gap: 0.05rem; }
+:host {
+  --weekend-gap: 0.05rem;
+}
 
 /* Columna del separador (colgroup) */
-.cal-table col.sep-col { width: var(--weekend-gap); }
+.cal-table col.sep-col {
+  width: var(--weekend-gap);
+}
 
 /* Celdas separador en header y body: sin bordes ni interacción */
 .cal-table .week-sep,
@@ -493,15 +538,12 @@ td.is-today .num { font-weight: 120%; font-size:120%; color: #1d4ed8; }
   pointer-events: none;
 }
 
-// .cal-table td:nth-child(6) .cell { /* ojo: con separador la columna S es la 7ª */
-//   box-shadow: -1px 0 0 #2b2b2b inset;
-// }
-
-
 /* Ajuste micro del fin de semana (sin columna extra) */
 :host {
-  --weekend-extra-gap: 0.12rem; /* baja hasta 0.02rem si quieres */
+  --weekend-extra-gap: 0.12rem;
 }
+
+/* baja hasta 0.02rem si quieres */
 
 /* Empuja un poco el contenido de Sábado para simular hueco fino */
 .cal-table tbody td:nth-child(6) .cell {
@@ -518,6 +560,7 @@ td.is-today .num { font-weight: 120%; font-size:120%; color: #1d4ed8; }
 .cal-table thead th:nth-child(6) {
   position: relative;
 }
+
 .cal-table tbody td:nth-child(6)::before,
 .cal-table thead th:nth-child(6)::before {
   content: '';
@@ -526,6 +569,7 @@ td.is-today .num { font-weight: 120%; font-size:120%; color: #1d4ed8; }
   top: 0;
   bottom: 0;
   width: 1px;
-  background: #2b2b2b; /* ajusta el color si quieres */
+  background: #2b2b2b;
+  /* ajusta el color si quieres */
   pointer-events: none;
 }
