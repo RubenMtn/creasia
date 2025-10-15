@@ -118,7 +118,12 @@
     "title": "Viajes organizados",
     "section1": {
       "title": "Viajar con Creasia",
-      "body1": "Organizamos viajes en grupo a China que combinan los iconos imprescindibles con rincones que normalmente solo conocen quienes han vivido allí. Cada ruta la curan especialistas que han residido y trabajado en el país, para que cada parada te conecte con la cultura que queremos compartir."
+      "body1": "¿Quieres viajar a China? ¡Ven con nosotros... ya estamos preparando el próximo viaje! No te preocupes si no conoces el idioma o no sabes muy bien que preparativos, visitas, rutas, actividades, hoteles, restaurantes o comercios elegir... viniendo con nosotros todo eso lo tendrás muy fácil y sólo tendrás que disfrutar de la experiencia."
+    },
+    "sectionCalendar": {
+      "bodyNoLog": "En este calendario compartido, puedes ver las próximas fechas en las que ya hay interesados en viajar a China con nuestro grupo y tienen disponibilidad. Si quieres poder añadir o modificar fechas de tu preferencia accede al <a href='/socios'>login</a> de tu usuario.",
+      "bodyLog": "Para añadir o modificar fechas de tu preferencia, selecciona rangos de 2 o más días en el calendario pulsando, indistintamente, un día de inicio y uno de final. A continuación, elige Guardar o Eliminar según necesites:",
+      "bodyLegend": "🔴 Borde rojo: días que has seleccionado.   ⚪ Superíndice blanco: personas interesadas para esa fecha."
     },
     "section2": {
       "title": "Maravillas que descubrirás",

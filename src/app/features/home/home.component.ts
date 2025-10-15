@@ -55,6 +55,7 @@ interface Connector {
   x2: number; y2: number;
   length: number;
   progress: number;
+  points?: string;   // 👈 polígono afilado
 }
 
 /* -------------------------------- Componente ------------------------------ */
@@ -90,6 +91,10 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
   private pendingConnectorUpdate = false;
   private connectorProgress = 0;
   animationDone = false;
+
+  // Grosor en unidades del viewBox (0..100). Más ancho en el botón → más fino hacia la cara.
+  private readonly LINE_W_START = 5;  // ancho cerca del botón
+  private readonly LINE_W_END = 0.9;  // ancho cerca de la cara
 
   // Disponibilidad DOM (SSR-safe)
   private readonly hasDOM = typeof window !== 'undefined' && typeof document !== 'undefined';
@@ -178,7 +183,7 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
     }
 
     // Quitar 'autoplay' si estuviera en el HTML para evitar dobles arranques (defensivo)
-    try { this.videoRef?.nativeElement.removeAttribute('autoplay'); } catch {}
+    try { this.videoRef?.nativeElement.removeAttribute('autoplay'); } catch { }
 
     // Recalcular conectores cuando cambia la lista de puntos/enlaces
     this.pointRefs.changes.subscribe(() => this.requestConnectorUpdate());
@@ -208,15 +213,15 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
       (document.visibilityState === 'hidden');
 
     let introSeen = false;
-    try { introSeen = sessionStorage.getItem('creasia:introPlayed') === '1'; } catch {}
+    try { introSeen = sessionStorage.getItem('creasia:introPlayed') === '1'; } catch { }
 
     let forceIntro = false;
-    try { forceIntro = sessionStorage.getItem('creasia:forceIntro') === '1'; } catch {}
+    try { forceIntro = sessionStorage.getItem('creasia:forceIntro') === '1'; } catch { }
 
     const introForced = params.get('intro') === '1';
 
     if (forceIntro) {
-      try { sessionStorage.removeItem('creasia:forceIntro'); } catch {}
+      try { sessionStorage.removeItem('creasia:forceIntro'); } catch { }
     }
 
     if (skipAnimations || (introSeen && !introForced && !forceIntro)) {
@@ -240,7 +245,7 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
         if (!wantIntro) return;
 
         // Quitar marca de "vista" y reiniciar con vídeo
-        try { sessionStorage.removeItem('creasia:introPlayed'); } catch {}
+        try { sessionStorage.removeItem('creasia:introPlayed'); } catch { }
         this.restartIntro();
 
         // Limpia ?intro de la URL (esto es posterior, no en el primer render)
@@ -323,7 +328,7 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
         video.style.removeProperty('display'); // vuelve a mostrar el <video> para la nueva intro
         this.videoStarted = false; // ← importante para reinicio limpio
         this.setupVideoStart(video);
-      } catch {}
+      } catch { }
     }
   }
 
@@ -613,7 +618,7 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
     }
 
     // Marcar intro como vista (en esta pestaña)
-    try { sessionStorage.setItem('creasia:introPlayed', '1'); } catch {}
+    try { sessionStorage.setItem('creasia:introPlayed', '1'); } catch { }
 
     // Si había returnUrl, navegar ahora
     this.handleReturnNavigation();
@@ -701,77 +706,101 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
   }
 
   /* --------------- Geometría/posicionamiento de las líneas (UI) -------------- */
-  private updateConnectors(): void {
-    if (!this.showLinks) {
-      this.connectors = [];
-      return;
-    }
+private updateConnectors(): void {
+  if (!this.showLinks) { this.connectors = []; return; }
 
-    const wrapEl = this.mediaWrapRef?.nativeElement;
-    if (!wrapEl) return;
+  const wrapEl = this.mediaWrapRef?.nativeElement;
+  if (!wrapEl) return;
 
-    const wrapRect = wrapEl.getBoundingClientRect();
-    if (!wrapRect.width || !wrapRect.height) return;
+  const wrapRect = wrapEl.getBoundingClientRect();
+  if (!wrapRect.width || !wrapRect.height) return;
 
-    // 1) Mapear puntos (centros de cada punto UI) en % del wrapper
-    const points = new Map<string, { x: number; y: number }>();
+  // 1) Mapear puntos
+  const points = new Map<string, { x: number; y: number }>();
 
-    // Preferir refs reales si existen; si no, usar cálculo escalado
-    const pointRefs = this.pointRefs;
-    if (pointRefs && pointRefs.length) {
-      pointRefs.forEach((ref) => {
-        const el = ref.nativeElement;
-        const id = el.dataset['point'];
-        if (!id) return;
-
-        const rect = el.getBoundingClientRect();
-        const x = (((rect.left + rect.right) / 2) - wrapRect.left) / wrapRect.width * 100;
-        const y = (((rect.top + rect.bottom) / 2) - wrapRect.top) / wrapRect.height * 100;
-        points.set(id, { x, y });
-      });
-    } else {
-      // Fallback a escalado estático
-      this.scaledPoints.forEach(({ id, left, top }) => {
-        points.set(id, { x: left, y: top });
-      });
-    }
-
-    // 2) Construir conectores desde cada enlace a su punto objetivo
-    const connectors: Connector[] = [];
-    this.linkRefs.forEach((ref) => {
+  const pointRefs = this.pointRefs;
+  if (pointRefs && pointRefs.length) {
+    pointRefs.forEach((ref) => {
       const el = ref.nativeElement;
-      const id = el.getAttribute('data-point');
+      const id = el.dataset['point'];
       if (!id) return;
 
-      const target = points.get(id);
-      if (!target) return;
-
       const rect = el.getBoundingClientRect();
-      const anchor = (el.getAttribute('data-anchor') as LinkAnchor | null) ?? null;
-
-      const centerX = (((rect.left + rect.right) / 2) - wrapRect.left) / wrapRect.width * 100;
-      const centerY = (((rect.top + rect.bottom) / 2) - wrapRect.top) / wrapRect.height * 100;
-
-      let x1 = centerX;
-      let y1 = centerY;
-
-      switch (anchor) {
-        case 'top': y1 = (rect.top - wrapRect.top) / wrapRect.height * 100; break;
-        case 'bottom': y1 = (rect.bottom - wrapRect.top) / wrapRect.height * 100; break;
-        case 'left': x1 = (rect.left - wrapRect.left) / wrapRect.width * 100; break;
-        case 'right': x1 = (rect.right - wrapRect.left) / wrapRect.width * 100; break;
-      }
-
-      const { x: x2, y: y2 } = target;
-      const length = Math.hypot(x2 - x1, y2 - y1);
-
-      connectors.push({ id, x1, y1, x2, y2, length, progress: 0 });
+      const x = (((rect.left + rect.right) / 2) - wrapRect.left) / wrapRect.width * 100;
+      const y = (((rect.top + rect.bottom) / 2) - wrapRect.top) / wrapRect.height * 100;
+      points.set(id, { x, y });
     });
-
-    // 3) Aplicar progreso animado si toca
-    const progress = this.showConnectors ? this.connectorProgress : 0;
-    this.connectors = connectors.map(c => ({ ...c, progress }));
+  } else {
+    this.scaledPoints.forEach(({ id, left, top }) => {
+      points.set(id, { x: left, y: top });
+    });
   }
+
+  // 2) Construir conectores
+  const connectors: Connector[] = [];
+  this.linkRefs.forEach((ref) => {
+    const el = ref.nativeElement;
+    const id = el.getAttribute('data-point');
+    if (!id) return;
+
+    const target = points.get(id);
+    if (!target) return;
+
+    const rect = el.getBoundingClientRect();
+    const anchor = (el.getAttribute('data-anchor') as LinkAnchor | null) ?? null;
+
+    const centerX = (((rect.left + rect.right) / 2) - wrapRect.left) / wrapRect.width * 100;
+    const centerY = (((rect.top + rect.bottom) / 2) - wrapRect.top) / wrapRect.height * 100;
+
+    let x1 = centerX, y1 = centerY;
+    switch (anchor) {
+      case 'top':    y1 = (rect.top    - wrapRect.top)  / wrapRect.height * 100; break;
+      case 'bottom': y1 = (rect.bottom - wrapRect.top)  / wrapRect.height * 100; break;
+      case 'left':   x1 = (rect.left   - wrapRect.left) / wrapRect.width  * 100; break;
+      case 'right':  x1 = (rect.right  - wrapRect.left) / wrapRect.width  * 100; break;
+    }
+
+    const { x: x2, y: y2 } = target;
+    const length = Math.hypot(x2 - x1, y2 - y1);
+
+    connectors.push({ id, x1, y1, x2, y2, length, progress: 0 });
+  });
+
+  // 3) Aplicar progreso y construir polígono afilado
+  const progress = this.showConnectors ? this.connectorProgress : 0;
+
+  this.connectors = connectors.map(c => {
+    const dx = c.x2 - c.x1;
+    const dy = c.y2 - c.y1;
+    const len = Math.hypot(dx, dy) || 1;
+
+    // unitario y normal
+    const ux = dx / len,  uy = dy / len;
+    const nx = -uy,       ny = ux;
+
+    // extremo actual (crece con progress)
+    const px = c.x1 + dx * progress;
+    const py = c.y1 + dy * progress;
+
+    // grosor: más ancho en el botón → más fino hacia la cara
+    const w1 = this.LINE_W_START;
+    const w2 = this.LINE_W_END;
+    const wAtEnd = w1 + (w2 - w1) * progress;
+
+    const h1 = w1 / 2;
+    const h2 = wAtEnd / 2;
+
+    // 4 puntos del polígono (orden horario)
+    const aX = c.x1 + nx * h1, aY = c.y1 + ny * h1;
+    const bX =  px  + nx * h2, bY =  py  + ny * h2;
+    const dX = c.x1 - nx * h1, dY = c.y1 - ny * h1;
+    const eX =  px  - nx * h2, eY =  py  - ny * h2;
+
+    const pts = `${aX},${aY} ${bX},${bY} ${eX},${eY} ${dX},${dY}`;
+    return { ...c, progress, points: pts };
+  });
+}
+
 
   /* ----------------------------- Utilidades tiempo --------------------------- */
   private scheduleTimeout(handle: number | null, callback: () => void, delay: number): number | null {
@@ -795,14 +824,14 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
    * - Si ya está listo (readyState >= 4), reproduce inmediatamente
    */
   private setupVideoStart(video: HTMLVideoElement): void {
-    try { video.muted = true; } catch {}
-    try { video.setAttribute('playsinline', 'true'); } catch {}
-    try { (video as any).webkitPlaysInline = true; } catch {}
+    try { video.muted = true; } catch { }
+    try { video.setAttribute('playsinline', 'true'); } catch { }
+    try { (video as any).webkitPlaysInline = true; } catch { }
 
     const playOnce = () => {
       if (this.videoStarted) return;
       this.videoStarted = true;
-      try { void video.play(); } catch {}
+      try { void video.play(); } catch { }
     };
 
     // Si ya hay datos suficientes, reproducir ya; si no, esperar al evento.

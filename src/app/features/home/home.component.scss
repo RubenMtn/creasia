@@ -323,6 +323,10 @@
   shape-rendering: geometricPrecision;
 }
 
+.lines-layer polygon {
+  shape-rendering: geometricPrecision;
+  /* el color lo aporta el fill=url(#grad-...) */
+}
 
 
 // .lines-layer line {
