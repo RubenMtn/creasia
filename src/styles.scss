@@ -71,4 +71,29 @@ textarea {
 
 
 
+// /* Tipografía unificada para bloques de Viajes */
+// .viajes-section {
+//   /* Tamaño y ritmo vertical iguales en ambos componentes */
+//   font-size: clamp(1rem, 0.35vw + 0.95rem, 1.06rem);
+//   line-height: 1.6;
+//   font-weight: 400;
 
+//   /* Ancho legible y centrado (ajusta si no lo quieres) */
+//   max-width: min(72ch, 92%);
+//   margin: 0 auto 0.75rem; /* auto centrado + separación por debajo */
+
+//   /* Si ambos bloques están sobre fondo oscuro y quieres mismo color: 
+//      descomenta la línea siguiente; si no, deja que herede. */
+//   /* color: #e5e7eb; */
+// }
+
+// .viajes-section p {
+//   margin: 0 0 0.9rem;
+// }
+
+// .viajes-section a {
+//   text-decoration: underline;
+//   text-underline-offset: 2px;
+//   /* color accesible sobre fondo oscuro (opcional):
+//      color: #93c5fd; */
+// }

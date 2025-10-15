@@ -16,6 +16,7 @@ import {
 } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { ViajesApi } from './viajes.api';
+import { THtmlPipe } from '../../shared/i18n/t-html.pipe';
 import { TPipe } from "../../shared/i18n/t.pipe";
 
 /** Estructuras auxiliares para render mensual */
@@ -37,7 +38,7 @@ interface MesView {
 @Component({
   selector: 'app-viajes-calendario',
   standalone: true,
-  imports: [CommonModule, TPipe],
+  imports: [CommonModule, THtmlPipe, TPipe],
   templateUrl: './viajes-calendario.component.html',
   styleUrls: ['./viajes-calendario.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,

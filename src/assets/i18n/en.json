@@ -33,7 +33,7 @@
     "title": "Exclusive perks, discounts, event invitations, updates...",
     "registerCaption": "Sign up with your email and a password (minimum 8 characters):",
     "loginCaption": "If you are already a registered Creasia member, sign in with your account:",
-    "loginRedirect": "Redirecting to the home page...",
+    "loginRedirect": "Redirecting...",
     "actions": {
       "register": "Register",
       "login": "Sign in"
@@ -122,9 +122,9 @@
       "body1": "Do you want to travel to China? Come with us… we're already preparing the next trip! Don’t worry if you don’t speak the language or aren’t sure about preparations, sights, routes, activities, hotels, restaurants or shops to choose… with us it’s all easy, you’ll just enjoy the experience."
     },
     "sectionCalendar": {
-      "bodyNoLog": "In this shared calendar, you can see upcoming dates when there are already people interested in traveling to China with our group and who are available. If you want to add or change your preferred dates, go to your <a href='/socios'>login</a>.",
+      "bodyNoLog": "In this shared calendar, you can see upcoming dates when people are already interested in traveling to China with our group and are available. On days with a yellow background, you’ll see a white number indicating how many people have signed up. If you want to add or modify your preferred dates, go to your user <a href='/socios?return=%2Fviajes'>login</a>.",
       "bodyLog": "To add or modify your preferred dates, select ranges of 2 or more consecutive days on the calendar by tapping any start day and any end day. Then choose Save or Delete as needed:",
-      "bodyLegend": "🔴 Red border: days you have selected.   ⚪ White superscript: number of people interested for that date."
+      "bodyLegend": "🔴 Red border: days you have selected"
     },
     "section2": {
       "title": "Wonders You Will Experience",

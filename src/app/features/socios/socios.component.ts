@@ -66,6 +66,9 @@ export class SociosComponent implements OnInit, OnDestroy {
   private readonly pollEveryMs = 5000;        // cada 5s
   private readonly pollMaxMs = 2 * 60 * 1000; // máx 2 minutos
 
+  // Return target (p.ej. '/viajes')
+  private returnTarget: string | null = null;
+
   // Listeners (para cambios de activación desde otras tabs)
   private onStorage = (e: StorageEvent) => {
     if (!e.key || e.key !== SociosComponent.ACTIVATION_KEY) return;
@@ -78,14 +81,36 @@ export class SociosComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     if (!this.hasWindow) return;
 
-    // 0) Si viene ?code=... (desde el botón del email), activamos desde el front
+    // 0) Destino de retorno (p.ej. /socios?return=/viajes)
+    const qpm = this.route.snapshot.queryParamMap;
+    this.returnTarget =
+      this.sanitizeReturn(qpm.get('return')) ??
+      this.sanitizeReturn(qpm.get('returnUrl')) ??
+      this.sanitizeReturn((() => {
+        try { return localStorage.getItem('creasia:returnAfterLogin'); } catch { return null; }
+      })());
+
+    // 0.1) Si no vino explícito, deduce retorno por referrer mismo-origen (p.ej. /viajes)
+    if (!this.returnTarget) {
+      try {
+        const ref = document.referrer || '';
+        if (ref) {
+          const refUrl = new URL(ref);
+          if (refUrl.origin === window.location.origin && refUrl.pathname === '/viajes') {
+            this.returnTarget = '/viajes';
+          }
+        }
+      } catch {}
+    }
+
+    // 1) Si viene ?code=... (desde el botón del email), activamos desde el front
     const qp = this.route.snapshot.queryParams;
     if (qp['code']) {
       this.activateFromCode(String(qp['code']), String(qp['lang'] ?? 'es'));
       return; // la activación gestionará la UI y la redirección
     }
 
-    // Restaurar vista simple: 'register' o 'login' (default 'login')
+    // 2) Restaurar vista simple: 'register' o 'login' (default 'login')
     const stored = window.sessionStorage.getItem(SociosComponent.VIEW_STATE_KEY);
     if (stored === 'register') {
       this.showRegisterForm = true;
@@ -96,14 +121,14 @@ export class SociosComponent implements OnInit, OnDestroy {
     }
     this.persistViewState();
 
-    // Flujo previo: ?activation=...
+    // 3) Flujo previo: ?activation=...
     this.applyActivationMessageFromURL();
 
-    // Listeners
+    // 4) Listeners
     window.addEventListener('storage', this.onStorage);
     window.addEventListener('focus', this.onFocus);
 
-    // Reanudar polling si hubiera UID pendiente
+    // 5) Reanudar polling si hubiera UID pendiente
     const pending = window.localStorage.getItem(SociosComponent.PENDING_UID_KEY);
     if (pending) {
       const uid = parseInt(pending, 10);
@@ -115,7 +140,7 @@ export class SociosComponent implements OnInit, OnDestroy {
       }
     }
 
-    // Por si ya existe marca en localStorage
+    // 6) Por si ya existe marca en localStorage
     this.applyActivationMessageFromStorage();
   }
 
@@ -160,11 +185,10 @@ export class SociosComponent implements OnInit, OnDestroy {
             this.showRegisterForm = false;
             this.persistViewState();
 
-            // Redirección suave (una sola vez) → Home sin animaciones
-            if (this.redirectTimer) { clearTimeout(this.redirectTimer); this.redirectTimer = null; }
-            this.redirectTimer = window.setTimeout(() => {
-              this.goHomeStaticOnce();
-            }, 1200);
+            // Redirección:
+            // - si hay returnTarget → vamos ahí
+            // - si NO hay returnTarget → Home sin animaciones
+            this.navigateAfterAuth(1200, true);
 
           } else {
             // Token inválido/expirado → mostramos mensaje y dejamos el login
@@ -320,11 +344,11 @@ export class SociosComponent implements OnInit, OnDestroy {
           // Notifica a quien escuche
           try { window.dispatchEvent(new Event('creasia:user-updated')); } catch {}
 
-          // Redirección suave (mantenemos login → Home normal)
-          if (this.redirectTimer) { clearTimeout(this.redirectTimer); this.redirectTimer = null; }
-          this.redirectTimer = window.setTimeout(() => {
-            void this.router.navigateByUrl('/', { replaceUrl: true });
-          }, 1200);
+          // Redirección:
+          // - si hay returnTarget → vamos ahí
+          // - si NO hay returnTarget → Home normal
+          this.navigateAfterAuth(1200, false);
+
         } else {
           this.error = res?.error || 'socios.errors.invalidCredentials';
           this.greetName = null;
@@ -420,8 +444,10 @@ export class SociosComponent implements OnInit, OnDestroy {
             this.showRegisterForm = false;
             this.persistViewState();
 
-            // ⬅️ Tras activación: Home sin animaciones
-            setTimeout(() => { this.goHomeStaticOnce(); }, 1200);
+            // Tras activación:
+            // - si hay returnTarget → vamos ahí
+            // - si NO hay returnTarget → Home sin animaciones
+            this.navigateAfterAuth(1200, true);
 
           } else {
             this.okMsg = 'socios.activation.ok';
@@ -467,6 +493,24 @@ export class SociosComponent implements OnInit, OnDestroy {
     url.searchParams.delete('autologin');
     if (langParam) url.searchParams.delete('lang');
     window.history.replaceState({}, '', url.toString());
+  }
+
+  private sanitizeReturn(v: unknown): string | null {
+    const s = (typeof v === 'string' ? v : '').trim();
+    // Acepta solo rutas internas tipo "/algo" y evita "//" o "http(s)://"
+    if (!s || !s.startsWith('/') || s.startsWith('//') || /^https?:\/\//i.test(s)) return null;
+    return s;
+  }
+
+  private navigateAfterAuth(delayMs = 1200, preferHomeStaticIfNoReturn = false): void {
+    const fallback = preferHomeStaticIfNoReturn ? '/?homeState=static' : '/';
+    const target = this.returnTarget || fallback;
+    if (this.redirectTimer) { clearTimeout(this.redirectTimer); this.redirectTimer = null; }
+    this.redirectTimer = window.setTimeout(() => {
+      void this.router.navigateByUrl(target, { replaceUrl: true });
+      this.returnTarget = null;
+      try { localStorage.removeItem('creasia:returnAfterLogin'); } catch {}
+    }, delayMs);
   }
 
   private applyActivationMessageFromStorage(): void {
@@ -544,11 +588,5 @@ export class SociosComponent implements OnInit, OnDestroy {
     if (this.hasWindow) {
       window.localStorage.removeItem(SociosComponent.PENDING_UID_KEY);
     }
-  }
-
-  // ===== Utilidad local: ir a Home ya en estado final (sin vídeo/animaciones) =====
-  private goHomeStaticOnce(): void {
-    try { sessionStorage.setItem('creasia:introPlayed', '1'); } catch {}
-    void this.router.navigateByUrl('/?homeState=static', { replaceUrl: true });
   }
 }

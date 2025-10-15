@@ -32,7 +32,7 @@
     "title": "Ventajas exclusivas, descuentos, invitaciones a eventos, novedades...",
     "registerCaption": "Regístrate con tu email y una contraseña (mínimo 8 caracteres):",
     "loginCaption": "Si ya eres socio registrado de Creasia, accede con tu usuario:",
-    "loginRedirect": "Redirigiendo al inicio...",
+    "loginRedirect": "Redirigiendo...",
     "actions": {
       "register": "Registro",
       "login": "Accede"
@@ -121,9 +121,9 @@
       "body1": "¿Quieres viajar a China? ¡Ven con nosotros... ya estamos preparando el próximo viaje! No te preocupes si no conoces el idioma o no sabes muy bien que preparativos, visitas, rutas, actividades, hoteles, restaurantes o comercios elegir... viniendo con nosotros todo eso lo tendrás muy fácil y sólo tendrás que disfrutar de la experiencia."
     },
     "sectionCalendar": {
-      "bodyNoLog": "En este calendario compartido, puedes ver las próximas fechas en las que ya hay interesados en viajar a China con nuestro grupo y tienen disponibilidad. Si quieres poder añadir o modificar fechas de tu preferencia accede al <a href='/socios'>login</a> de tu usuario.",
-      "bodyLog": "Para añadir o modificar fechas de tu preferencia, selecciona rangos de 2 o más días en el calendario pulsando, indistintamente, un día de inicio y uno de final. A continuación, elige Guardar o Eliminar según necesites:",
-      "bodyLegend": "🔴 Borde rojo: días que has seleccionado.   ⚪ Superíndice blanco: personas interesadas para esa fecha."
+      "bodyNoLog": "En este calendario compartido, puedes ver las próximas fechas en las que ya hay interesados en viajar a China con nuestro grupo y tienen disponibilidad. En los días con fondo amarillo, verás un número blanco que indica el número de personas apuntadas. Si quieres poder añadir o modificar fechas de tu preferencia accede al <a href='/socios?return=%2Fviajes'>login</a> de tu usuario.",
+      "bodyLog": "Para añadir o modificar fechas de tu preferencia, selecciona rangos de 2 o más días en el calendario pulsando un día de inicio y uno de final indistintamente. A continuación, elige Guardar o Eliminar según necesites:",
+      "bodyLegend": "🔴 Borde rojo: días que has seleccionado"
     },
     "section2": {
       "title": "Maravillas que descubrirás",

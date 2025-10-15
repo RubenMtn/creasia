@@ -3,6 +3,7 @@ import { Injectable, PLATFORM_ID, inject } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, firstValueFrom } from 'rxjs';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 
 export type Lang = 'es' | 'en' | 'zh';
 
@@ -52,7 +53,7 @@ const ES_FALLBACK: Dict = {
     title: 'Ventajas exclusivas, descuentos, invitaciones a eventos, novedades...',
     registerCaption: 'Regístrate con tu email y una contraseña (mínimo 8 caracteres):',
     loginCaption: 'Si ya eres socio registrado de Creasia, accede con tu usuario:',
-    loginRedirect: 'Redirigiendo al inicio...',
+    loginRedirect: 'Redirigiendo...',
     actions: {
       register: 'Registro',
       login: 'Accede'
@@ -186,9 +187,9 @@ const ES_FALLBACK: Dict = {
       body1: '¿Quieres viajar a China? ¡Ven con nosotros... ya estamos preparando el próximo viaje! No te preocupes si no conoces el idioma o no sabes muy bien que preparativos, visitas, rutas, actividades, hoteles, restaurantes o comercios elegir... viniendo con nosotros todo eso lo tendrás muy fácil y sólo tendrás que disfrutar de la experiencia.'
     },
     sectionCalendar: {
-      bodyNoLog: 'En este calendario compartido, puedes ver las próximas fechas en las que ya hay interesados en viajar a China con nuestro grupo y tienen disponibilidad. Si quieres poder añadir o modificar fechas de tu preferencia accede al <a href=\'/socios\'>login</a> de tu usuario.',
-      bodyLog: 'Para añadir o modificar fechas de tu preferencia, selecciona rangos de 2 o más días en el calendario pulsando, indistintamente, un día de inicio y uno de final. A continuación, elige Guardar o Eliminar según necesites:',
-      bodyLegend: '🔴 Borde rojo: días que has seleccionado.   ⚪ Superíndice blanco: personas interesadas para esa fecha.',
+      bodyNoLog: 'En este calendario compartido, puedes ver las próximas fechas en las que ya hay interesados en viajar a China con nuestro grupo y tienen disponibilidad. En los días con fondo amarillo, verás un número blanco que indica el número de personas apuntadas. Si quieres poder añadir o modificar fechas de tu preferencia accede al <a href=\'/socios?return=%2Fviajes\'>login</a> de tu usuario.',
+      bodyLog: 'Para añadir o modificar fechas de tu preferencia, selecciona rangos de 2 o más días en el calendario pulsando un día de inicio y uno de final indistintamente. A continuación, elige Guardar o Eliminar según necesites:',
+      bodyLegend: '🔴 Borde rojo: días que has seleccionado',
     },
     section2: {
       title: 'Maravillas que descubrirás',
@@ -255,10 +256,13 @@ const ES_FALLBACK: Dict = {
 
 @Injectable({ providedIn: 'root' })
 export class TranslationService {
+  private readonly sanitizer = inject(DomSanitizer);
   private readonly http = inject(HttpClient);
   private readonly platformId = inject(PLATFORM_ID);
 
   private readonly currentLang$ = new BehaviorSubject<Lang>('es');
+  /** Observable de cambios de idioma (para pipes y componentes) */
+  readonly langChanges$ = this.currentLang$.asObservable(); // ← añadido para facilitar la suscripción
   // Registramos el fallback español para que siempre exista.
   private readonly dicts = new Map<Lang, Dict>([['es', ES_FALLBACK]]);
 
@@ -288,6 +292,28 @@ export class TranslationService {
         } catch { }
       }
     }
+  }
+
+  tHtml(
+    key: string,
+    links?: { href: string; text?: string; target?: string; rel?: string }[]
+  ): SafeHtml {
+    const raw = this.t(key); // usa tu t() de siempre
+    const html = this.resolveLinks(raw, links ?? []);
+    return this.sanitizer.bypassSecurityTrustHtml(html);
+  }
+
+  private resolveLinks(src: string, links: { href: string; text?: string; target?: string; rel?: string }[]): string {
+    if (!src) return src;
+    return src.replace(/【(\d+)(?:†([^】]+))?】/g, (_m, idxStr, labelFromKey) => {
+      const i = Number(idxStr);
+      const cfg = links[i];
+      if (!cfg || !cfg.href) return labelFromKey ?? '';
+      const text = (labelFromKey ?? cfg.text ?? cfg.href).replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      const target = cfg.target ? ` target="${cfg.target}"` : '';
+      const rel = cfg.rel ? ` rel="${cfg.rel}"` : (cfg.target === '_blank' ? ' rel="noopener noreferrer"' : '');
+      return `<a href="${cfg.href}"${target}${rel}>${text}</a>`;
+    });
   }
 
   get lang(): Lang {

@@ -1,21 +1,28 @@
-<p [innerHTML]="'viajes.sectionCalendar.bodyNoLog_html' | t"></p>
+<!-- <p [innerHTML]="'viajes.sectionCalendar.bodyNoLog_html' | t"></p> -->
 <!-- Intro del calendario: cambia según login -->
+<!-- Mensaje con enlace (usa tHtml + innerHTML) -->
+<!-- <p [innerHTML]="'viajes.sectionCalendar.bodyNoLog_html' | tHtml"></p> -->
+
+<!-- El resto (sin HTML) puede seguir con | t normal -->
 <div class="cal-intro" role="note" aria-live="polite">
   @if (isLoggedIn) {
-  <section class="viajes-section" aria-labelledby="travel-wonders">
-    <p>{{ 'viajes.sectionCalendar.bodyLog' | t }}</p>
-  </section>
-  <br />
-  <section class="viajes-section" aria-labelledby="travel-wonders">
-    <p>{{ 'viajes.sectionCalendar.bodyLegend' | t }}</p>
-  </section>
+    <section class="viajes-section">
+      <p>{{ 'viajes.sectionCalendar.bodyLog' | t }}</p>
+    </section>
+    <br/>
+    <br/>
+    <section class="viajes-section-legend">
+      <p>{{ 'viajes.sectionCalendar.bodyLegend' | t }}</p>
+    </section>
   } @else {
-  <section class="viajes-section" aria-labelledby="travel-wonders">
-    <p>{{ 'viajes.sectionCalendar.bodyNoLog' | t }}</p>
-  </section>
-  <br />
+    <!-- Si quieres que el no-log también aparezca abajo, repite tHtml aquí -->
+    <section class="viajes-section">
+      <p [innerHTML]="'viajes.sectionCalendar.bodyNoLog' | tHtml"></p>
+    </section>
+    <br/>
   }
 </div>
+
 
 <div class="cal-grid">
   @for (mes of months(); track $index) {
