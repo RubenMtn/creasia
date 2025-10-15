@@ -111,6 +111,31 @@ export class ViajesCalendarioComponent implements OnChanges {
     return a <= b ? { from: a, to: b } : { from: b, to: a };
   });
 
+  /** Regla UX: mínimo 2 días salvo que el único día toque un rango propio (fusión) */
+  readonly minTwoDaysViolation = computed<boolean>(() => {
+    const r = this.selectedRange();
+    if (!r) return false;
+
+    const a = this.dayKey(r.from);
+    const b = this.dayKey(r.to);
+    const lo = Math.min(a, b);
+    const hi = Math.max(a, b);
+
+    // Días inclusivos
+    const lenDays = Math.round((hi - lo) / 86_400_000) + 1;
+    if (lenDays >= 2) return false;
+
+    // Selección de 1 día: ¿toca alguno de mis rangos a izquierda o derecha?
+    const prev = lo - 86_400_000;
+    const next = lo + 86_400_000;
+    const touchesMine = this.myRangesNorm.some(iv =>
+      (iv.from <= prev && prev <= iv.to) || (iv.from <= next && next <= iv.to)
+    );
+
+    return !touchesMine;
+  });
+
+
   // Rango propio normalizado a números (para pintar borde amarillo)
   private myRangesNorm: { from: number; to: number }[] = [];
 

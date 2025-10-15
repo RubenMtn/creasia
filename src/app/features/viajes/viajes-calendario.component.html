@@ -1,16 +1,16 @@
 <!-- Intro del calendario: cambia según login -->
 <div class="cal-intro" role="note" aria-live="polite">
   @if (!isLoggedIn) {
-  <p>
-    En este calendario compartido, puedes ver las próximas fechas en las que ya hay interesados en viajar a China con
-    nuestro grupo y tienen disponibilidad. Si quieres poder añadir o modificar fechas de tu preferencia accede al
-    login de tu usuario.
-  </p>
+    <p>
+      En este calendario compartido, puedes ver las próximas fechas en las que ya hay interesados en viajar a China con
+      nuestro grupo y tienen disponibilidad. Si quieres poder añadir o modificar fechas de tu preferencia accede al
+      login de tu usuario.
+    </p>
   } @else {
-  <p>
-    Para añadir o modificar fechas de tu preferencia, selecciona rangos de 2 o más días en el calendario pulsando,
-    indistintamente, un día de inicio y uno de final. A continuación, elige Guardar o Eliminar según necesites:
-  </p>
+    <p>
+      Para añadir o modificar fechas de tu preferencia, selecciona rangos de 2 o más días en el calendario pulsando,
+      indistintamente, un día de inicio y uno de final. A continuación, elige Guardar o Eliminar según necesites:
+    </p>
   }
 </div>
 
@@ -18,78 +18,106 @@
 
 <div class="cal-grid">
   @for (mes of months(); track $index) {
-  <article class="cal-month" aria-label="{{ mes.monthName }} de {{ mes.year }}">
-    <header class="cal-month__header">
-      <h4 class="cal-month__title">{{ mes.monthName }} {{ mes.year }}</h4>
-    </header>
+    <article class="cal-month" aria-label="{{ mes.monthName }} de {{ mes.year }}">
+      <header class="cal-month__header">
+        <h4 class="cal-month__title">{{ mes.monthName }} {{ mes.year }}</h4>
+      </header>
 
-    <table class="cal-table" role="grid">
-      <thead>
-        <tr>
-          <th scope="col" abbr="Lunes">L</th>
-          <th scope="col" abbr="Martes">M</th>
-          <th scope="col" abbr="Miércoles">X</th>
-          <th scope="col" abbr="Jueves">J</th>
-          <th scope="col" abbr="Viernes">V</th>
-          <th scope="col" abbr="Sábado">S</th>
-          <th scope="col" abbr="Domingo">D</th>
-        </tr>
-      </thead>
-      <tbody>
-        @for (week of mes.weeks; track week[0].iso) {
-        <tr role="row">
-          @for (day of week; track day.iso) {
-          <td [class.is-outside]="!day.inMonth" [class.is-selected]="isSelected(day.date)"
-            [class.is-in-range]="isRangeMiddle(day.date)" [class.is-past]="day.isPast" [class.is-today]="day.isToday">
-            <div class="cell" [class.tone-0]="day.count === 0" [class.tone-1]="day.count === 1"
-              [class.tone-2]="day.count === 2" [class.tone-3]="day.count === 3" [class.tone-4]="day.count === 4"
-              [class.tone-5]="day.count === 5" [class.tone-6]="day.count >= 6 && day.count <= 9"
-              [class.tone-7]="day.count >= 10" [class.is-mine]="isLoggedIn && isOwnDay(day.date)" role="button"
-              [attr.tabindex]="(day.inMonth && !day.isPast) ? 0 : null" [attr.aria-disabled]="day.isPast ? true : null"
-              (click)="!day.isPast && onDayClick(day.date, monthId(mes.year, mes.monthIndex), day.inMonth)">
-              <span class="num">{{ day.date.getDate() }}</span>
-              @if (day.count > 0 && day.inMonth) {
-              <span class="badge">{{ day.count }}</span>
+      <table class="cal-table" role="grid">
+        <thead>
+          <tr>
+            <th scope="col" abbr="Lunes">L</th>
+            <th scope="col" abbr="Martes">M</th>
+            <th scope="col" abbr="Miércoles">X</th>
+            <th scope="col" abbr="Jueves">J</th>
+            <th scope="col" abbr="Viernes">V</th>
+            <th scope="col" abbr="Sábado">S</th>
+            <th scope="col" abbr="Domingo">D</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (week of mes.weeks; track week[0].iso) {
+            <tr role="row">
+              @for (day of week; track day.iso) {
+                <td
+                  [class.is-outside]="!day.inMonth"
+                  [class.is-selected]="isSelected(day.date)"
+                  [class.is-in-range]="isRangeMiddle(day.date)"
+                  [class.is-past]="day.isPast"
+                  [class.is-today]="day.isToday"
+                >
+                  <div
+                    class="cell"
+                    [class.tone-0]="day.count === 0"
+                    [class.tone-1]="day.count === 1"
+                    [class.tone-2]="day.count === 2"
+                    [class.tone-3]="day.count === 3"
+                    [class.tone-4]="day.count === 4"
+                    [class.tone-5]="day.count === 5"
+                    [class.tone-6]="day.count >= 6 && day.count <= 9"
+                    [class.tone-7]="day.count >= 10"
+                    [class.is-mine]="isLoggedIn && isOwnDay(day.date)"
+                    role="button"
+                    [attr.tabindex]="(day.inMonth && !day.isPast) ? 0 : null"
+                    [attr.aria-disabled]="day.isPast ? true : null"
+                    (click)="!day.isPast && onDayClick(day.date, monthId(mes.year, mes.monthIndex), day.inMonth)"
+                  >
+                    <span class="num">{{ day.date.getDate() }}</span>
+                    @if (day.count > 0 && day.inMonth) {
+                      <span class="badge">{{ day.count }}</span>
+                    }
+                  </div>
+                </td>
               }
-            </div>
-          </td>
+            </tr>
           }
-        </tr>
+        </tbody>
+      </table>
+
+      <!-- Acciones: DENTRO del article del mes -->
+      @if (selectedRange(); as r) {
+        @if (isLoggedIn && isEdgeOfRangeMonth(mes.year, mes.monthIndex)) {
+          <div class="cal-actions">
+            @if (saveState === 'idle') {
+              <button type="button" class="btn-save" (click)="emitSave()" [disabled]="saving || minTwoDaysViolation()">
+                {{ saving ? 'Guardando…' : (selectionFullyMine() ? 'Eliminar fechas' : 'Guardar fechas') }}
+              </button>
+            } @else {
+              <span
+                class="save-result"
+                role="status"
+                [class.ok]="saveState==='ok'"
+                [class.err]="saveState==='error'"
+                [class.deleted]="saveState==='deleted'"
+              >
+                {{
+                  saveState==='ok' ? 'GUARDADO'
+                    : saveState==='deleted' ? 'ELIMINADO'
+                    : 'ERROR. CONTÁCTENOS'
+                }}
+              </span>
+            }
+
+            <!-- Mensaje o rango: si no cumple mínimo, se muestra el aviso en lugar de la fecha -->
+            @if (minTwoDaysViolation()) {
+              <span class="save-result err" role="status" aria-live="polite">
+                Mínimo 2 días seguidos
+              </span>
+            } @else {
+              <span class="range-label">
+                {{ r.from | date:'dd/MM/yyyy' }} - {{ r.to | date:'dd/MM/yyyy' }}
+              </span>
+            }
+          </div>
         }
-      </tbody>
-    </table>
-
-    <!-- Acciones: DENTRO del article del mes -->
-    @if (selectedRange(); as r) {
-    @if (isLoggedIn && isEdgeOfRangeMonth(mes.year, mes.monthIndex)) {
-    <div class="cal-actions">
-      @if (saveState === 'idle') {
-      <button type="button" class="btn-save" (click)="emitSave()" [disabled]="saving">
-        {{ saving ? 'Guardando…' : (selectionFullyMine() ? 'Eliminar fechas' : 'Guardar fechas') }}
-      </button>
-      } @else {
-      <span class="save-result" role="status" [class.ok]="saveState==='ok'" [class.err]="saveState==='error'"
-        [class.deleted]="saveState==='deleted'">
-        {{
-        saveState==='ok' ? 'GUARDADO'
-        : saveState==='deleted' ? 'ELIMINADO'
-        : 'ERROR. CONTÁCTENOS'
-        }}
-      </span>
       }
-      <span class="range-label">
-        {{ r.from | date:'dd/MM/yyyy' }} - {{ r.to | date:'dd/MM/yyyy' }}
-      </span>
-    </div>
-    }
-    }
 
-    <!-- Aviso: requiere login (se muestra bajo el mes clicado) -->
-    @if (!isLoggedIn && loginNoticeMonthId() === monthId(mes.year, mes.monthIndex)) {
-    <div class="cal-actions" role="status" aria-live="polite">
-      <span class="save-result">Debe logarse para añadir fechas</span>
-    </div>
-    }
-  </article>
+      <!-- Aviso: requiere login (se muestra bajo el mes clicado) -->
+      @if (!isLoggedIn && loginNoticeMonthId() === monthId(mes.year, mes.monthIndex)) {
+        <div class="cal-actions" role="status" aria-live="polite">
+          <span class="save-result">Debe logarse para añadir fechas</span>
+        </div>
+      }
+    </article>
   }
 </div>

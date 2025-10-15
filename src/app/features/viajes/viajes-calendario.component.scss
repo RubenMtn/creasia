@@ -474,4 +474,58 @@ td.is-mine,
 }
 
 /* “Hoy”: número más grande y negrita */
-td.is-today .num { font-weight: 700; font-size: 1.1em; }
+//td.is-today .num { font-weight: 700; font-size: 1.1em; }
+td.is-today .num { font-weight: 120%; font-size:120%; color: #1d4ed8; }
+
+/* Ancho del separador fin de semana (ajustable) */
+:host { --weekend-gap: 0.05rem; }
+
+/* Columna del separador (colgroup) */
+.cal-table col.sep-col { width: var(--weekend-gap); }
+
+/* Celdas separador en header y body: sin bordes ni interacción */
+.cal-table .week-sep,
+.cal-table th.week-sep {
+  padding: 0;
+  border: 0;
+  width: var(--weekend-gap);
+  background: transparent !important;
+  pointer-events: none;
+}
+
+// .cal-table td:nth-child(6) .cell { /* ojo: con separador la columna S es la 7ª */
+//   box-shadow: -1px 0 0 #2b2b2b inset;
+// }
+
+
+/* Ajuste micro del fin de semana (sin columna extra) */
+:host {
+  --weekend-extra-gap: 0.12rem; /* baja hasta 0.02rem si quieres */
+}
+
+/* Empuja un poco el contenido de Sábado para simular hueco fino */
+.cal-table tbody td:nth-child(6) .cell {
+  margin-left: var(--weekend-extra-gap);
+}
+
+/* Encabezado Sábado con un pelín más de aire a la izquierda */
+.cal-table thead th:nth-child(6) {
+  padding-left: calc(0.35rem + var(--weekend-extra-gap));
+}
+
+/* (Opcional) línea sutil antes de Sábado, sin alterar la rejilla */
+.cal-table tbody td:nth-child(6),
+.cal-table thead th:nth-child(6) {
+  position: relative;
+}
+.cal-table tbody td:nth-child(6)::before,
+.cal-table thead th:nth-child(6)::before {
+  content: '';
+  position: absolute;
+  left: -1px;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: #2b2b2b; /* ajusta el color si quieres */
+  pointer-events: none;
+}
