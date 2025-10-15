@@ -1,13 +1,22 @@
 ﻿/* eslint-disable no-empty */
 /* eslint-disable @typescript-eslint/no-explicit-any */
+
+/**
+ * SociosComponent
+ * ----------------
+ * Cambios clave:
+ *  - Tras activación (vía ?code= o ?activation=ok) redirige a "/?homeState=static"
+ *    para que Home se muestre SIN animaciones ni vídeo.
+ *  - Además, marca sessionStorage "creasia:introPlayed" = "1" por si el Home
+ *    también lo usa como señal de “intro ya vista”.
+ */
+
 import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, ActivatedRoute } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
-
 import { TranslationService } from '../../shared/i18n/translation.service';
 import { TPipe } from '../../shared/i18n/t.pipe';
-
 import { SociosService } from '../../services/socios.service';
 import { UserSessionService } from '../../services/user-session.service';
 import { AuthService } from '../../services/auth.service';
@@ -20,9 +29,10 @@ import { AuthService } from '../../services/auth.service';
   styleUrl: './socios.component.scss'
 })
 export class SociosComponent implements OnInit, OnDestroy {
-  private static readonly VIEW_STATE_KEY = 'creasia:sociosView';
-  private static readonly ACTIVATION_KEY = 'creasia:activation';
-  private static readonly PENDING_UID_KEY = 'creasia:pendingUid';
+
+  private static readonly VIEW_STATE_KEY   = 'creasia:sociosView';
+  private static readonly ACTIVATION_KEY   = 'creasia:activation';
+  private static readonly PENDING_UID_KEY  = 'creasia:pendingUid';
 
   private readonly hasWindow = typeof window !== 'undefined';
   private readonly i18n = inject(TranslationService);
@@ -51,7 +61,6 @@ export class SociosComponent implements OnInit, OnDestroy {
   // Vista por defecto
   showRegisterForm = false;
   showLoginForm = true;
-
   loading = false;
 
   // Mensajería UI
@@ -63,8 +72,8 @@ export class SociosComponent implements OnInit, OnDestroy {
   private activationTimer: number | null = null;
   private activationDeadline = 0;
   private pendingUid: number | null = null;
-  private readonly pollEveryMs = 5000;        // cada 5s
-  private readonly pollMaxMs = 2 * 60 * 1000; // máx 2 minutos
+  private readonly pollEveryMs = 5000;       // cada 5s
+  private readonly pollMaxMs   = 2 * 60 * 1000; // máx 2 minutos
 
   // Listeners (para cambios de activación desde otras tabs)
   private onStorage = (e: StorageEvent) => {
@@ -78,7 +87,7 @@ export class SociosComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     if (!this.hasWindow) return;
 
-    // 0) Si viene ?code=... (desde el botón del email), activamos desde el front
+    // 0) Si viene ?code=... (desde el botón del email), activamos desde el front.
     const qp = this.route.snapshot.queryParams;
     if (qp['code']) {
       this.activateFromCode(String(qp['code']), String(qp['lang'] ?? 'es'));
@@ -121,6 +130,7 @@ export class SociosComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     if (!this.hasWindow) return;
+
     window.removeEventListener('storage', this.onStorage);
     window.removeEventListener('focus', this.onFocus);
     this.stopActivationPolling();
@@ -131,43 +141,49 @@ export class SociosComponent implements OnInit, OnDestroy {
     }
   }
 
-  // ========= Activación desde el front por token =========
+  // ========= Activación desde el front por token (profundidad: ?code=...) =========
   private activateFromCode(code: string, lang: string): void {
     this.clearMessages();
     this.loading = true;
 
     // Llamada directa al endpoint JSON (mismo origen) con cookies
-    this.http.post<any>('/api/auth/activate_token.php', { code, lang }, { withCredentials: true })
+    this.http.post('/api/auth/activate_token.php', { code, lang }, { withCredentials: true })
       .subscribe({
-        next: async (j) => {
+        next: async (j: any) => {
           if (j?.ok && j.socio) {
             const displayName = ((j.socio.nombre ?? '') || j.socio.email || '').trim();
+
             this.okMsg = 'socios.login.greeting';
             this.greetName = displayName;
             this.error = '';
 
+            // Persistimos login básico
             try {
               localStorage.setItem('creasia:isLoggedIn', '1');
               localStorage.setItem('creasia:userEmail', (j.socio.email || '').trim());
               localStorage.setItem(SociosComponent.ACTIVATION_KEY, 'ok'); // para otras tabs
-            } catch { }
+            } catch {}
 
             this.session.persistLogin(displayName, { token: '1' });
-            try { window.dispatchEvent(new Event('creasia:user-updated')); } catch { }
+            try { window.dispatchEvent(new Event('creasia:user-updated')); } catch {}
 
             // Forzamos vista login (el saludo tapa el form)
             this.showLoginForm = true;
             this.showRegisterForm = false;
             this.persistViewState();
 
+            // 🟢 CLAVE: entrar en Home en estado estático y evitar vídeo
+            try { sessionStorage.setItem('creasia:introPlayed', '1'); } catch {}
+            const langParam = (localStorage.getItem('creasia:lang') ?? 'es').slice(0, 2);
+            const target = `/?homeState=static&lang=${encodeURIComponent(langParam)}`;
 
-            // Redirección suave (una sola vez)
-            if (this.redirectTimer) { clearTimeout(this.redirectTimer); this.redirectTimer = null; }
+            if (this.redirectTimer) {
+              clearTimeout(this.redirectTimer);
+              this.redirectTimer = null;
+            }
             this.redirectTimer = window.setTimeout(() => {
-              void this.router.navigateByUrl('/', { replaceUrl: true });
+              void this.router.navigateByUrl(target, { replaceUrl: true });
             }, 1200);
-
-
           } else {
             // Token inválido/expirado → mostramos mensaje y dejamos el login
             this.error = j?.error || 'socios.activation.error';
@@ -190,7 +206,6 @@ export class SociosComponent implements OnInit, OnDestroy {
   }
 
   // ====== Registro / login / logout / utilidades ======
-
   openRegister(): void {
     this.clearMessages();
     this.showRegisterForm = true;
@@ -217,17 +232,26 @@ export class SociosComponent implements OnInit, OnDestroy {
     this.stopActivationPolling();
 
     const form = event.target as HTMLFormElement;
-    const nombre = (form.elements.namedItem('registerName') as HTMLInputElement)?.value.trim() || '';
-    const apesRaw = (form.elements.namedItem('registerSurname') as HTMLInputElement)?.value || '';
-    const email = (form.elements.namedItem('registerEmail') as HTMLInputElement)?.value.trim() || '';
+    const nombre   = (form.elements.namedItem('registerName') as HTMLInputElement)?.value.trim() || '';
+    const apesRaw  = (form.elements.namedItem('registerSurname') as HTMLInputElement)?.value || '';
+    const email    = (form.elements.namedItem('registerEmail') as HTMLInputElement)?.value.trim() || '';
     const password = (form.elements.namedItem('registerPassword') as HTMLInputElement)?.value || '';
-    const optIn = (form.elements.namedItem('registerOptIn') as HTMLInputElement)?.checked ?? false;
+    const optIn    = (form.elements.namedItem('registerOptIn') as HTMLInputElement)?.checked ?? false;
+
     const lang = (localStorage.getItem('creasia:lang') ?? 'es').slice(0, 2) as 'es' | 'en' | 'zh';
 
-    if (!nombre && !email && !password) { this.error = 'socios.errors.fillFields'; return; }
-    if (!nombre || !email || !password) { this.error = 'socios.errors.missingRequired'; return; }
-    if (!this.isValidEmail(email)) { this.error = 'socios.errors.invalidEmail'; return; }
-    if (password.length < 8) { this.error = 'socios.errors.invalidEmailOrPasswordMin8'; return; }
+    if (!nombre && !email && !password) {
+      this.error = 'socios.errors.fillFields'; return;
+    }
+    if (!nombre || !email || !password) {
+      this.error = 'socios.errors.missingRequired'; return;
+    }
+    if (!this.isValidEmail(email)) {
+      this.error = 'socios.errors.invalidEmail'; return;
+    }
+    if (password.length < 8) {
+      this.error = 'socios.errors.invalidEmailOrPasswordMin8'; return;
+    }
 
     const surname = (apesRaw ?? '').trim();
     const [a1, ...rest] = surname.split(/\s+/);
@@ -235,123 +259,114 @@ export class SociosComponent implements OnInit, OnDestroy {
     const apellido2 = rest.length ? rest.join(' ') : null;
 
     this.loading = true;
-    this.socios.register(email, password, nombre, apellido1, apellido2, !!optIn, lang).subscribe({
-      next: (res: any) => {
-        if (res.ok) {
-          this.okMsg = 'socios.register.successCheckEmail';
-          this.greetName = null;
 
-          const uidVal = res?.uid;
-          if (typeof uidVal === 'number' && uidVal > 0) {
-            this.pendingUid = uidVal;
-            try { window.localStorage.setItem(SociosComponent.PENDING_UID_KEY, String(uidVal)); } catch { }
-            this.startActivationPolling();
+    this.socios.register(email, password, nombre, apellido1, apellido2, !!optIn, lang)
+      .subscribe({
+        next: (res: any) => {
+          if (res.ok) {
+            this.okMsg = 'socios.register.successCheckEmail';
+            this.greetName = null;
+
+            const uidVal = res?.uid;
+            if (typeof uidVal === 'number' && uidVal > 0) {
+              this.pendingUid = uidVal;
+              try { window.localStorage.setItem(SociosComponent.PENDING_UID_KEY, String(uidVal)); } catch {}
+              this.startActivationPolling();
+            }
+            form.reset();
+          } else {
+            this.error = res.error || 'socios.errors.generic';
+          }
+        },
+        error: (e) => {
+          if (e.status === 409) this.error = 'socios.errors.emailAlreadyRegistered';
+          else if (e.status === 422) this.error = 'socios.errors.invalidEmailOrPassword';
+          else this.error = 'socios.errors.server';
+          this.loading = false;
+        },
+        complete: () => (this.loading = false)
+      });
+  }
+
+  onLoginSubmit(event: Event): void {
+    event.preventDefault();
+    this.clearMessages();
+
+    const form = event.target as HTMLFormElement;
+    const email = (form.elements.namedItem('loginEmail') as HTMLInputElement)?.value.trim();
+    const password = (form.elements.namedItem('loginPassword') as HTMLInputElement)?.value;
+
+    if (!email || !password) {
+      this.error = 'socios.errors.emailAndPasswordRequired'; return;
+    }
+
+    const isLogged = localStorage.getItem('creasia:isLoggedIn') === '1';
+    const storedEmail = (localStorage.getItem('creasia:userEmail') || '').trim().toLowerCase();
+    if (isLogged && storedEmail && email.trim().toLowerCase() === storedEmail) {
+      this.error = 'socios.errors.alreadyLoggedIn'; return;
+    }
+
+    this.loading = true;
+
+    this.socios.login(email, password).subscribe({
+      next: (res: any) => {
+        if (res.ok && res.socio) {
+          const nombre = (res.socio.nombre ?? '').trim();
+          const displayName = (nombre || res.socio.email || '').trim();
+
+          this.okMsg = 'socios.login.greeting';
+          this.error = '';
+          this.greetName = displayName;
+
+          const access = (res as any).access_token || (res as any).access;
+          if (access) this.auth.setAccess(access);
+
+          this.session.persistLogin(displayName, { token: '1' });
+
+          try {
+            localStorage.setItem('creasia:isLoggedIn', '1');
+            localStorage.setItem('creasia:userEmail', (res.socio.email || '').trim());
+          } catch {}
+
+          try { window.dispatchEvent(new Event('creasia:user-updated')); } catch {}
+
+          if (this.redirectTimer) {
+            clearTimeout(this.redirectTimer);
+            this.redirectTimer = null;
           }
 
-          form.reset();
+          // Redirección suave a Home. Si quieres saltar intro también aquí,
+          // puedes añadir "?homeState=static".
+          this.redirectTimer = window.setTimeout(() => {
+            void this.router.navigateByUrl('/', { replaceUrl: true });
+          }, 1200);
+
         } else {
-          this.error = res.error || 'socios.errors.generic';
+          this.error = res.error || 'socios.errors.invalidCredentials';
+          this.greetName = null;
+          this.session.clearLogin();
         }
       },
       error: (e) => {
-        if (e.status === 409) this.error = 'socios.errors.emailAlreadyRegistered';
-        else if (e.status === 422) this.error = 'socios.errors.invalidEmailOrPassword';
-        else this.error = 'socios.errors.server';
+        this.error =
+          e.status === 401 ? 'socios.errors.invalidCredentials' :
+          e.status === 422 ? 'socios.errors.emailOrPasswordRequired' :
+          e.status === 403 ? 'socios.errors.mustActivate' :
+          'socios.errors.server';
+
         this.loading = false;
+        this.session.clearLogin();
       },
       complete: () => (this.loading = false)
     });
   }
-
-onLoginSubmit(event: Event): void {
-  event.preventDefault();
-  this.clearMessages();
-
-  const form = event.target as HTMLFormElement;
-  const email = (form.elements.namedItem('loginEmail') as HTMLInputElement)?.value.trim();
-  const password = (form.elements.namedItem('loginPassword') as HTMLInputElement)?.value;
-
-  if (!email || !password) {
-    this.error = 'socios.errors.emailAndPasswordRequired';
-    return;
-  }
-
-  // Evita “ya estás logado con ese mismo email”
-  const isLogged = localStorage.getItem('creasia:isLoggedIn') === '1';
-  const storedEmail = (localStorage.getItem('creasia:userEmail') || '').trim().toLowerCase();
-  if (isLogged && storedEmail && email.toLowerCase() === storedEmail) {
-    this.error = 'socios.errors.alreadyLoggedIn';
-    return;
-  }
-
-  this.loading = true;
-
-  this.socios.login(email, password).subscribe({
-    next: (res: any) => {
-      // Acepta varias formas de “ok”
-      const ok =
-        !!(res?.ok || res?.success || res?.logged || res?.isLogged || (typeof res?.uid === 'number' && res.uid > 0));
-
-      // Normaliza “socio-like”: puede venir como res.socio o como res.user
-      const socio = res?.socio ?? res?.user ?? null;
-      const socioEmail: string | null =
-        (socio?.email ?? res?.email ?? null) ? String(socio?.email ?? res?.email).trim() : null;
-      const socioName =
-        ((socio?.nombre ?? socio?.name ?? '') as string).trim();
-
-      if (ok && (socioEmail || socioName)) {
-        const displayName = (socioName || socioEmail || '').trim();
-
-        // Mensajes UI
-        this.okMsg = 'socios.login.greeting';
-        this.error = '';
-        this.greetName = displayName;
-
-        // Si el backend devolviera access/access_token, lo guardamos
-        const access = (res as any).access_token || (res as any).access;
-        if (access) this.auth.setAccess(access);
-
-        // Estado de sesión unificado (servicio + localStorage)
-        this.session.persistLogin(displayName, { token: '1' });
-        try {
-          localStorage.setItem('creasia:isLoggedIn', '1');
-          if (socioEmail) localStorage.setItem('creasia:userEmail', socioEmail);
-          if (displayName) localStorage.setItem('creasia:userName', displayName);
-        } catch {}
-
-        // Notifica a quien escuche
-        try { window.dispatchEvent(new Event('creasia:user-updated')); } catch {}
-
-        // Redirección suave
-        if (this.redirectTimer) { clearTimeout(this.redirectTimer); this.redirectTimer = null; }
-        this.redirectTimer = window.setTimeout(() => {
-          void this.router.navigateByUrl('/', { replaceUrl: true });
-        }, 1200);
-      } else {
-        this.error = res?.error || 'socios.errors.invalidCredentials';
-        this.greetName = null;
-        this.session.clearLogin();
-      }
-    },
-    error: (e) => {
-      this.error =
-        e.status === 401 ? 'socios.errors.invalidCredentials' :
-        e.status === 422 ? 'socios.errors.emailOrPasswordRequired' :
-        e.status === 403 ? 'socios.errors.mustActivate' :
-        'socios.errors.server';
-      this.loading = false;
-      this.session.clearLogin();
-    },
-    complete: () => (this.loading = false),
-  });
-}
 
   logout(): void {
     this.session.clearLogin();
     try {
       localStorage.setItem('creasia:isLoggedIn', '0');
       localStorage.removeItem('creasia:userEmail');
-    } catch { }
+    } catch {}
   }
 
   private persistViewState(): void {
@@ -369,12 +384,12 @@ onLoginSubmit(event: Event): void {
   // ===== Flujo previo (por si llega ?activation=... desde otros lados) =====
   private applyActivationMessageFromURL(): void {
     if (!this.hasWindow) return;
-    const url = new URL(window.location.href);
 
+    const url = new URL(window.location.href);
     const langParam = url.searchParams.get('lang');
     if (langParam) {
       const lang2 = (langParam.slice(0, 2).toLowerCase() as 'es' | 'en' | 'zh');
-      try { localStorage.setItem('creasia:lang', lang2); } catch { }
+      try { localStorage.setItem('creasia:lang', lang2); } catch {}
       void this.i18n.setLang(lang2);
     }
 
@@ -389,20 +404,20 @@ onLoginSubmit(event: Event): void {
 
     const errMap: Record<string, string> = {
       expired: 'socios.activation.expired',
-      used: 'socios.activation.used',
+      used:    'socios.activation.used',
       invalid: 'socios.activation.invalid',
-      error: 'socios.activation.error'
+      error:   'socios.activation.error'
     };
 
     if (status === 'ok') {
       this.auth.refresh()
         .then((ok) => {
           if (!ok) throw new Error('refresh-failed');
-          return this.http.get<any>('/api/socios_me.php', { withCredentials: true })
+          return this.http.get('/api/socios_me.php', { withCredentials: true })
             .toPromise()
             .then(res => res ?? null);
         })
-        .then((j) => {
+        .then((j: any) => {
           if (j?.ok && j.socio) {
             const displayName = ((j.socio.nombre ?? '') || j.socio.email || '').trim();
 
@@ -413,18 +428,24 @@ onLoginSubmit(event: Event): void {
             try {
               localStorage.setItem('creasia:isLoggedIn', '1');
               localStorage.setItem('creasia:userEmail', (j.socio.email || '').trim());
-            } catch { }
-            this.session.persistLogin(displayName, { token: '1' });
+            } catch {}
 
-            try { window.dispatchEvent(new Event('creasia:user-updated')); } catch { }
+            this.session.persistLogin(displayName, { token: '1' });
+            try { window.dispatchEvent(new Event('creasia:user-updated')); } catch {}
 
             this.showLoginForm = true;
             this.showRegisterForm = false;
             this.persistViewState();
 
-            setTimeout(() => { void this.router.navigateByUrl('/', { replaceUrl: true }); }, 1200);
+            // 🟢 CLAVE: forzar Home estático
+            try { sessionStorage.setItem('creasia:introPlayed', '1'); } catch {}
+            const lang2 = (localStorage.getItem('creasia:lang') ?? 'es').slice(0, 2);
+            setTimeout(() => {
+              void this.router.navigateByUrl(`/?homeState=static&lang=${encodeURIComponent(lang2)}`, { replaceUrl: true });
+            }, 1200);
 
           } else {
+            // ok de activación pero sin socio cargado → mostramos OK simple
             this.okMsg = 'socios.activation.ok';
             this.error = '';
             this.greetName = null;
@@ -434,6 +455,7 @@ onLoginSubmit(event: Event): void {
           }
         })
         .catch(() => {
+          // fallback: mostramos OK simple
           this.okMsg = 'socios.activation.ok';
           this.error = '';
           this.greetName = null;
@@ -449,6 +471,7 @@ onLoginSubmit(event: Event): void {
       this.showLoginForm = true;
       this.showRegisterForm = false;
       this.persistViewState();
+
     } else {
       this.error = 'socios.activation.invalid';
       this.okMsg = '';
@@ -463,7 +486,7 @@ onLoginSubmit(event: Event): void {
     this.showRegisterForm = false;
     this.persistViewState();
 
-    // Limpiar la URL
+    // Limpiar la URL de activación (dejamos la ruta limpia)
     url.searchParams.delete('activation');
     url.searchParams.delete('autologin');
     if (langParam) url.searchParams.delete('lang');
@@ -510,7 +533,6 @@ onLoginSubmit(event: Event): void {
       }
 
       const url = `${this.apiBase}/api/socios_activation_status.php?uid=${this.pendingUid}`;
-
       fetch(url, {
         cache: 'no-store',
         method: 'GET',

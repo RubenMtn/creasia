@@ -1,28 +1,49 @@
 ﻿/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable no-empty */
 /* eslint-disable @angular-eslint/prefer-inject */
-// [01] Dependencias externas y utilidades que usa el hero de la home.
+
+/**
+ * HomeComponent – Hero animado con vídeo + fases (conectores, puntos, enlaces)
+ * ----------------------------------------------------------------------------
+ * Cambios relevantes:
+ *  1) Arranque del vídeo una sola vez con 'canplaythrough' (evita "saltitos")
+ *  2) Permite saltar animaciones con '?skip=1' o '?homeState=static'
+ *  3) Limpieza y comentarios; sin romper API usada por la plantilla
+ */
+
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
   AfterViewInit,
   Component,
   DestroyRef,
   ElementRef,
-  inject,
   NgZone,
   OnDestroy,
   QueryList,
   ViewChild,
   ViewChildren,
-  HostListener
+  HostListener,
+  inject,
 } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { fromEvent } from 'rxjs';
-import { TPipe } from '../../shared/i18n/t.pipe';
-import { CarouselComponent } from "../../shared/ui/carousel/carousel.component";
-import { AnimationPhase, LinkAnchor, LinkItem, FacePoint, HERO_FRAME_ASPECT, HERO_TIMING, HERO_FACE_POINTS, HERO_LINKS, HERO_SLIDES } from './home-hero.config';
 
-// [02] Tipos derivados internos que usan la configuracion importada.
+import { TPipe } from '../../shared/i18n/t.pipe';
+import { CarouselComponent } from '../../shared/ui/carousel/carousel.component';
+
+import {
+  AnimationPhase,
+  LinkAnchor,
+  LinkItem,
+  FacePoint,
+  HERO_FRAME_ASPECT,
+  HERO_TIMING,
+  HERO_FACE_POINTS,
+  HERO_LINKS,
+  HERO_SLIDES,
+} from './home-hero.config';
+
+/* ----------------------------- Tipos internos ----------------------------- */
 interface ScaledFacePoint extends FacePoint {
   left: number;
   top: number;
@@ -30,66 +51,66 @@ interface ScaledFacePoint extends FacePoint {
 
 interface Connector {
   id: string;
-  x1: number;
-  y1: number;
-  x2: number;
-  y2: number;
+  x1: number; y1: number;
+  x2: number; y2: number;
   length: number;
   progress: number;
 }
 
-// [03] Declaracion del componente standalone que orquesta el hero animado.
+/* -------------------------------- Componente ------------------------------ */
 @Component({
   selector: 'app-home',
   standalone: true,
   imports: [RouterLink, TPipe, CarouselComponent],
   templateUrl: './home.component.html',
-  styleUrl: './home.component.scss'
+  styleUrl: './home.component.scss',
 })
 export class HomeComponent implements AfterViewInit, OnDestroy {
+  /* --------------------------- Referencias de vista --------------------------- */
+  @ViewChild('mediaWrap', { static: true }) private readonly mediaWrapRef!: ElementRef<HTMLElement>;
+  // ⬇️ Cambio: static:false para no resolver la ref antes de que exista en DOM
+  @ViewChild('vid', { static: false }) private readonly videoRef?: ElementRef<HTMLVideoElement>;
+  @ViewChildren('facePoint') private readonly pointRefs!: QueryList<ElementRef<HTMLElement>>;
+  @ViewChildren('linkEl') private readonly linkRefs!: QueryList<ElementRef<HTMLElement>>;
 
-  @ViewChild('mediaWrap', { static: true })
-  private readonly mediaWrapRef!: ElementRef<HTMLDivElement>;
-
-  @ViewChild('vid', { static: true })
-  private readonly videoRef?: ElementRef<HTMLVideoElement>;
-
-  @ViewChildren('facePoint')
-  private readonly pointRefs!: QueryList<ElementRef<HTMLSpanElement>>;
-
-  @ViewChildren('linkEl')
-  private readonly linkRefs!: QueryList<ElementRef<HTMLAnchorElement>>;
-
+  /* ------------------------------ Estado base UI ----------------------------- */
   frameAR: string = HERO_FRAME_ASPECT.cssAspectRatio;
   private frameRatio = HERO_FRAME_ASPECT.numericFrameRatio;
   private readonly imageRatio = HERO_FRAME_ASPECT.referenceImageRatio;
 
+  /* ---------------------------- Infraestructura DOM --------------------------- */
   private resizeObserver?: ResizeObserver;
   private pendingFrame = -1;
   private pointsTimeout: number | null = null;
   private connectorsTimeout: number | null = null;
   private trackingHandle: number | null = null;
 
+  /* ------------------------------- Fases/flags -------------------------------- */
   private connectorsReady = false;
   private pendingConnectorUpdate = false;
   private connectorProgress = 0;
-  private animationDone = false;
+  animationDone = false;
 
+  // Disponibilidad DOM (SSR-safe)
   private readonly hasDOM = typeof window !== 'undefined' && typeof document !== 'undefined';
-  private readonly supportsResizeObserver = this.hasDOM && typeof window.ResizeObserver !== 'undefined';
+  private readonly supportsResizeObserver = this.hasDOM && typeof (window as any).ResizeObserver !== 'undefined';
+  // ⬇️ Nuevo: flag público por si quieres condicionar en el HTML que el <video> sólo exista en cliente
+  public readonly isBrowser = typeof window !== 'undefined' && typeof document !== 'undefined';
 
   private phaseQueue: AnimationPhase[] = [];
   private runningPhase: AnimationPhase | null = null;
 
+  /* ------------------------------- Timings (cfg) ------------------------------ */
   private readonly POINTS_DELAY = HERO_TIMING.POINTS_DELAY;
   private readonly LINES_LEAD = HERO_TIMING.LINES_LEAD;
   private readonly LINES_DRAW_DURATION = HERO_TIMING.LINES_DRAW_DURATION;
   private readonly LINKS_DURATION = HERO_TIMING.LINKS_DURATION;
   private readonly LINKS_BUFFER = HERO_TIMING.LINKS_BUFFER;
 
+  /* -------------------------------- Contenido -------------------------------- */
   homeSlides = [...HERO_SLIDES];
 
-  // Flags de UI
+  /* ----------------------------- Flags visuales ------------------------------ */
   fading = false;
   skipToEnd = false;
   showImage = false;
@@ -103,23 +124,27 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
   linksPhaseOffset = 0;
 
   readonly facePoints: FacePoint[] = HERO_FACE_POINTS;
-
   scaledPoints: ScaledFacePoint[] = [];
   connectors: Connector[] = [];
+
   private readonly destroyRef = inject(DestroyRef);
   private returnUrl: string | null = null;
   private returnNavigationTriggered = false;
-
   private readonly links: LinkItem[] = HERO_LINKS;
 
-  // [04] Constructor: geometría inicial, returnUrl y eventos globales (skip).
+  /* ----------- NUEVO: control de arranque del vídeo para evitar saltos ------- */
+  private videoStarted = false;
+
+  /* -------------------------------- Constructor ------------------------------ */
   constructor(
     private readonly zone: NgZone,
     private readonly route: ActivatedRoute,
-    private readonly router: Router
+    private readonly router: Router,
   ) {
+    // Geometría inicial
     this.updatePoints();
 
+    // returnUrl opcional (para volver a la página previa tras la intro)
     const encodedReturn = this.route.snapshot.queryParamMap.get('returnUrl');
     if (encodedReturn) {
       const decoded = this.decodeReturnUrl(encodedReturn);
@@ -128,8 +153,9 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
       }
     }
 
-    if (typeof window !== 'undefined') {
-      fromEvent(window, 'homeSkipToEnd')
+    // Evento global opcional para saltar al final (por ejemplo, desde header)
+    if (this.hasDOM) {
+      fromEvent<CustomEvent>(window, 'homeSkipToEnd')
         .pipe(takeUntilDestroyed(this.destroyRef))
         .subscribe(() => {
           this.zone.run(() => {
@@ -140,9 +166,9 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
     }
   }
 
-  // [05] Hook tras el render inicial: observers + decidir si saltar intro. También
-  // SUSCRIPCIÓN a cambios de query params para poder forzar la intro si ya estamos en Home.
+  /* --------------------------- Ciclo de vida / init --------------------------- */
   ngAfterViewInit(): void {
+    // SSR: no hay DOM → dejar la vista en estado "final" razonable y salir.
     if (!this.hasDOM) {
       Promise.resolve().then(() => {
         this.connectorsReady = true;
@@ -151,9 +177,14 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
       return;
     }
 
+    // Quitar 'autoplay' si estuviera en el HTML para evitar dobles arranques (defensivo)
+    try { this.videoRef?.nativeElement.removeAttribute('autoplay'); } catch {}
+
+    // Recalcular conectores cuando cambia la lista de puntos/enlaces
     this.pointRefs.changes.subscribe(() => this.requestConnectorUpdate());
     this.linkRefs.changes.subscribe(() => this.requestConnectorUpdate());
 
+    // Observador de tamaño para recalcular geometría del área media
     if (this.supportsResizeObserver) {
       this.zone.runOutsideAngular(() => {
         this.resizeObserver = new ResizeObserver(() => {
@@ -163,51 +194,70 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
       });
     }
 
-    // A) Lógica inicial: saltar si ya se vio o si viene ?skip=1
-    const skipAnimations = this.route.snapshot.queryParamMap.get('skip') === '1';
-    let introSeen = false; try { introSeen = sessionStorage.getItem('creasia:introPlayed') === '1'; } catch {}
-    let forceIntro = false; try { forceIntro = sessionStorage.getItem('creasia:forceIntro') === '1'; } catch {}
-    const introForced = this.route.snapshot.queryParamMap.get('intro') === '1';
+    /* ------------------------------------------------------------------------
+     * A) Lógica inicial: saltar si ya se vio o si llegan flags por URL.
+     *    - skip=1       → saltar animación
+     *    - homeState=static → saltar animación (nuevo soporte)
+     *    - intro=1      → forzar intro aunque ya se hubiese visto
+     * ---------------------------------------------------------------------- */
+    const params = this.route.snapshot.queryParamMap;
+    // A) Lógica inicial: saltar si ya se vio o si viene ?skip=1 / ?homeState=static / pestaña oculta
+    const skipAnimations =
+      params.get('skip') === '1' ||
+      params.get('homeState') === 'static' ||
+      (document.visibilityState === 'hidden');
 
-    if (forceIntro) { try { sessionStorage.removeItem('creasia:forceIntro'); } catch {} }
+    let introSeen = false;
+    try { introSeen = sessionStorage.getItem('creasia:introPlayed') === '1'; } catch {}
 
-    if (skipAnimations || (introSeen && !introForced && !forceIntro)) {
-      Promise.resolve().then(() => {
-        this.finalizeAnimation(true);
-        if (skipAnimations) {
-          void this.router.navigate([], {
-            relativeTo: this.route, queryParams: { skip: null },
-            queryParamsHandling: 'merge', replaceUrl: true
-          });
-        }
-      });
+    let forceIntro = false;
+    try { forceIntro = sessionStorage.getItem('creasia:forceIntro') === '1'; } catch {}
+
+    const introForced = params.get('intro') === '1';
+
+    if (forceIntro) {
+      try { sessionStorage.removeItem('creasia:forceIntro'); } catch {}
     }
 
-    // B) Suscripción a cambios de query params: si llega intro=1 estando en Home, reinicia la intro.
+    if (skipAnimations || (introSeen && !introForced && !forceIntro)) {
+      // ⬇️ Cambio: sólo aplicamos estado final; NO navegamos ni tocamos la URL aquí
+      Promise.resolve().then(() => {
+        this.finalizeAnimation(true);
+      });
+    } else {
+      // No se salta: preparar arranque del vídeo SIN dobles inicios
+      const video = this.videoRef?.nativeElement;
+      if (video) this.setupVideoStart(video);
+    }
+
+    /* ------------------------------------------------------------------------
+     * B) Si llega intro=1 mientras estamos en Home, reinicia la intro.
+     * ---------------------------------------------------------------------- */
     this.route.queryParamMap
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((map) => {
         const wantIntro = map.get('intro') === '1';
         if (!wantIntro) return;
 
-        // Quita marca de "ya vista" para esta pestaña y reinicia con vídeo.
+        // Quitar marca de "vista" y reiniciar con vídeo
         try { sessionStorage.removeItem('creasia:introPlayed'); } catch {}
         this.restartIntro();
 
-        // Limpia el parámetro ?intro de la URL tras procesarlo.
+        // Limpia ?intro de la URL (esto es posterior, no en el primer render)
         Promise.resolve().then(() => {
           void this.router.navigate([], {
             relativeTo: this.route,
             queryParams: { intro: null },
             queryParamsHandling: 'merge',
-            replaceUrl: true
+            replaceUrl: true,
           });
         });
       });
   }
 
-  // [06] Limpia timeouts, RAF y observers cuando el componente se destruye.
+  /* ------------------------------ Ciclo de vida ------------------------------ */
   ngOnDestroy(): void {
+    // Cancelar RAF/timeout pendientes
     if (this.pendingFrame !== -1 && this.hasDOM) {
       window.cancelAnimationFrame(this.pendingFrame);
     }
@@ -221,17 +271,19 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
     }
     this.trackingHandle = null;
 
+    // Desconectar observer y limpiar fases
     this.resizeObserver?.disconnect();
     this.phaseQueue = [];
     this.runningPhase = null;
+
     this.pendingConnectorUpdate = false;
     this.connectorsReady = false;
     this.connectorProgress = 0;
   }
 
-  // [06.1] Reinicio limpio de la intro (para botón "Ver animación" cuando ya estamos en Home)
+  /* ---------------------- Reinicio limpio de la intro (UI) -------------------- */
   private restartIntro(): void {
-    // Cancelar cualquier animación/timeout/RAF pendiente
+    // 1) Cancelar animaciones/RAF/timeout
     if (this.pendingFrame !== -1 && this.hasDOM) {
       window.cancelAnimationFrame(this.pendingFrame);
       this.pendingFrame = -1;
@@ -243,13 +295,12 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
       this.trackingHandle = null;
     }
 
-    // Reset de estado visual
+    // 2) Reset visual
     this.phaseQueue = [];
     this.runningPhase = null;
     this.fading = false;
     this.animationDone = false;
     this.skipToEnd = false;
-
     this.showImage = false;
     this.showLinks = false;
     this.showPoints = false;
@@ -260,25 +311,23 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
     this.connectorsReady = false;
     this.pendingConnectorUpdate = false;
 
-    // Re-hidratar geometría
+    // 3) Rehidratar geometría
     this.updatePoints();
 
-    // Reproducir vídeo desde el inicio
+    // 4) Preparar reproducción del vídeo (sin doble arranque)
     const video = this.videoRef?.nativeElement;
     if (video) {
       try {
         video.pause();
         video.currentTime = 0;
-        video.muted = true; // por si el navegador exige muted para autoplay
-        // playsInline en iOS sin tocar tipos TS
-        try { video.setAttribute('playsinline', 'true'); } catch {}
-        try { (video as any).webkitPlaysInline = true; } catch {}
-        void video.play?.();
+        video.style.removeProperty('display'); // vuelve a mostrar el <video> para la nueva intro
+        this.videoStarted = false; // ← importante para reinicio limpio
+        this.setupVideoStart(video);
       } catch {}
     }
   }
 
-  // [07] Ajusta la relacion de aspecto y recalcula puntos cuando llega metadata del video.
+  /* ---------------------- Vídeo: metadata → ajustar relación ------------------ */
   onMeta(video: HTMLVideoElement): void {
     if (video.videoWidth && video.videoHeight) {
       this.frameRatio = video.videoWidth / video.videoHeight;
@@ -287,26 +336,24 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
     }
   }
 
-  // [08] Gestiona el desvanecimiento del video y prepara las fases posteriores.
+  /* --------------------------- Vídeo: iniciar fade ---------------------------- */
   startFade(video: HTMLVideoElement): void {
     video.pause();
+    if (this.animationDone) return;
 
-    if (this.animationDone) {
-      return;
-    }
     try {
+      // Lleva el vídeo casi al final para un fundido limpio
       video.currentTime = Math.max(0, video.duration - 0.05);
-    } catch {
-      // ignored
-    }
+    } catch { /* ignore */ }
 
+    // Reset de fases visibles (prepara la cadena posterior)
     this.showImage = true;
     this.showPoints = false;
     this.showLinks = false;
     this.showConnectors = false;
     this.connectors = [];
-    this.linksPhaseOffset = 0;
 
+    this.linksPhaseOffset = 0;
     this.connectorsReady = false;
     this.pendingConnectorUpdate = false;
 
@@ -320,53 +367,48 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
 
     this.phaseQueue = [];
     this.runningPhase = null;
+
     this.fading = true;
     this.animationDone = false;
     this.skipToEnd = false;
   }
 
-  // [09] Al terminar el fade del video dispara la cadena de fases (lineas, puntos, enlaces).
+  /* ---------------------- Vídeo: fin de fade → disparar fases ----------------- */
   onFadeEnd(event: TransitionEvent): void {
     const element = event.target as HTMLElement | null;
-    if (!element || event.propertyName !== 'opacity') {
-      return;
-    }
+    if (!element || event.propertyName !== 'opacity') return;
 
+    // Si el fade ha afectado al bloque del vídeo, iniciar cadena: conectores → puntos
     if (this.fading && !this.animationDone && element.classList.contains('video')) {
+      const v = this.videoRef?.nativeElement;
+      if (v) { v.style.display = 'none'; } // ocultar físicamente el <video>
       this.preparePhases(['connectors', 'points']);
     }
+
   }
 
-  // Saltar a estado final por interacción global
+  /* ------------------- Interacciones globales: saltar a final ----------------- */
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: MouseEvent): void {
-    if (!this.shouldHandleGlobalClick(event)) {
-      return;
-    }
+    if (!this.shouldHandleGlobalClick(event)) return;
     this.finalizeAnimation(true);
   }
 
   @HostListener('window:keydown', ['$event'])
   onDocumentKey(event: KeyboardEvent): void {
-    if (!this.shouldHandleGlobalKey(event)) {
-      return;
-    }
+    if (!this.shouldHandleGlobalKey(event)) return;
     this.finalizeAnimation(true);
   }
 
   private shouldHandleGlobalClick(event: MouseEvent): boolean {
-    if (!this.hasDOM || this.animationDone) {
-      return false;
-    }
+    if (!this.hasDOM || this.animationDone) return false;
     const element = event.target instanceof Element ? event.target : null;
     if (!element) return true;
     return !this.isInteractiveTarget(element);
   }
 
   private shouldHandleGlobalKey(event: KeyboardEvent): boolean {
-    if (!this.hasDOM || this.animationDone) {
-      return false;
-    }
+    if (!this.hasDOM || this.animationDone) return false;
     const element = event.target instanceof Element ? event.target : null;
     if (this.isInteractiveTarget(element)) return false;
     return true;
@@ -380,7 +422,7 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
     return !!element.closest('a, button, input, textarea, select, [contenteditable], [role="link"]');
   }
 
-  // [11] Cola de fases
+  /* ------------------------------- Cola de fases ------------------------------ */
   private preparePhases(order: AnimationPhase[]): void {
     this.phaseQueue = [...order];
     this.runningPhase = null;
@@ -400,6 +442,8 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
     if (this.runningPhase !== expected) return;
     this.runningPhase = null;
     this.advancePhase();
+
+    // Si ya no quedan fases, pasar a estado final
     if (this.runningPhase === null && this.phaseQueue.length === 0) {
       this.finalizeAnimation();
     }
@@ -407,24 +451,31 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
 
   private runPointsPhase(): void {
     this.showPoints = true;
+
     if (!this.hasDOM) {
       this.finishPhase('points');
       return;
     }
-    this.pointsTimeout = this.scheduleTimeout(this.pointsTimeout, () => {
-      this.finishPhase('points');
-    }, this.POINTS_DELAY);
+
+    this.pointsTimeout = this.scheduleTimeout(
+      this.pointsTimeout,
+      () => this.finishPhase('points'),
+      this.POINTS_DELAY,
+    );
   }
 
-  // [12] Conectores/enlaces animados
+  /* --------------------------- Conectores / enlaces -------------------------- */
   private runConnectorsPhase(): void {
+    // Mezclar enlaces para variar el orden
     this.displayLinks = [...this.links].sort(() => Math.random() - 0.5);
+
     this.showLinks = true;
     this.showPoints = false;
     this.showConnectors = false;
     this.connectorProgress = 0;
-    this.linksPhaseOffset = this.LINES_LEAD;
 
+    // Los conectores arrancan tras un leve "lead" frente a los enlaces
+    this.linksPhaseOffset = this.LINES_LEAD;
     this.connectorsReady = true;
     this.requestConnectorUpdate(true);
 
@@ -450,6 +501,7 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
       this.finishPhase('connectors');
       return;
     }
+
     if (this.trackingHandle !== null) {
       window.cancelAnimationFrame(this.trackingHandle);
     }
@@ -489,27 +541,28 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
     this.trackingHandle = window.requestAnimationFrame(step);
   }
 
-  // [13] Estado final + navegación de retorno
+  /* ------------------------------ Estado final ------------------------------- */
   private finalizeAnimation(force = false): void {
-    if (this.animationDone && !force) {
-      return;
-    }
+    if (this.animationDone && !force) return;
 
+    // En force=true, asegurar que el vídeo queda pausado y posicionado al final.
     if (force && this.hasDOM) {
       const video = this.videoRef?.nativeElement;
       if (video) {
         try {
           video.pause();
+          const v2 = this.videoRef?.nativeElement;
+          if (v2) { v2.style.display = 'none'; } // oculta el vídeo en salto directo
+
           if (!Number.isNaN(video.duration) && Number.isFinite(video.duration)) {
             video.currentTime = video.duration;
           }
-        } catch {
-          // ignored
-        }
+        } catch { /* ignore */ }
       }
     }
 
     if (force) {
+      // Cancelar animaciones/RAF/timeout en curso
       this.pointsTimeout = this.clearTimeout(this.pointsTimeout);
       this.connectorsTimeout = this.clearTimeout(this.connectorsTimeout);
 
@@ -517,12 +570,12 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
         window.cancelAnimationFrame(this.trackingHandle);
         this.trackingHandle = null;
       }
-
       if (this.pendingFrame !== -1 && this.hasDOM) {
         window.cancelAnimationFrame(this.pendingFrame);
         this.pendingFrame = -1;
       }
 
+      // Configurar estado "todo visible"
       this.phaseQueue = [];
       this.runningPhase = null;
       this.skipToEnd = true;
@@ -531,17 +584,24 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
         this.displayLinks = [...this.links].sort(() => Math.random() - 0.5);
       }
 
+      this.showImage = true;
       this.showLinks = true;
       this.showPoints = true;
+      this.showConnectors = true;
       this.linksPhaseOffset = 0;
+
+      this.fading = false; // ← clave: no activar fade en final forzado
+    } else {
+      // Flujo normal (con fade)
+      this.fading = true;
+      this.showImage = true;
+      this.showLinks = true;
+      this.showPoints = true;
+      this.showConnectors = true;
     }
 
+    // Estado final común
     this.animationDone = true;
-    this.fading = true;
-    this.showImage = true;
-    this.showLinks = true;
-    this.showPoints = true;
-    this.showConnectors = true;
     this.connectorProgress = 1;
     this.connectorsReady = true;
     this.pendingConnectorUpdate = false;
@@ -552,17 +612,16 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
       this.updateConnectors();
     }
 
-    // Marca la intro como vista para esta pestaña
+    // Marcar intro como vista (en esta pestaña)
     try { sessionStorage.setItem('creasia:introPlayed', '1'); } catch {}
 
+    // Si había returnUrl, navegar ahora
     this.handleReturnNavigation();
   }
 
-  // [14] Navegación a returnUrl si aplica
+  /* -------------------- Navegación de retorno (returnUrl) -------------------- */
   private handleReturnNavigation(): void {
-    if (!this.returnUrl || this.returnNavigationTriggered || !this.hasDOM) {
-      return;
-    }
+    if (!this.returnUrl || this.returnNavigationTriggered || !this.hasDOM) return;
 
     this.returnNavigationTriggered = true;
     const target = this.returnUrl;
@@ -574,24 +633,24 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
   }
 
   private decodeReturnUrl(value: string): string {
-    try {
-      return decodeURIComponent(value);
-    } catch {
-      return value;
-    }
+    try { return decodeURIComponent(value); }
+    catch { return value; }
   }
 
-  // [15] Reescalado de puntos faciales
+  /* -------------------- Reescalado de puntos faciales (AR) ------------------- */
   private updatePoints(): void {
     const ratio = this.frameRatio / this.imageRatio;
+
     this.scaledPoints = this.facePoints.map((point) => {
       let left = point.x;
       let top = point.y;
 
       if (ratio < 1) {
+        // Marco más alto que la imagen → ajustar vertical
         const offset = (1 - ratio) * 50;
         top = offset + point.y * ratio;
       } else if (ratio > 1) {
+        // Marco más ancho que la imagen → ajustar horizontal
         const invRatio = 1 / ratio;
         const offset = (1 - invRatio) * 50;
         left = offset + point.x * invRatio;
@@ -603,7 +662,7 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
     this.requestConnectorUpdate();
   }
 
-  // [16] Solicita recálculo de conectores
+  /* --------------------------- Recalcular conectores ------------------------- */
   private requestConnectorUpdate(force = false): void {
     if (!this.showLinks) {
       this.pendingConnectorUpdate = true;
@@ -624,7 +683,7 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
     this.scheduleUpdateConnectors();
   }
 
-  // [17] Coordina recálculo con RAF
+  /* ---------------------- Coordinar recálculo con RAF ------------------------ */
   private scheduleUpdateConnectors(): void {
     if (!this.hasDOM) {
       this.updateConnectors();
@@ -641,7 +700,7 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
     });
   }
 
-  // [18] Geometría de líneas conectores
+  /* --------------- Geometría/posicionamiento de las líneas (UI) -------------- */
   private updateConnectors(): void {
     if (!this.showLinks) {
       this.connectors = [];
@@ -649,96 +708,108 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
     }
 
     const wrapEl = this.mediaWrapRef?.nativeElement;
-    if (!wrapEl) {
-      return;
-    }
+    if (!wrapEl) return;
 
     const wrapRect = wrapEl.getBoundingClientRect();
-    if (!wrapRect.width || !wrapRect.height) {
-      return;
-    }
+    if (!wrapRect.width || !wrapRect.height) return;
 
+    // 1) Mapear puntos (centros de cada punto UI) en % del wrapper
     const points = new Map<string, { x: number; y: number }>();
+
+    // Preferir refs reales si existen; si no, usar cálculo escalado
     const pointRefs = this.pointRefs;
     if (pointRefs && pointRefs.length) {
       pointRefs.forEach((ref) => {
         const el = ref.nativeElement;
         const id = el.dataset['point'];
-        if (!id) {
-          return;
-        }
+        if (!id) return;
+
         const rect = el.getBoundingClientRect();
-        const x = ((rect.left + rect.right) / 2 - wrapRect.left) / wrapRect.width * 100;
-        const y = ((rect.top + rect.bottom) / 2 - wrapRect.top) / wrapRect.height * 100;
+        const x = (((rect.left + rect.right) / 2) - wrapRect.left) / wrapRect.width * 100;
+        const y = (((rect.top + rect.bottom) / 2) - wrapRect.top) / wrapRect.height * 100;
         points.set(id, { x, y });
       });
     } else {
+      // Fallback a escalado estático
       this.scaledPoints.forEach(({ id, left, top }) => {
         points.set(id, { x: left, y: top });
       });
     }
 
+    // 2) Construir conectores desde cada enlace a su punto objetivo
     const connectors: Connector[] = [];
     this.linkRefs.forEach((ref) => {
       const el = ref.nativeElement;
       const id = el.getAttribute('data-point');
-      if (!id) {
-        return;
-      }
+      if (!id) return;
+
       const target = points.get(id);
-      if (!target) {
-        return;
-      }
+      if (!target) return;
+
       const rect = el.getBoundingClientRect();
       const anchor = (el.getAttribute('data-anchor') as LinkAnchor | null) ?? null;
-      const centerX = ((rect.left + rect.right) / 2 - wrapRect.left) / wrapRect.width * 100;
-      const centerY = ((rect.top + rect.bottom) / 2 - wrapRect.top) / wrapRect.height * 100;
+
+      const centerX = (((rect.left + rect.right) / 2) - wrapRect.left) / wrapRect.width * 100;
+      const centerY = (((rect.top + rect.bottom) / 2) - wrapRect.top) / wrapRect.height * 100;
+
       let x1 = centerX;
       let y1 = centerY;
 
       switch (anchor) {
-        case 'top':
-          y1 = (rect.top - wrapRect.top) / wrapRect.height * 100;
-          break;
-        case 'bottom':
-          y1 = (rect.bottom - wrapRect.top) / wrapRect.height * 100;
-          break;
-        case 'left':
-          x1 = (rect.left - wrapRect.left) / wrapRect.width * 100;
-          break;
-        case 'right':
-          x1 = (rect.right - wrapRect.left) / wrapRect.width * 100;
-          break;
+        case 'top': y1 = (rect.top - wrapRect.top) / wrapRect.height * 100; break;
+        case 'bottom': y1 = (rect.bottom - wrapRect.top) / wrapRect.height * 100; break;
+        case 'left': x1 = (rect.left - wrapRect.left) / wrapRect.width * 100; break;
+        case 'right': x1 = (rect.right - wrapRect.left) / wrapRect.width * 100; break;
       }
 
       const { x: x2, y: y2 } = target;
       const length = Math.hypot(x2 - x1, y2 - y1);
+
       connectors.push({ id, x1, y1, x2, y2, length, progress: 0 });
     });
 
+    // 3) Aplicar progreso animado si toca
     const progress = this.showConnectors ? this.connectorProgress : 0;
-    this.connectors = connectors.map(conn => ({ ...conn, progress }));
+    this.connectors = connectors.map(c => ({ ...c, progress }));
   }
 
-  // [19] Wrap de setTimeout (SSR-safe)
+  /* ----------------------------- Utilidades tiempo --------------------------- */
   private scheduleTimeout(handle: number | null, callback: () => void, delay: number): number | null {
-    if (!this.hasDOM) {
-      callback();
-      return null;
-    }
-
-    if (handle !== null) {
-      window.clearTimeout(handle);
-    }
-
+    if (!this.hasDOM) { callback(); return null; }
+    if (handle !== null) { window.clearTimeout(handle); }
     return window.setTimeout(callback, delay);
   }
 
-  // [20] Cancela timeout y devuelve null
   private clearTimeout(handle: number | null): number | null {
     if (handle !== null && this.hasDOM) {
       window.clearTimeout(handle);
     }
     return null;
+  }
+
+  /* --------------------------- NUEVO: vídeo sin saltos ------------------------ */
+  /**
+   * Prepara un arranque de vídeo estable:
+   * - Garantiza muted + playsinline para autoplay móvil
+   * - Arranca SOLO una vez, al alcanzar 'canplaythrough'
+   * - Si ya está listo (readyState >= 4), reproduce inmediatamente
+   */
+  private setupVideoStart(video: HTMLVideoElement): void {
+    try { video.muted = true; } catch {}
+    try { video.setAttribute('playsinline', 'true'); } catch {}
+    try { (video as any).webkitPlaysInline = true; } catch {}
+
+    const playOnce = () => {
+      if (this.videoStarted) return;
+      this.videoStarted = true;
+      try { void video.play(); } catch {}
+    };
+
+    // Si ya hay datos suficientes, reproducir ya; si no, esperar al evento.
+    if (video.readyState >= 4 /* HAVE_ENOUGH_DATA */) {
+      playOnce();
+    } else {
+      video.addEventListener('canplaythrough', playOnce, { once: true });
+    }
   }
 }
