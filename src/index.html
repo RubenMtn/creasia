@@ -15,6 +15,15 @@
   <meta charset="utf-8">
   <title>Creasia | Cultura entre oriente y occidente</title>
   <base href="/">
+  <script>
+    (function () {
+      var m = location.pathname.match(/^\/proxy\/(\d+)(\/|$)/);
+      if (!m) return;
+      var want = m[0].endsWith('/') ? m[0] : m[0] + '/';
+      var base = document.querySelector('base');
+      if (base && base.getAttribute('href') !== want) base.setAttribute('href', want);
+    })();
+  </script>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="Creasia: cultura oriental, diseno sereno y contenido cuidado.">
   <link rel="icon" type="image/png" sizes="512x512" href="assets/icons/favicon-32x32.png">

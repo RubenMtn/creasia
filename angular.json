@@ -40,6 +40,52 @@
             ],
             "styles": [
               "src/styles.scss"
+            ]
+          },
+          "configurations": {
+            "production": {
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "500kB",
+                  "maximumError": "1MB"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "7kB",
+                  "maximumError": "9kB"
+                }
+              ],
+              "outputHashing": "all"
+            },
+            "development": {
+              "optimization": false,
+              "extractLicenses": false,
+              "sourceMap": true
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "build-ssr": {
+          "builder": "@angular/build:application",
+          "options": {
+            "stylePreprocessorOptions": {
+              "includePaths": [
+                "src/styles"
+              ]
+            },
+            "browser": "src/main.ts",
+            "polyfills": [
+              "zone.js"
+            ],
+            "tsConfig": "tsconfig.app.json",
+            "inlineStyleLanguage": "scss",
+            "assets": [
+              "src/favicon.ico",
+              "src/assets"
+            ],
+            "styles": [
+              "src/styles.scss"
             ],
             "server": "src/main.server.ts",
             "outputMode": "server",
@@ -79,6 +125,18 @@
             },
             "development": {
               "buildTarget": "creasia:build:development"
+            }
+          },
+          "defaultConfiguration": "development"
+        },
+        "serve-ssr": {
+          "builder": "@angular/build:dev-server",
+          "configurations": {
+            "production": {
+              "buildTarget": "creasia:build-ssr:production"
+            },
+            "development": {
+              "buildTarget": "creasia:build-ssr:development"
             }
           },
           "defaultConfiguration": "development"
