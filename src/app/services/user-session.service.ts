@@ -89,17 +89,17 @@ export class UserSessionService implements OnDestroy {
 
     try {
       rawFlag = localStorage.getItem(UserSessionService.LOGIN_FLAG_KEY) ?? '0';
-    } catch {}
+    } catch { }
 
     try {
       rawName = localStorage.getItem(UserSessionService.USER_NAME_KEY);
-    } catch {}
+    } catch { }
 
     try {
       hasToken =
         !!sessionStorage.getItem(UserSessionService.AUTH_TOKEN_KEY) ||
         !!localStorage.getItem(UserSessionService.AUTH_TOKEN_KEY);
-    } catch {}
+    } catch { }
 
     const logged = this.normalizeLoginFlag(rawFlag) || hasToken;
     const normalizedName = this.normalizeName(rawName);
@@ -124,7 +124,7 @@ export class UserSessionService implements OnDestroy {
           localStorage.removeItem(UserSessionService.USER_NAME_KEY);
         }
         localStorage.setItem(UserSessionService.LOGIN_FLAG_KEY, '1');
-      } catch {}
+      } catch { }
     }
 
     this.applyToken(tokenValue, tokenMode);
@@ -137,13 +137,13 @@ export class UserSessionService implements OnDestroy {
     if (this.hasWindow) {
       try {
         localStorage.removeItem(UserSessionService.USER_NAME_KEY);
-      } catch {}
+      } catch { }
       try {
         localStorage.removeItem(UserSessionService.LOGIN_FLAG_KEY);
-      } catch {}
+      } catch { }
       try {
         localStorage.removeItem(UserSessionService.USER_MAIL_KEY);
-      } catch {}
+      } catch { }
     }
 
     this.applyToken(null, 'none');
@@ -187,14 +187,18 @@ export class UserSessionService implements OnDestroy {
       const chars = [...compact];
       const initials = chars.slice(0, 2).join('').toUpperCase();
       if (initials) return initials;
-    } catch {}
+    } catch { }
 
     const fallback = normalized.replace(/[^A-Za-z0-9]+/g, '').slice(0, 2).toUpperCase();
     return fallback.length > 0 ? fallback : null;
   }
 
+  // Reemplazar método applyToken existente:
   private applyToken(token: string | null, mode: AuthTokenPersistence): void {
     if (!this.hasWindow) return;
+
+    // 👉 Nunca persistimos el JWT real: solo una bandera "1" o nada.
+    const flag = token ? '1' : null;
 
     if (mode === 'none') {
       this.clearToken();
@@ -202,31 +206,30 @@ export class UserSessionService implements OnDestroy {
     }
 
     try {
-      if (token) sessionStorage.setItem(UserSessionService.AUTH_TOKEN_KEY, token);
+      if (flag) sessionStorage.setItem(UserSessionService.AUTH_TOKEN_KEY, '1');
       else sessionStorage.removeItem(UserSessionService.AUTH_TOKEN_KEY);
-    } catch {}
+    } catch { }
 
     if (mode === 'both') {
       try {
-        if (token) localStorage.setItem(UserSessionService.AUTH_TOKEN_KEY, token);
+        if (flag) localStorage.setItem(UserSessionService.AUTH_TOKEN_KEY, '1');
         else localStorage.removeItem(UserSessionService.AUTH_TOKEN_KEY);
-      } catch {}
+      } catch { }
     } else {
-      try {
-        localStorage.removeItem(UserSessionService.AUTH_TOKEN_KEY);
-      } catch {}
+      try { localStorage.removeItem(UserSessionService.AUTH_TOKEN_KEY); } catch { }
     }
   }
+
 
   private clearToken(): void {
     if (!this.hasWindow) return;
 
     try {
       sessionStorage.removeItem(UserSessionService.AUTH_TOKEN_KEY);
-    } catch {}
+    } catch { }
     try {
       localStorage.removeItem(UserSessionService.AUTH_TOKEN_KEY);
-    } catch {}
+    } catch { }
   }
 
   private isRelevantKey(key: string): boolean {
@@ -242,7 +245,7 @@ export class UserSessionService implements OnDestroy {
     if (!this.hasWindow) return;
     try {
       window.dispatchEvent(new Event('creasia:user-updated'));
-    } catch {}
+    } catch { }
   }
 
   // Aplica estado de login y persiste flag mínima (usada por el init de sesión).
@@ -253,7 +256,7 @@ export class UserSessionService implements OnDestroy {
       } else {
         localStorage.removeItem(UserSessionService.LOGIN_FLAG_KEY);
       }
-    } catch {}
+    } catch { }
     this.isLoggedIn.set(logged);
   }
 }

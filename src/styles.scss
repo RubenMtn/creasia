@@ -1,99 +1,64 @@
+/* ============================================================================
+   Global styles – Reset suave, tipografía, variables CSS y layout común
+   ========================================================================== */
 @use "styles/tokens" as *;
 @use "styles/breakpoints" as *;
-@use "styles/typography" as typography;
-@use "accessibility";
+@use "styles/typography" as typo;
+@use "styles/foundation" as f;
 
-* {
-  box-sizing: border-box;
-}
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; }
+:root { color-scheme: dark; }
 
-html,
-body {
-  height: 100%;
-  margin: 0;
-}
-
+/* Tipografía y colores base */
 body {
   background: $bg-dark;
   color: $text-light;
   font-family: $font-body;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
-// Variables globales que gobiernan los espacios laterales y el gutter del selector de idioma.
+/* Usabilidad: seleccionar texto sólo donde procede */
+body, body *:not(input):not(textarea) { user-select: none; -webkit-user-select: none; }
+input, textarea { user-select: text; -webkit-user-select: text; }
+
+/* Gutters responsivos (usados por header/idiomas, etc.) */
 :root {
-  color-scheme: dark;
-  --side-gutter: 10vw; // movil (base)
+  --side-gutter: 10vw; /* móvil (base) */
   --lang-gutter: clamp(14px, calc(14px + 0.09 * (100vw - 360px)), 56px);
 }
+@include for-tablet  { :root { --side-gutter: 12vw; } }
+@include for-desktop { :root { --side-gutter: 12vw; } }
 
-@include for-tablet {
-  :root {
-    --side-gutter: 12vw; // tablet
-  }
+/* Contenedor fluido reutilizable */
+@include f.container();
+
+/* =========================
+   Variables CSS de componentes
+   ========================== */
+/* Botón ghost por defecto (puedes sobrescribir por componente) */
+:root {
+  --btn-bg: rgba(0,0,0,.70);
+  --btn-border: rgba(255,255,255,.75);
 }
 
-@include for-desktop {
-  :root {
-    --side-gutter: 12vw; // escritorio
-  }
+/* Paleta de tonos del calendario (centralizada) */
+:root {
+  --tone-0: #ffffff;
+  --tone-1: #ffe466;
+  --tone-2: #EFCF52;
+  --tone-3: #DFBA3E;
+  --tone-4: goldenrod;
+  --tone-5: #C89B1F;
+  --tone-6: #C09015;
+  --tone-7: darkgoldenrod;
+
+  /* Selección por rango (azules suaves) */
+  --cal-sel-bg: rgba(37, 99, 235, 0.16);
+  --cal-sel-bg-strong: rgba(37, 99, 235, 0.22);
+  --cal-sel-outline: rgba(37, 99, 235, 0.7);
+
+  /* Borde amarillo de “mis días” */
+  --cal-mine-outline: #fbbf24;
 }
-
-// Contenedor fluido reutilizado por las paginas.
-.container {
-  width: min(100%, 960px);
-  margin: 0 auto;
-  padding: $space-2;
-}
-
-@include for-tablet {
-  .container {
-    width: min(100%, 1120px); // tablet
-  }
-}
-
-@include for-desktop {
-  .container {
-    width: min(100%, 1240px); // escritorio
-  }
-}
-
-body,
-body *:not(input):not(textarea) {
-  user-select: none;
-  -webkit-user-select: none;
-}
-
-input,
-textarea {
-  user-select: text;
-  -webkit-user-select: text;
-}
-
-
-
-// /* Tipografía unificada para bloques de Viajes */
-// .viajes-section {
-//   /* Tamaño y ritmo vertical iguales en ambos componentes */
-//   font-size: clamp(1rem, 0.35vw + 0.95rem, 1.06rem);
-//   line-height: 1.6;
-//   font-weight: 400;
-
-//   /* Ancho legible y centrado (ajusta si no lo quieres) */
-//   max-width: min(72ch, 92%);
-//   margin: 0 auto 0.75rem; /* auto centrado + separación por debajo */
-
-//   /* Si ambos bloques están sobre fondo oscuro y quieres mismo color: 
-//      descomenta la línea siguiente; si no, deja que herede. */
-//   /* color: #e5e7eb; */
-// }
-
-// .viajes-section p {
-//   margin: 0 0 0.9rem;
-// }
-
-// .viajes-section a {
-//   text-decoration: underline;
-//   text-underline-offset: 2px;
-//   /* color accesible sobre fondo oscuro (opcional):
-//      color: #93c5fd; */
-// }

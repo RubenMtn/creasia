@@ -1,0 +1,52 @@
+/* ============================================================================
+   Foundation – mixins, utilidades y capas comunes
+   Dep: tokens, breakpoints, typography
+   ========================================================================== */
+@use "tokens" as *;
+@use "breakpoints" as *;
+@use "typography" as typo;
+
+/* Z-layers coherentes en toda la app */
+$z-media: 1;
+$z-lines: 3;
+$z-points: 4;
+$z-links: 5;
+
+/* Enfoque accesible (focus visible) */
+@mixin focus-ring($color: #fff, $offset: 2px) {
+  &:focus-visible { outline: 2px solid $color; outline-offset: $offset; }
+}
+
+/* Botón tipo ghost/translúcido para overlays sobre media */
+@mixin btn-ghost(
+  $bg: rgba(0,0,0,.70),
+  $border: rgba(255,255,255,.75),
+  $radius: .5rem,
+  $pady: .35rem,
+  $padx: .6rem,
+  $fs: .82rem
+) {
+  color: #fff;
+  text-decoration: none;
+  background-color: $bg;
+  border: 1px solid $border;
+  border-radius: $radius;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: $pady $padx;
+  font-family: $font-body;
+  font-weight: 380;
+  font-size: $fs;
+  line-height: 1.05;
+  gap: .15em;
+  @include focus-ring(rgba(255,255,255,.30), 3px);
+}
+
+/* Contenedor fluido (usado en pages) */
+@mixin container($w-mobile: 960px, $w-tablet: 1120px, $w-desktop: 1240px) {
+  .container { width: min(100%, $w-mobile); margin: 0 auto; padding: $space-2; }
+  @include for-tablet  { .container { width: min(100%, $w-tablet); } }
+  @include for-desktop { .container { width: min(100%, $w-desktop); } }
+}

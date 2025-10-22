@@ -1,173 +1,84 @@
 ﻿/* ============================================================================
    Home – Hero con vídeo, puntos, conectores y enlaces (botones)
-   Estructura clara, comentarios en español y sin duplicidades.
-   Reglas de Rubén: modular, limpio, sin !important (salvo caso excepcional).
+   Limpio, comentado y con breakpoints unificados.
    ========================================================================== */
-
 @use "tokens" as *;
 @use "breakpoints" as *;
+@use "foundation" as f;
 
-/* =========================
-   0) Variables de componente
-   ========================= */
-:host {
-  /* Fondo semitransparente del botón: alto contraste p/ texto nítido */
-  --link-bg: rgba(0, 0, 0, 0.70);
-  --link-border: rgba(255, 255, 255, 0.75);
-
-  /* Grosor de líneas del SVG (<line>), si se usan; los polígonos usan fill */
-  --connector-stroke: 3.7;
-}
-
-/* ==========================
-   1) Shell / contenedor hero
-   ========================== */
+/* 1) Shell / contenedor hero */
 .hero {
   position: relative;
   display: grid;
   place-items: center;
   padding: $space-2 0;
 }
-
-/* Modo “saltar animaciones”: evita transiciones al forzar estado final */
 .hero.skip-to-end {
   .video, .image { transition: none; }
   .link {
-    transition: none;
-    animation: none;
+    transition: none; animation: none;
     transform: translate(calc(-50% + var(--tx)), calc(-50% + var(--ty))) scale(1);
     opacity: 1;
   }
   .point, .lines-layer line { transition: none; animation: none; }
 }
 
-/* ======================
-   2) Media (vídeo/imagen)
-   ====================== */
+/* 2) Media (vídeo/imagen) */
 .media-wrap {
   position: relative;
   width: 100%;
   line-height: 0;
-  /* Control de altura: evita que el vídeo ocupe todo el viewport */
-  max-height: clamp(340px, 60vh, 580px);
+  max-height: clamp(340px, 60vh, 580px); /* evita que el vídeo tape todo */
   margin: 0 auto;
 }
-
-.layer {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  display: block;
-}
-
-.video {
-  z-index: 2;
-  transition: opacity 900ms ease;
-}
+.layer { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; display: block; }
+.video { z-index: 2; transition: opacity 900ms ease; }
 .video.fade-out { opacity: 0; }
-
-.image {
-  z-index: 1;
-  opacity: 0;
-  transition: opacity 1000ms ease;
-}
+.image { z-index: 1; opacity: 0; transition: opacity 1000ms ease; }
 .image.visible { opacity: 1; }
 
-/* =================
-   3) Puntos en la cara
-   ================== */
-.points-layer {
-  z-index: 4;
-  pointer-events: none;
-}
-
+/* 3) Puntos */
+.points-layer { z-index: 4; pointer-events: none; }
 .point {
-  position: absolute;
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: #ffffff;
-  box-shadow: 0 0 3px rgba(0, 0, 0, 0.35);
+  position: absolute; width: 5px; height: 5px; border-radius: 50%;
+  background: #fff; box-shadow: 0 0 3px rgba(0,0,0,.35);
   transform: translate(-50%, -50%);
-  transition:
-    top 180ms ease,
-    left 180ms ease,
-    transform 180ms ease;
+  transition: top 180ms ease, left 180ms ease, transform 180ms ease;
   will-change: top, left, transform;
 }
 
-/* =========================
-   4) Enlaces (botones) HERO
-   ========================= */
-.link-layer {
-  position: absolute;
-  inset: 0;
-  z-index: 5;
-  pointer-events: none; /* el interior del botón sí recibe click */
-}
-
+/* 4) Enlaces (botones) – doble línea y fondo translúcido */
+.link-layer { position: absolute; inset: 0; z-index: 5; pointer-events: none; }
 .link {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-
-  /* Estado inicial: animación de aparición */
+  position: absolute; top: 50%; left: 50%;
   transform: translate(-50%, -50%) scale(0.05);
-  opacity: 0;
+  opacity: 0; pointer-events: auto;
 
-  pointer-events: auto;
-  color: #ffffff;
-  text-decoration: none;
+  /* Base común desde Foundation (fondo y tipografía) */
+  @include f.btn-ghost(var(--btn-bg), var(--btn-border), .5rem, .35rem, .6rem, .82rem);
 
-  /* Fondo semitransparente + borde para separación sobre el vídeo */
-  background-color: var(--link-bg);
-  border: 1px solid var(--link-border);
-  border-radius: 0.5rem;
+  /* Doble línea */
+  flex-direction: column; /* apila texto superior/inferior */
+  inline-size: fit-content; min-inline-size: 8ch; max-inline-size: 26ch;
 
-  /* Doble línea de texto (superior normal + inferior más pequeña) */
-  display: inline-flex;
-  flex-direction: column; /* apilamos arriba/abajo */
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  gap: 0.15em;
-  line-height: 1.05;
-
-  /* Tipografía y tamaño base (móvil por defecto) */
-  padding: 0.35rem 0.6rem;
-  font-size: 0.82rem;   /* base móvil */
-  font-weight: 380;
-
-  inline-size: fit-content;
-  min-inline-size: 8ch;
-  max-inline-size: 26ch;
-
-  /* Nitidez del texto (evitar sensación “lavada” tras transform) */
-  text-shadow: none;
-  -webkit-font-smoothing: antialiased;
-  text-rendering: optimizeLegibility;
-
-  /* Evitar efectos de desenfoque involuntarios */
-  backdrop-filter: none;
-  filter: none;
+  /* Nitidez */
+  text-shadow: none; -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility;
 
   /* Animación de entrada */
   will-change: transform, opacity;
   animation: popInMove 900ms cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
 
-  &:hover { outline: 2px solid rgba(255, 255, 255, 0.30); }
-  &:active { scale: 0.985; }
+  &:hover { outline: 2px solid rgba(255,255,255,.30); }
+  &:active { scale: .985; }
 }
 
-/* Segunda línea (misma etiqueta duplicada, más pequeña) */
-.link .label-bottom {
-  font-size: 0.78em;
-  opacity: 0.95; /* ligeramente más tenue para jerarquía */
-}
+/* Primera línea (texto amarillo más grande) */
+// .link { display: inline-flex; flex-direction: column; gap: .15em; line-height: 1.15; color: gold; font: bold; }
 
-/* Posiciones relativas de cada botón (desplazamientos) */
+/* Segunda línea (texto descriptivo más pequeño) */
+.link .label-bottom { font-size: .6em; color: white; }
+
+/* Posiciones relativas de cada botón */
 .l-top-left  { --tx: -28vw; --ty: -12vh; }
 .l-mid-left  { --tx: -28vw; --ty:   0vh; }
 .l-bot-left  { --tx: -28vw; --ty:  12vh; }
@@ -175,98 +86,50 @@
 .l-mid-right { --tx:  28vw; --ty:   0vh; }
 .l-bot-right { --tx:  28vw; --ty:  12vh; }
 
-/* ============
-   5) Conectores
-   ============ */
-.lines-layer {
-  z-index: 3;
-  pointer-events: none;
-}
-
-/* Si usas <line>, controla aquí el grosor (no afecta a <polygon>) */
+/* 5) Conectores */
+.lines-layer { z-index: 3; pointer-events: none; } /* una sola definición */
 .lines-layer line {
-  stroke-width: var(--connector-stroke);
+  /* Grosor sólo si usas <line> (los polígonos usan fill) */
+  stroke-width: 3.7;
   stroke-linecap: round;
-  vector-effect: non-scaling-stroke;  /* grosor estable si el SVG escala */
+  vector-effect: non-scaling-stroke;
   shape-rendering: geometricPrecision;
 }
+.lines-layer polygon { shape-rendering: geometricPrecision; }
 
-/* Si usas polígonos (trapecio afilado) el color vendrá por fill=... */
-.lines-layer polygon {
-  shape-rendering: geometricPrecision;
-}
-
-/* =========================
-   6) Títulos y descripciones
-   ========================= */
-.title-below {
-  width: 100%;
-  align-self: stretch;
-  margin: clamp($space-2, 4vh, $space-3 * 1.5) auto 0;
-  text-align: center;
-  color: $text-light;
-  max-width: min(72ch, 92%);
-  opacity: 0;
-  transform: translateY(6px);
+/* 6) Títulos y descripciones */
+.title-below, .caption-below {
+  width: 100%; align-self: stretch; text-align: center; color: $text-light;
+  max-width: min(72ch, 92%); opacity: 0; transform: translateY(6px);
   animation: captionIn 500ms ease 160ms forwards;
 }
-
+.title-below { margin: clamp($space-2, 4vh, $space-3 * 1.5) auto 0; }
 .caption-below {
-  width: 100%;
-  align-self: stretch;
   margin: $space-1 auto 0;
-  text-align: center;
-  color: $text-light;
-  max-width: min(72ch, 92%);
-  opacity: 0;
-  transform: translateY(6px);
-  animation: captionIn 500ms ease 160ms forwards;
-
-  /* Halo radial suave para legibilidad sobre el vídeo */
-  background: radial-gradient(
-    circle at center,
-    rgba(0, 0, 0, 0.85) 0%,
-    rgba(0, 0, 0, 0.55) 38%,
-    rgba(0, 0, 0, 0.22) 68%,
-    rgba(0, 0, 0, 0) 100%
-  );
+  background: radial-gradient(circle at center,
+    rgba(0,0,0,.85) 0%,
+    rgba(0,0,0,.55) 38%,
+    rgba(0,0,0,.22) 68%,
+    rgba(0,0,0,0) 100%);
 }
 
-/* ===================
-   7) Animaciones clave
-   =================== */
+/* 7) Animaciones clave */
 @keyframes popInMove {
-  0%   { transform: translate(-50%, -50%) scale(0.05); opacity: 0; }
-  60%  { opacity: 1; }
+  0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
+  60% { opacity: 1; }
   100% { transform: translate(calc(-50% + var(--tx)), calc(-50% + var(--ty))) scale(1); opacity: 1; }
 }
+@keyframes captionIn { to { opacity: 1; transform: translateY(0); } }
 
-@keyframes captionIn {
-  to { opacity: 1; transform: translateY(0); }
-}
-
-/* ====================
-   8) Responsive (tres tamaños claros)
-   ==================== */
-
-/* ——— MÓVIL (base) ———
-   Ya aplicado en reglas por defecto. Ajustes finos aquí si hace falta. */
+/* 8) Responsive (3 tamaños claros) */
 @include for-mobile {
-  .hero       { padding: $space-1 0; }
+  .hero { padding: $space-1 0; }
   .title-below { margin: $space-1 auto 0; }
 }
-
-/* ——— TABLET (>= 1024px aprox.) ——— */
 @include from-tablet {
   .media-wrap { max-height: clamp(360px, 58vh, 540px); }
-
-  .link {
-    padding: 0.55rem 0.9rem;
-    min-inline-size: 9ch;
-    font-size: 0.9rem; /* subimos tipografía para tablet */
-  }
-
-  /* Reposicionamos enlaces para pantallas más anchas */
+  
+  .link { @include f.btn-ghost(var(--btn-bg), var(--btn-border), .5rem, .55rem, .9rem, .9rem); }
   .l-top-left  { --tx: -32vw; --ty: -18vh; }
   .l-mid-left  { --tx: -32vw; --ty:   0vh; }
   .l-bot-left  { --tx: -32vw; --ty:  18vh; }
@@ -274,18 +137,10 @@
   .l-mid-right { --tx:  32vw; --ty:   0vh; }
   .l-bot-right { --tx:  32vw; --ty:  18vh; }
 }
-
-/* ——— ESCRITORIO (>= 1280px aprox.) ——— */
 @include from-desktop {
   .media-wrap { max-height: clamp(380px, 54vh, 520px); }
-
-  .link {
-    padding: 0.65rem 1.55rem;
-    min-inline-size: 10ch;
-    font-size: 1rem; /* tipografía más cómoda en escritorio */
-  }
-
-  /* Ajuste fino de posiciones en escritorio */
+  
+  .link { @include f.btn-ghost(var(--btn-bg), var(--btn-border), .5rem, .65rem, 1.05rem, 1rem); }
   .l-top-left  { --tx: -30vw; --ty: -16vh; }
   .l-mid-left  { --tx: -30vw; --ty:   0vh; }
   .l-bot-left  { --tx: -30vw; --ty:  16vh; }
@@ -294,5 +149,6 @@
   .l-bot-right { --tx:  30vw; --ty:  16vh; }
 }
 
-.link { display: inline-flex; flex-direction: column; gap: .15em; line-height: 1.15; color: gold; font: bold; }
-.link .label-bottom { font-size: .6em; color: white; }
+/* 9) Colores de las dos líneas del botón (tras los breakpoints para que prevalezcan) */
+.link .label-top    { color: gold; font-weight: 700; }
+.link .label-bottom { color: #ffffff; }
