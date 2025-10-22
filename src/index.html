@@ -1,87 +1,45 @@
 ﻿<!doctype html>
 <html lang="es">
-
 <head>
-  <!-- Android/Chrome: color de la barra del navegador -->
-  <meta name="theme-color" content="#000000">
-  <!-- Tema claro/oscuro (opcional) -->
-  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#000000">
-  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff">
-  <!-- iOS al añadir a pantalla de inicio (PWA) -->
-  <meta name="mobile-web-app-capable" content="yes">
-  <!-- Estilos de la barra de estado en PWA: default | black | black-translucent -->
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-
   <meta charset="utf-8">
   <title>Creasia | Cultura entre oriente y occidente</title>
-  <base href="/">
-  <script>
-    (function () {
-      var m = location.pathname.match(/^\/proxy\/(\d+)(\/|$)/);
-      if (!m) return;
-      var want = m[0].endsWith('/') ? m[0] : m[0] + '/';
-      var base = document.querySelector('base');
-      if (base && base.getAttribute('href') !== want) base.setAttribute('href', want);
-    })();
-  </script>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Creasia: cultura oriental, diseno sereno y contenido cuidado.">
-  <link rel="icon" type="image/png" sizes="512x512" href="assets/icons/favicon-32x32.png">
-  <link rel="icon" type="image/x-icon" href="assets/icons/favicon.ico">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#000000">
+  <meta name="robots" content="index,follow,max-image-preview:large">
+  <link rel="icon" href="assets/icons/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/icons/favicon-32x32.png">
+  <link rel="manifest" href="assets/pics/manifest.json">
+  <!-- Preconexiones a hosts que usas (API, imágenes, etc.) -->
+  <link rel="preconnect" href="https://creasia.es" crossorigin>
+  <link rel="dns-prefetch" href="//creasia.es">
 
-  <!-- Fuentes (Inter + Noto Serif JP) -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Noto+Serif+JP:wght@500;700&display=swap"
-    rel="stylesheet">
+  <!-- Canonical y hreflang: se ajustan dinámicamente en runtime/SSR -->
+  <link rel="canonical" href="/">
+  <link rel="alternate" hreflang="es" href="/?lang=es">
+  <link rel="alternate" hreflang="en" href="/?lang=en">
+  <link rel="alternate" hreflang="zh" href="/?lang=zh">
+  <link rel="alternate" hreflang="x-default" href="/">
 
-  <!-- 🔹 APLICAR IDIOMA LO ANTES POSIBLE (antes de que Angular inyecte los bundles) -->
-  <script>
-    (function () {
-      try {
-        var supported = ['es', 'en', 'zh'];
+  <!-- Open Graph básicos (se sobreescriben por ruta) -->
+  <meta property="og:site_name" content="Creasia">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Creasia">
+  <meta property="og:description" content="Cultura entre oriente y occidente">
+  <meta property="og:image" content="assets/pics/slide1.jpg">
+  <meta property="og:url" content="/">
 
-        // 1) ¿Viene ?lang= en la URL de entrada?
-        var url = new URL(window.location.href);
-        var qlang = url.searchParams.get('lang');
-        var chosen = null;
-
-        if (qlang) {
-          qlang = (qlang + '').slice(0, 2).toLowerCase();
-          if (supported.indexOf(qlang) !== -1) {
-            chosen = qlang;
-            // Persistimos para que el TranslationService lo coja como inicial
-            try { localStorage.setItem('creasia:lang', chosen); } catch (e) { }
-          }
-          // Limpia la URL (opcional, sin recargar)
-          url.searchParams.delete('lang');
-          history.replaceState({}, '', url.toString());
-        }
-
-        // 2) Si no vino en la URL, prueba con lo guardado
-        if (!chosen) {
-          try {
-            var saved = localStorage.getItem('creasia:lang');
-            if (saved && supported.indexOf(saved) !== -1) {
-              chosen = saved;
-            }
-          } catch (e) { }
-        }
-
-        // 3) Si ya sabemos idioma, ponlo en <html lang="..."> antes de pintar nada
-        if (chosen) {
-          document.documentElement.setAttribute('lang', chosen);
-        }
-      } catch (e) {
-        // silencioso
-      }
-    })();
+  <!-- JSON-LD simple de organización -->
+  <script type="application/ld+json">
+  {
+    "@context":"https://schema.org",
+    "@type":"Organization",
+    "name":"Creasia",
+    "url":"https://creasia.es/",
+    "logo":"https://creasia.es/assets/icons/favicon-32x32.png"
+  }
   </script>
 </head>
-
 <body>
   <app-root></app-root>
 </body>
-
 </html>
