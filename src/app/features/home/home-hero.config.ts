@@ -2,11 +2,12 @@ export type LinkAnchor = 'top' | 'right' | 'bottom' | 'left';
 export type AnimationPhase = 'points' | 'connectors';
 
 export interface LinkItem {
-  key: string;
-  route: string;
-  cls: string;
-  pointId: FacePoint['id'];
-  anchor: LinkAnchor;
+   key: string;
+   bottomKey?: string;
+   route: string;
+   cls: string;
+   pointId:FacePoint['id'];
+   anchor: LinkAnchor; 
 }
 
 export interface FacePoint {
@@ -38,11 +39,12 @@ export const HERO_FACE_POINTS: FacePoint[] = [
   { id: 'mouth-right', x: 56.4, y: 90 }
 ];
 
+// BOTONES DE HOME SOBRE LA IMAGEN DE LA CARA:
 export const HERO_LINKS: LinkItem[] = [
-  { key: 'menu.activities', route: '/actividades', cls: 'l-top-left', pointId: 'eye-left', anchor: 'bottom' },
-  { key: 'menu.gourmet', route: '/gourmet', cls: 'l-top-right', pointId: 'eye-right', anchor: 'bottom' },
-  { key: 'menu.partners', route: '/socios', cls: 'l-bot-left', pointId: 'mouth-left', anchor: 'right' },
-  { key: 'menu.trips', route: '/viajes', cls: 'l-bot-right', pointId: 'mouth-right', anchor: 'left' }
+  { key: 'menu.nosotros', bottomKey:'menu.nosotros_desc', route: '/legal', cls: 'l-top-left', pointId: 'eye-left', anchor: 'bottom' },
+  { key: 'menu.restaurant', bottomKey:'menu.restaurant_desc', route: '/gourmet', cls: 'l-top-right', pointId: 'eye-right', anchor: 'bottom' },
+  { key: 'menu.trips', bottomKey:'menu.trips_desc', route: '/viajes', cls: 'l-bot-left', pointId: 'mouth-left', anchor: 'right' },
+  { key: 'menu.activities', bottomKey:'menu.activities_desc', route: '/actividades', cls: 'l-bot-right', pointId: 'mouth-right', anchor: 'left' }
 ];
 
 export const HERO_SLIDES = [

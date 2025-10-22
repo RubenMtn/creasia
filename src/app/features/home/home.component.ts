@@ -93,7 +93,8 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
   animationDone = false;
 
   // Grosor en unidades del viewBox (0..100). Más ancho en el botón → más fino hacia la cara.
-  private readonly LINE_W_START = 5;  // ancho cerca del botón
+  // Modificación del polígono-triángulo líneas conectores hacia los botones:
+  private readonly LINE_W_START = 7;  // ancho cerca del botón
   private readonly LINE_W_END = 0.9;  // ancho cerca de la cara
 
   // Disponibilidad DOM (SSR-safe)

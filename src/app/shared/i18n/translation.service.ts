@@ -39,9 +39,16 @@ const ES_FALLBACK: Dict = {
     trips: 'VIAJES',
     languages: 'IDIOMAS',
     networking: 'NETWORKING',
+    nosotros: 'NOSOTROS',
     consulting: 'CONSULTORÍA',
     legal: 'LEGAL',
     galeria: 'GALERÍA',
+    restaurant: 'RESTAURANTES',
+    nosotros_desc: 'QUIENES SOMOS',
+    activities_desc: 'IDIOMAS, EVENTOS Y MÁS',
+    restaurant_desc: 'VENTAJAS Y DESCUENTOS',
+    trips_desc: '¡VÁMONOS A CHINA!',
+
   },
 
   home: {
@@ -191,6 +198,16 @@ const ES_FALLBACK: Dict = {
       bodyLog: 'Para añadir o modificar fechas de tu preferencia, selecciona rangos de 2 o más días en el calendario pulsando un día de inicio y uno de final indistintamente. A continuación, elige Guardar o Eliminar según necesites:',
       bodyLegend: '🔴 Borde rojo: días que has seleccionado',
     },
+    calendar: {
+      saving: 'Guardando…',
+      saveDates: 'Guardar fechas',
+      deleteDates: 'Eliminar fechas',
+      saved: 'GUARDADO',
+      deleted: 'ELIMINADO',
+      error: 'ERROR. CONTÁCTENOS',
+      minTwoDays: 'Mínimo 2 días seguidos',
+      loginToAdd: 'Debe iniciar sesión para añadir fechas',
+    },
     section2: {
       title: 'Maravillas que descubrirás',
       body1: 'Desde la Gran Muralla en Mutianyu hasta la Ciudad Prohibida, los pueblos acuáticos de Suzhou y los rascacielos futuristas de Shanghái y Shenzhen, abrimos puertas a los contrastes de China.',
@@ -223,9 +240,9 @@ const ES_FALLBACK: Dict = {
       title: '2. Protección de Datos Personales',
       body1: 'Los datos personales facilitados a través de los formularios de Creasia serán tratados de acuerdo con la normativa vigente en materia de protección de datos (Reglamento UE 2016/679 y Ley Orgánica 3/2018).',
       body2: 'La finalidad del tratamiento es la gestión de la relación con los usuarios, el envío de información sobre actividades, novedades y servicios de Creasia, así como la atención de consultas. Los datos no serán cedidos a terceros salvo obligación legal.',
-      body3Before: 'El usuario puede ejercer sus derechos de acceso, rectificación, supresión, limitación, oposición y portabilidad mediante la sección ',
-      contactLink: 'Contáctanos',
-      body3After: '.',
+      body3Before: 'El usuario puede ejercer sus derechos de acceso, rectificación, supresión, limitación, oposición y portabilidad mediante ',
+      contactLink: 'contacto',
+      body3After: ' por escrito.',
       body4: 'Si desea darse de baja de nuestras comunicaciones, también puede solicitarlo a través de la misma página de contacto.'
     },
     section3: {

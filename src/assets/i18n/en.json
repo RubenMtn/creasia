@@ -18,12 +18,18 @@
     "animation": "VIEW ANIMATION",
     "activities": "ACTIVITIES",
     "partners": "PARTNERS",
-    "trips": "TRIPS",
+    "trips": "TRAVEL",
     "legal": "LEGAL",
     "languages": "LANGUAGES",
     "networking": "NETWORKING",
+    "nosotros": "ABOUT US",
+    "restaurant": "RESTAURANTS",
     "gourmet": "GOURMET PASS",
-    "consulting": "CONSULTING"
+    "consulting": "CONSULTING",
+    "nosotros_desc": "WHO WE ARE",
+    "activities_desc": "LANGUAGES, EVENTS...",
+    "restaurant_desc": "BENEFITS & DISCOUNTS",
+    "trips_desc": "LET’S GO TO CHINA!"
   },
   "home": {
     "title": "A living bridge between Spain and China",
@@ -126,6 +132,16 @@
       "bodyLog": "To add or modify your preferred dates, select ranges of 2 or more consecutive days on the calendar by tapping any start day and any end day. Then choose Save or Delete as needed:",
       "bodyLegend": "🔴 Red border: days you have selected"
     },
+    "calendar": {
+      "saving": "Saving…",
+      "saveDates": "Save dates",
+      "deleteDates": "Delete dates",
+      "saved": "SAVED",
+      "deleted": "DELETED",
+      "error": "ERROR. PLEASE CONTACT US",
+      "minTwoDays": "Minimum 2 consecutive days",
+      "loginToAdd": "Please sign in to add dates"
+    },
     "section2": {
       "title": "Wonders You Will Experience",
       "body1": "From the Great Wall at Mutianyu to the Forbidden City, Suzhou water towns, and the futuristic skylines of Shanghai and Shenzhen, we open the doors to China's contrasts.",
@@ -163,9 +179,9 @@
       "title": "2. Personal Data Protection",
       "body1": "Personal data provided through Creasia’s forms will be processed in accordance with the applicable data protection regulations (EU Regulation 2016/679 and Spanish Organic Law 3/2018).",
       "body2": "The purpose of the processing is to manage the relationship with users, send information about Creasia’s activities, news, and services, and handle inquiries. Data will not be transferred to third parties except where required by law.",
-      "body3Before": "Users may exercise their rights of access, rectification, erasure, restriction, objection, and portability via the ",
-      "contactLink": "Contact us",
-      "body3After": " section.",
+      "body3Before": "Users may exercise their rights of access, rectification, erasure, restriction, objection and data portability by ",
+      "contactLink": "contacting us",
+      "body3After": "  in writing.",
       "body4": "If you wish to unsubscribe from our communications, you may also request it through the same contact page."
     },
     "section3": {

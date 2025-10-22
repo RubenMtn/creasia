@@ -16,7 +16,11 @@
       <p>{{ 'legal.section2.body2' | t }}</p>
       <p>
         {{ 'legal.section2.body3Before' | t }}
-        <a class="legal-link" routerLink="/socios">{{ 'legal.section2.contactLink' | t }}</a>
+
+        <!-- <a class="legal-link" routerLink="/socios">{{ 'legal.section2.contactLink' | t }}</a> -->
+<a class="legal-link" href="mailto:mail@creasia.es">{{ 'legal.section2.contactLink' | t }}</a>
+        
+        
         {{ 'legal.section2.body3After' | t }}
       </p>
       <p>{{ 'legal.section2.body4' | t }}</p>

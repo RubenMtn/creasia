@@ -73,23 +73,26 @@
     <div class="cal-actions">
       @if (saveState === 'idle') {
       <button type="button" class="btn-save" (click)="emitSave()" [disabled]="saving || minTwoDaysViolation()">
-        {{ saving ? 'Guardando…' : (selectionFullyMine() ? 'Eliminar fechas' : 'Guardar fechas') }}
+        <!-- {{ saving ? 'Guardando…' : (selectionFullyMine() ? 'Eliminar fechas' : 'Guardar fechas') }} -->
+        {{ saving ? ('viajes.calendar.saving' | t) : (selectionFullyMine() ? ('viajes.calendar.deleteDates' | t) : ('viajes.calendar.saveDates' | t)) }}
       </button>
       } @else {
       <span class="save-result" role="status" [class.ok]="saveState==='ok'" [class.err]="saveState==='error'"
         [class.deleted]="saveState==='deleted'">
-        {{
+        <!-- {{
         saveState==='ok' ? 'GUARDADO'
         : saveState==='deleted' ? 'ELIMINADO'
         : 'ERROR. CONTÁCTENOS'
-        }}
+        }} -->
+        {{ saveState==='ok' ? ('viajes.calendar.saved' | t) : saveState==='deleted' ? ('viajes.calendar.deleted' | t) : ('viajes.calendar.error' | t) }}
       </span>
       }
 
       <!-- Mensaje o rango: si no cumple mínimo, se muestra el aviso en lugar de la fecha -->
       @if (minTwoDaysViolation()) {
       <span class="save-result err" role="status" aria-live="polite">
-        Mínimo 2 días seguidos
+        <!-- Mínimo 2 días seguidos -->
+        {{ 'viajes.calendar.minTwoDays' | t }}
       </span>
       } @else {
       <span class="range-label">
@@ -103,7 +106,8 @@
     <!-- Aviso: requiere login (se muestra bajo el mes clicado) -->
     @if (!isLoggedIn && loginNoticeMonthId() === monthId(mes.year, mes.monthIndex)) {
     <div class="cal-actions" role="status" aria-live="polite">
-      <span class="save-result">Debe logarse para añadir fechas</span>
+      <!-- <span class="save-result">Debe logarse para añadir fechas</span> -->
+       <span class="save-result">{{ 'viajes.calendar.loginToAdd' | t }}</span>
     </div>
     }
   </article>
