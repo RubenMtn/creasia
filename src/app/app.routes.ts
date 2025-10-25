@@ -33,6 +33,10 @@ export const routes: Routes = [
         data: { headerKey: 'header.trips', seoTitleKey: 'viajes.title', seoDescKey: 'viajes.section1.body1' }
       },
       {
+        path: 'viajes-wizard',
+        loadComponent: () => import('./features/viajes/viajes-wizard.component').then(m => m.ViajesWizardComponent)
+      },
+      {
         path: 'consultoria',
         loadComponent: () => import('./features/consultoria/consultoria.component').then(m => m.ConsultoriaComponent),
         data: { headerKey: 'header.consulting', seoTitleKey: 'consultoria.title', seoDescKey: 'consultoria.caption' }

@@ -1,0 +1,52 @@
+/* Archivo: src/app/features/viajes/viajes-preferencias.component.scss */
+/* Estilos simples, mobile-first, sliders en goldenrod. */
+
+.prefs {
+  display: grid;
+  gap: 1.9rem; /* ⬆️ Aún más separación entre preguntas */
+}
+
+.prefs__intro {
+  font-size: 0.95rem;
+  opacity: 0.9;
+}
+
+.prefs__item {
+  display: grid;
+  gap: 0.6rem; /* Un poco más de aire dentro de cada bloque */
+  margin: 0;
+
+  > span {
+    font-weight: 600;
+    line-height: 1.2;
+  }
+
+  > small {
+    opacity: 0.8;
+  }
+}
+
+.prefs__control {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 0.6rem;
+
+  input[type="range"] {
+    width: 100%;
+    /* Color del control y la barra seleccionada */
+    accent-color: goldenrod;
+  }
+
+  output {
+    min-width: 2ch;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+.prefs__resumen {
+  margin-top: 0.6rem;
+  font-size: 0.9rem;
+  opacity: 0.85;
+}

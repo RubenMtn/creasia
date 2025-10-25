@@ -1,0 +1,140 @@
+<!-- Archivo: src/app/features/viajes/viajes-wizard.component.html -->
+<!-- Intro sin cabecera; pasos 1–3 con cabecera/progreso ancho + hitos clicables + avión. -->
+
+<!-- 🔝 Ancla para forzar scroll al top cuando se cambia de paso -->
+<div #topAnchor aria-hidden="true"></div>
+
+<!-- CABECERA (sólo pasos 1–3) -->
+<div class="wizard__progress" *ngIf="paso()>0" aria-label="Progreso de configuración" role="img">
+    <div class="progress__track">
+
+        <!-- Tramo completado -->
+        <div class="progress__fill" [class.is-complete]="saved()" [style.width.%]="planePct()"></div>
+
+        <!-- Avión que actúa como testigo de avance -->
+        <img *ngIf="!saved()" class="progress__plane" src="assets/icons/planehor.png" alt=""
+            [style.left.%]="planePct()" />
+
+
+        <!-- Botón Paso 1 -->
+        <button type="button" class="milestone m1" [class.is-active]="saved() || paso()>=1"
+            [class.is-clickable]="paso()>1" (click)="goToPasoFromMilestone(1)" aria-label="Ir al paso 1">1</button>
+
+        <!-- Botón Paso 2 -->
+        <button type="button" class="milestone m2" [class.is-active]="saved() || paso()>=2"
+            [class.is-clickable]="paso()>2" (click)="goToPasoFromMilestone(2)" aria-label="Ir al paso 2">2</button>
+
+        <!-- Botón Paso 3 -->
+        <button type="button" class="milestone m3" [class.is-active]="saved()" [class.is-clickable]="false"
+            (click)="goToPasoFromMilestone(3)" aria-label="Paso 3">3</button>
+
+    </div>
+</div>
+
+<!-- FASE 0 — INTRODUCCIÓN -->
+<section class="wizard__panel" *ngIf="paso()===0" role="region" aria-labelledby="intro-title">
+    <h3 id="intro-title">Viajes a China (modo amigos)</h3>
+    <p>
+        Creasia coordina, de forma informal, pequeños grupos de viaje “entre amigos” para descubrir China a tu ritmo.
+    </p>
+    <p>El recorrido consta de 3 etapas:</p>
+    <ol>
+        <li><strong>Tipo de viaje e intereses</strong></li>
+        <li><strong>Fechas de preferencia y disponibilidad</strong></li>
+        <li><strong>Puerta de embarque</strong>: te avisamos cuando haya grupo afín</li>
+    </ol>
+    <p class="wizard__note" *ngIf="!logged()">
+        Para configurar tu viaje necesitas iniciar sesión.
+    </p>
+</section>
+
+<!-- PASO 1 — PREFERENCIAS -->
+<section class="wizard__panel" *ngIf="paso()===1" role="region" aria-labelledby="prefs-title">
+    <h4 id="prefs-title">1) Tipo de viaje e intereses</h4>
+    <app-viajes-preferencias (ready)="onPreferenciasReady($event)"></app-viajes-preferencias>
+</section>
+
+<!-- PASO 2 — FECHAS -->
+<section class="wizard__panel" *ngIf="paso()===2" role="region" aria-labelledby="dates-title">
+    <h4 id="dates-title">2) Fechas de preferencia y disponibilidad</h4>
+    <app-viajes-calendario></app-viajes-calendario>
+</section>
+
+<!-- PASO 3 — PUERTA DE EMBARQUE -->
+<section class="wizard__panel" *ngIf="paso()===3" role="region" aria-labelledby="gate-title">
+    <h4 id="gate-title">3) Puerta de embarque</h4>
+    <p>
+        ¡Enhorabuena! Ya estás muy cerca de hacer realidad tu viaje. En cuanto
+        haya suficiente gente disponible para viajar en fechas y con un tipo de viaje
+        similar a tus preferencias, nos pondremos en contacto contigo para ultimar detalles.
+    </p>
+
+    <!-- Resumen de preferencias -->
+    <div class="prefs-summary" role="status" aria-live="polite">
+        <h5>Resumen de tus preferencias</h5>
+        <ul>
+            <li><span>Grupo de personas:</span> <strong>{{ prefsSnapshot().grupoPersonas }}/10</strong></li>
+            <li><span>Ritmo de actividad:</span> <strong>{{ prefsSnapshot().ritmoActividad }}/10</strong></li>
+            <li><span>Presupuesto:</span> <strong>{{ prefsSnapshot().presupuesto }}/10</strong></li>
+            <li><span>Gastronomía:</span> <strong>{{ prefsSnapshot().gastronomia }}/10</strong></li>
+            <li><span>Naturaleza:</span> <strong>{{ prefsSnapshot().naturaleza }}/10</strong></li>
+            <li><span>Cultura y tradición:</span> <strong>{{ prefsSnapshot().culturaTradicion }}/10</strong></li>
+            <li><span>Vida nocturna:</span> <strong>{{ prefsSnapshot().vidaNocturna }}/10</strong></li>
+            <li><span>Compras:</span> <strong>{{ prefsSnapshot().compras }}/10</strong></li>
+            <li><span>Negocios:</span> <strong>{{ prefsSnapshot().negocios }}/10</strong></li>
+            <li><span>Tradicional ↔ Moderno:</span> <strong>{{ prefsSnapshot().tradicionalVsModerno }}/10</strong></li>
+        </ul>
+    </div>
+
+    <!-- Cuadro de texto libre -->
+    <label class="wizard__textarea">
+        <span>
+            Si desea añadir algún comentario, avisar sobre alguna alergia o intolerancia alimenticia,
+            o añadir cualquier información que considere importante, hágalo en el siguiente cuadro de texto:
+            <em>(máximo 200 caracteres)</em>
+        </span>
+        <textarea [value]="nota()" (input)="onNotaInput($event)" maxlength="200" rows="4"
+            aria-label="Comentarios adicionales (máx. 200 caracteres)"></textarea>
+        <small class="wizard__charcount" aria-live="polite">{{ notaRestante() }} caracteres restantes</small>
+    </label>
+
+    <p class="wizard__note" *ngIf="!logged()">
+        Cuando puedas, inicia sesión para que podamos avisarte personalmente.
+    </p>
+</section>
+
+<!-- Botonera inferior -->
+<footer class="wizard__actions">
+    <!-- Intro -->
+    <ng-container *ngIf="paso()===0">
+        <div class="inline-warning" *ngIf="showLoginWarning()" aria-live="assertive">
+            Debes logarte para configurar tu viaje
+        </div>
+        <button type="button" class="cta" (click)="empezar()" [class.is-disabled]="!logged()"
+            aria-label="Comenzar configuración de viaje">
+            Empezar
+        </button>
+    </ng-container>
+
+    <!-- Pasos 1–2 -->
+    <ng-container *ngIf="paso()===1 || paso()===2">
+        <button type="button" (click)="anterior()" aria-label="Volver al paso anterior">Anterior</button>
+        <button type="button" (click)="siguiente()" [disabled]="!puedeSiguiente()" aria-label="Pasar al siguiente paso">
+            Siguiente
+        </button>
+    </ng-container>
+
+    <!-- Paso 3 -->
+    <ng-container *ngIf="paso()===3">
+        <button type="button" (click)="anterior()" aria-label="Volver al paso anterior">Anterior</button>
+        <div class="save-block">
+            <button type="button" class="cta" (click)="guardarPreferencias()" [disabled]="saved()"
+                [class.is-disabled]="saved()" aria-label="Guardar preferencias">
+                Guardar preferencias
+            </button>
+            <p class="save-msg" *ngIf="saved()" aria-live="polite">
+                Preferencias guardadas, en cualquier momento puede revisarlas o modificarlas.
+            </p>
+        </div>
+    </ng-container>
+</footer>

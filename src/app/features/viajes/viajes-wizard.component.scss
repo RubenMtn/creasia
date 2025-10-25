@@ -1,0 +1,275 @@
+/* Archivo: src/app/features/viajes/viajes-wizard.component.scss */
+/* Ajustes:
+   - Avión más grande
+   - Track sin oscurecer el fill
+   - Al guardar: parpadeo dorado doble y luego se queda dorado, pero SIN avión
+*/
+
+:host {
+  /* Dorado principal */
+  --progress-accent: gold;          /* dorado vivo final */
+  --progress-accent-dim: #d4b84a;   /* dorado algo más apagado para el parpadeo */
+  --progress-track-bg: rgba(0,0,0,0.15); /* color de la parte NO completada */
+}
+
+.wizard__panel {
+  display: grid;
+  gap: 0.9rem;
+
+  h3, h4 {
+    margin: 0.25rem 0 0.5rem;
+  }
+}
+
+.wizard__note {
+  font-size: 0.9rem;
+  opacity: 0.8;
+}
+
+/* ===== Progreso con hitos (sólo pasos 1–3) ===== */
+.wizard__progress {
+  margin: 2rem 0 1rem 0;
+}
+
+/* Pista completa */
+.progress__track {
+  position: relative;
+  height: 20px;
+  background: var(--progress-track-bg);
+  border-radius: 999px;
+  overflow: visible;
+  z-index: 0; /* base */
+}
+
+/* Tramo completado */
+.progress__fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  height: 20px;
+  width: 0%;
+  background: var(--progress-accent);
+  border-radius: 999px;
+  transition:
+    width 220ms ease,
+    background-color 220ms ease;
+  z-index: 1; /* por encima del track, pero por debajo del avión y los hitos */
+}
+
+/* Parpadeo cuando está completado (saved=true)
+   Hace blink 2 veces entre un dorado más apagado y el dorado vivo,
+   y termina dorado vivo.
+*/
+.progress__fill.is-complete {
+  /* 3 parpadeos más lentos */
+  animation: progressBlink 1.5s ease-in-out 1;
+  background: var(--progress-accent);
+}
+
+
+@keyframes progressBlink {
+  /* 3 blinks:
+     brillante -> tenue -> brillante -> tenue -> brillante -> tenue -> brillante final
+     repartido más despacio en 1.5s
+  */
+  0%   { background-color: var(--progress-accent); }
+  16%  { background-color: var(--progress-accent-dim); }
+  33%  { background-color: var(--progress-accent); }
+  50%  { background-color: var(--progress-accent-dim); }
+  66%  { background-color: var(--progress-accent); }
+  83%  { background-color: var(--progress-accent-dim); }
+  100% { background-color: var(--progress-accent); }
+}
+
+/* Avión indicador de progreso (testigo de avance) */
+.progress__plane {
+  position: absolute;
+  top: 0;
+  /* Lo desplazamos ligeramente hacia la derecha (-30% en vez de -50%)
+     y un poco hacia arriba (-60% en vez de -70% original, que ahora estaba bajado)
+     para que quede por encima y alante del tramo dorado sin pisar la barra. */
+  transform: translate(-30%, -60%);
+  width: 48px; /* tamaño grande del avión */
+  height: auto;
+  pointer-events: none;
+  z-index: 5; /* siempre por encima de la pista y del fill */
+  filter:
+    drop-shadow(0 0 2px rgba(0,0,0,0.6))
+    drop-shadow(0 0 4px rgba(255,255,255,0.4));
+}
+
+/* Hitos circulares tipo botón */
+.milestone {
+  position: absolute;
+  top: 50%;
+  translate: 0 -50%;
+  width: 48px;            /* ⬅️ más grande para el dedo en móvil */
+  height: 48px;
+  border-radius: 50%;
+  border: 2px solid #fff; /* círculo blanco alrededor siempre */
+  background: transparent;
+  color: #fff;            /* número SIEMPRE en blanco */
+  font-size: 1rem;
+  line-height: 44px;      /* centrado vertical del número */
+  text-align: center;
+  font-weight: 700;       /* bold más marcado */
+  padding: 0;
+  cursor: default;
+  transition:
+    box-shadow 0.15s ease,
+    transform 0.15s ease;
+  z-index: 4;
+  touch-action: manipulation; /* mejor respuesta en pantallas táctiles */
+}
+
+/* posición de cada hito mantenida igual */
+.m1 { left: 0; }
+.m2 { left: 50%; translate: -50% -50%; }
+.m3 { right: 0; }
+
+/* El paso ACTIVO gana halo dorado alrededor,
+   para que se lea que es “dónde estoy / dónde he estado”
+   sin tener que cambiar el color del número ni del borde.
+*/
+.milestone.is-active {
+  box-shadow: 0 0 0 4px rgba(255, 215, 0, 0.6);
+}
+
+/* Botón clicable (volver atrás):
+   - cursor pointer
+   - pequeño scale en hover/focus para feedback
+*/
+.milestone.is-clickable {
+  cursor: pointer;
+}
+.milestone.is-clickable:is(:hover, :focus-visible) {
+  transform: scale(1.05);
+  box-shadow: 0 0 0 5px rgba(255, 215, 0, 0.8);
+  outline: none;
+}
+
+
+
+/* Posición de cada hito */
+.m1 { left: 0; }
+.m2 { left: 50%; translate: -50% -50%; }
+.m3 { right: 0; }
+
+/* Hito activo:
+   - fondo dorado
+   - texto oscuro para contraste
+   - borde dorado
+*/
+.milestone.is-active {
+  background: var(--progress-accent);
+  border-color: var(--progress-accent);
+  color: #000;
+}
+
+/* Hito clicable (permitimos volver atrás) */
+.milestone.is-clickable {
+  cursor: pointer;
+}
+.milestone.is-clickable:is(:hover, :focus-visible) {
+  box-shadow: 0 0 0 4px rgba(255, 215, 0, 0.35); /* halo dorado suave */
+  outline: none;
+  border-color: var(--progress-accent);
+}
+
+/* ===== Resumen y textarea del paso 3 ===== */
+.prefs-summary {
+  display: grid;
+  gap: 0.6rem;
+
+  h5 {
+    margin: 0.25rem 0;
+    font-size: 1rem;
+    font-weight: 600;
+  }
+
+  ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: 0.4rem;
+  }
+
+  li {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 0.5rem;
+    align-items: center;
+
+    span { opacity: 0.85; }
+    strong { font-variant-numeric: tabular-nums; }
+  }
+}
+
+.wizard__textarea {
+  display: grid;
+  gap: 0.5rem;
+
+  > span {
+    line-height: 1.3;
+  }
+
+  textarea {
+    width: 100%;
+    min-height: 6rem;
+    border-radius: 0.5rem;
+    padding: 0.6rem 0.75rem;
+    border: 1px solid currentColor;
+    background: transparent;
+    color: inherit;
+    resize: vertical;
+  }
+
+  .wizard__charcount {
+    justify-self: end;
+    font-size: 0.85rem;
+    opacity: 0.75;
+  }
+}
+
+/* ===== Botonera y mensajes inline ===== */
+.wizard__actions {
+  display: grid;
+  grid-auto-flow: column;
+  justify-content: end;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  align-items: start;
+
+  button {
+    padding: 0.5rem 0.9rem;
+    border-radius: 0.6rem;
+    border: 1px solid currentColor;
+  }
+
+  .cta {
+    border: 1px solid currentColor;
+  }
+
+  .is-disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .save-block {
+    display: grid;
+    gap: 0.4rem;
+  }
+
+  .save-msg {
+    margin: 0;
+    font-size: 0.95rem;
+    opacity: 0.95;
+  }
+}
+
+/* Aviso inline sobre “Empezar” cuando no hay login (sin pop-up) */
+.inline-warning {
+  margin-bottom: 0.5rem;
+  padding: 0.25rem 0;
+  opacity: 0.95;
+}

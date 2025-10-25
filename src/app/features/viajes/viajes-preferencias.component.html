@@ -1,0 +1,113 @@
+<!-- Archivo: src/app/features/viajes/viajes-preferencias.component.html -->
+<!-- 10 sliders 0–10 en el ORDEN solicitado (accent-color: goldenrod en el SCSS). -->
+
+<form [formGroup]="form" class="prefs">
+  <div class="prefs__intro">
+    <p>
+      Cuéntanos tus preferencias para ajustar el tipo de viaje que mejor encaja contigo.
+      Podrás afinarlas más adelante si cambias de idea.
+    </p>
+  </div>
+
+  <!-- 1) Tamaño del grupo -->
+  <label class="prefs__item">
+    <span>¿Con cuánta gente te gustaría viajar?</span>
+    <small>(0: cuanto menos mejor · 10: cuanto más mejor)</small>
+    <div class="prefs__control">
+      <input type="range" min="0" max="10" step="1" formControlName="grupoPersonas" aria-label="Tamaño del grupo" />
+      <output>{{ form.value.grupoPersonas }}</output>
+    </div>
+  </label>
+
+  <!-- 2) Ritmo de actividad -->
+  <label class="prefs__item">
+    <span>Ritmo de actividad del viaje</span>
+    <small>(0: muy tranquilo · 10: muy intenso)</small>
+    <div class="prefs__control">
+      <input type="range" min="0" max="10" step="1" formControlName="ritmoActividad" aria-label="Ritmo de actividad" />
+      <output>{{ form.value.ritmoActividad }}</output>
+    </div>
+  </label>
+
+  <!-- 3) Presupuesto -->
+  <label class="prefs__item">
+    <span>Presupuesto aproximado</span>
+    <small>(0: ajustado · 10: alto)</small>
+    <div class="prefs__control">
+      <input type="range" min="0" max="10" step="1" formControlName="presupuesto" aria-label="Presupuesto" />
+      <output>{{ form.value.presupuesto }}</output>
+    </div>
+  </label>
+
+  <!-- 4) Gastronomía -->
+  <label class="prefs__item">
+    <span>Interés por la gastronomía</span>
+    <small>(0: poco · 10: mucho)</small>
+    <div class="prefs__control">
+      <input type="range" min="0" max="10" step="1" formControlName="gastronomia" aria-label="Gastronomía" />
+      <output>{{ form.value.gastronomia }}</output>
+    </div>
+  </label>
+
+  <!-- 5) Naturaleza -->
+  <label class="prefs__item">
+    <span>Interés por naturaleza / paisajes</span>
+    <small>(0: poco · 10: mucho)</small>
+    <div class="prefs__control">
+      <input type="range" min="0" max="10" step="1" formControlName="naturaleza" aria-label="Naturaleza" />
+      <output>{{ form.value.naturaleza }}</output>
+    </div>
+  </label>
+
+  <!-- 6) Cultura y tradición -->
+  <label class="prefs__item">
+    <span>Interés por cultura y tradición</span>
+    <small>(0: poco · 10: mucho)</small>
+    <div class="prefs__control">
+      <input type="range" min="0" max="10" step="1" formControlName="culturaTradicion" aria-label="Cultura y tradición" />
+      <output>{{ form.value.culturaTradicion }}</output>
+    </div>
+  </label>
+
+  <!-- 7) Vida nocturna -->
+  <label class="prefs__item">
+    <span>Interés por vida nocturna</span>
+    <small>(0: nada · 10: mucho)</small>
+    <div class="prefs__control">
+      <input type="range" min="0" max="10" step="1" formControlName="vidaNocturna" aria-label="Interés por vida nocturna" />
+      <output>{{ form.value.vidaNocturna }}</output>
+    </div>
+  </label>
+
+  <!-- 8) Compras -->
+  <label class="prefs__item">
+    <span>Interés por compras</span>
+    <small>(0: nada · 10: mucho)</small>
+    <div class="prefs__control">
+      <input type="range" min="0" max="10" step="1" formControlName="compras" aria-label="Compras" />
+      <output>{{ form.value.compras }}</output>
+    </div>
+  </label>
+
+  <!-- 9) Negocios -->
+  <label class="prefs__item">
+    <span>Interés por negocios</span>
+    <small>(0: nada · 10: mucho)</small>
+    <div class="prefs__control">
+      <input type="range" min="0" max="10" step="1" formControlName="negocios" aria-label="Interés por negocios" />
+      <output>{{ form.value.negocios }}</output>
+    </div>
+  </label>
+
+  <!-- 10) Tradicional vs moderno -->
+  <label class="prefs__item">
+    <span>Preferencia: tradicional vs moderno</span>
+    <small>(0: China tradicional · 10: China tecnológica y moderna)</small>
+    <div class="prefs__control">
+      <input type="range" min="0" max="10" step="1" formControlName="tradicionalVsModerno" aria-label="Preferencia tradicional vs moderno" />
+      <output>{{ form.value.tradicionalVsModerno }}</output>
+    </div>
+  </label>
+
+  <p class="prefs__resumen" aria-live="polite">{{ resumen() }}</p>
+</form>
